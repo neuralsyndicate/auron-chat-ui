@@ -74,3 +74,6 @@ auron-chat-ui/
 ---
 
 **Neural Syndicate** | Auron AI Assistant
+
+## 🚀 Automated Deployment
+Frontend automatically deploys to BunnyCDN on every push to main branch.
