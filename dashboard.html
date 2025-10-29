@@ -1,0 +1,2390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Auron</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans (Neural Music brand font) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <!-- Logto Browser SDK via ES Module -->
+    <script type="module">
+        import LogtoClient from 'https://esm.run/@logto/browser';
+        window.LogtoClient = LogtoClient;
+        window.logtoConfig = {
+            endpoint: 'https://auth.neuralsyndicate.com/',
+            appId: 'a5m87e4osv2y7vv8asbwu',
+        };
+        console.log('✓ Logto SDK loaded successfully');
+    </script>
+
+    <script src="logto-config.js?v=2"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#000DFF',
+                        'primary-dark': '#001AFF',
+                        'ns-black': '#000000',
+                        'ns-white': '#FFFFFF',
+                        'ns-blue': '#000DFF',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Neural Syndicate - Cyberpunk Minimalist Design System */
+        /* Dark Blue (#000DFF) + Pure Black - Professional/Futuristic */
+
+        :root {
+            /* Core Colors - HEAVY Electric Blue (like 43.png) */
+            --ns-black: #000000;
+            --ns-navy: #0a0a0f;
+            --ns-blue-glow: #00D9FF;      /* Bright electric blue - MAIN */
+            --ns-blue-bright: #00BFFF;    /* Cyan glow */
+            --ns-blue-mid: #0099FF;       /* Medium blue */
+
+            /* Text */
+            --ns-white: #FFFFFF;
+            --ns-gray: #8899AA;
+            --ns-gray-dark: #556677;
+
+            /* Liquid Glass (Apple-style) */
+            --glass-bg: rgba(10, 10, 31, 0.4);
+            --glass-bg-strong: rgba(10, 10, 31, 0.75);
+            --glass-border: rgba(0, 13, 255, 0.12);
+            --glass-blur: blur(24px);
+
+            /* Glows - Dark Blue Only */
+            --glow-soft: 0 0 15px rgba(0, 13, 255, 0.3);
+            --glow-medium: 0 0 25px rgba(0, 13, 255, 0.5);
+            --glow-strong: 0 0 45px rgba(0, 13, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--ns-black);
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+            color: var(--ns-white);
+            font-weight: 400;
+            letter-spacing: -0.01em;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Liquid Glass Effect (Apple-inspired) */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            box-shadow:
+                0 8px 32px 0 rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.03),
+                inset 0 0 20px 0 rgba(0, 13, 255, 0.02);
+        }
+
+        .glass-strong {
+            background: var(--glass-bg-strong);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(0, 13, 255, 0.18);
+            box-shadow:
+                0 16px 48px 0 rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+        }
+
+        /* Glow Effects - Dark Blue ONLY */
+        .glow {
+            text-shadow: var(--glow-soft);
+        }
+
+        .glow-strong {
+            text-shadow: var(--glow-medium);
+            filter: drop-shadow(0 0 12px rgba(0, 13, 255, 0.4));
+        }
+
+        .neural-glow {
+            box-shadow: var(--glow-soft);
+        }
+
+        .neural-border {
+            border: 1px solid rgba(0, 13, 255, 0.25);
+            box-shadow:
+                var(--glow-soft),
+                inset 0 0 15px rgba(0, 13, 255, 0.04);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .pulse-line {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .message {
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading-dot {
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Dialogue Modal - Liquid Glass Cyberpunk Professional */
+        .dialogue-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dialogue-modal {
+            /* Liquid Glass Effect */
+            background: rgba(10, 10, 31, 0.65);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+
+            /* HEAVY Blue Glow Border (like 43.png) */
+            border: 2px solid rgba(0, 217, 255, 0.4);
+            border-radius: 0;
+
+            /* INTENSE Blue Glow */
+            box-shadow:
+                0 0 0 1px rgba(0, 217, 255, 0.1) inset,
+                0 24px 60px 0 rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(0, 217, 255, 0.6),
+                0 0 80px rgba(0, 217, 255, 0.4),
+                0 0 120px rgba(0, 191, 255, 0.3);
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+
+            padding: 3rem;
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Sci-Fi Shimmer Effects (Neural Music style) */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes shimmer {
+            0%, 100% {
+                background-position: -200% center;
+            }
+            50% {
+                background-position: 200% center;
+            }
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% {
+                box-shadow:
+                    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+                    0 24px 60px 0 rgba(0, 0, 0, 0.6),
+                    0 0 60px 0 rgba(0, 13, 255, 0.15),
+                    0 0 120px 0 rgba(0, 13, 255, 0.08);
+            }
+            50% {
+                box-shadow:
+                    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+                    0 24px 60px 0 rgba(0, 0, 0, 0.6),
+                    0 0 80px 0 rgba(0, 13, 255, 0.25),
+                    0 0 160px 0 rgba(0, 13, 255, 0.15);
+            }
+        }
+
+        @keyframes gradient-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Rotating ring shimmer */
+        .shimmer-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            border: 1px solid rgba(0, 13, 255, 0.2);
+            animation: spin 20s linear infinite;
+            pointer-events: none;
+        }
+
+        .shimmer-ring::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            background: conic-gradient(
+                from 0deg,
+                transparent 0%,
+                rgba(0, 13, 255, 0.4) 10%,
+                transparent 20%,
+                transparent 100%
+            );
+            animation: spin 8s linear infinite reverse;
+        }
+
+        /* Sci-fi button with HEAVY blue glow (like 43.png) */
+        .btn-sci-fi {
+            position: relative;
+            background: linear-gradient(
+                135deg,
+                #00D9FF 0%,
+                #00BFFF 50%,
+                #00D9FF 100%
+            );
+            background-size: 200% 200%;
+            animation: gradient-shift 3s ease infinite;
+            transition: all 0.3s ease-out;
+            overflow: hidden;
+            box-shadow:
+                0 0 20px rgba(0, 217, 255, 0.6),
+                0 0 40px rgba(0, 191, 255, 0.4);
+        }
+
+        .btn-sci-fi:hover {
+            transform: scale(1.05);
+            box-shadow:
+                0 0 30px rgba(0, 217, 255, 0.8),
+                0 0 60px rgba(0, 191, 255, 0.6),
+                0 0 100px rgba(0, 153, 255, 0.4);
+        }
+
+        .btn-sci-fi::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 20%,
+                rgba(255, 255, 255, 0.6) 50%,
+                transparent 80%
+            );
+            animation: shimmer 2s linear infinite;
+            z-index: 1;
+        }
+
+        .btn-sci-fi > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Glass card with hover scale */
+        .glass-card {
+            transition: all 0.3s ease-out;
+        }
+
+        .glass-card:hover {
+            transform: scale(1.02) translateY(-4px);
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+                0 8px 32px rgba(0, 0, 0, 0.6),
+                0 0 80px rgba(0, 13, 255, 0.2);
+        }
+
+        .dialogue-modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .dialogue-modal-close:hover {
+            color: #000DFF;
+            background: rgba(0, 191, 255, 0.1);
+        }
+
+        /* Loading Overlay - Professional Dark Blue */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .loading-spinner {
+            width: 64px;
+            height: 64px;
+            border: 3px solid rgba(0, 13, 255, 0.1);
+            border-top-color: var(--ns-blue-dark);
+            border-radius: 50%;
+            animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+            box-shadow: 0 0 40px rgba(0, 13, 255, 0.2);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Close Button - Minimal Professional */
+        .dialogue-modal-close {
+            position: absolute;
+            top: 1.75rem;
+            right: 1.75rem;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--ns-gray);
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-weight: 300;
+        }
+
+        .dialogue-modal-close:hover {
+            background: rgba(0, 13, 255, 0.15);
+            border-color: rgba(0, 13, 255, 0.3);
+            color: var(--ns-white);
+            box-shadow: 0 0 20px rgba(0, 13, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
+
+        const API_BASE = 'http://86.38.182.54:8001';
+        const DIALOGUE_API_BASE = 'http://100.123.105.115:8000';  // Tailscale → M4 Pro
+        const UNLOCK_THRESHOLD = 10;
+
+        // Helper function to get auth token
+        async function getAuthToken() {
+            // First try localStorage (cached access token)
+            let token = localStorage.getItem('auron_access_token');
+
+            if (token) {
+                return token;
+            }
+
+            // Get fresh access token from Logto with API resource
+            try {
+                token = await window.LogtoAuth.getAccessToken(DIALOGUE_API_BASE);
+                if (token) {
+                    localStorage.setItem('auron_access_token', token);
+                    return token;
+                }
+            } catch (err) {
+                console.warn('Could not get access token from Logto:', err);
+            }
+
+            return null;
+        }
+
+        // Beautiful Loading Screen Component
+        function LoadingScreen() {
+            const [dots, setDots] = useState('');
+
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    setDots(prev => prev.length >= 3 ? '' : prev + '.');
+                }, 500);
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.92)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    zIndex: 2000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    animation: 'fadeIn 0.3s ease'
+                }}>
+                    <div style={{
+                        position: 'relative',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '2rem'
+                    }}>
+                        {/* Orbital Rings */}
+                        <div style={{
+                            position: 'relative',
+                            width: '200px',
+                            height: '200px'
+                        }}>
+                            {/* Outer Ring */}
+                            <div style={{
+                                position: 'absolute',
+                                inset: 0,
+                                border: '2px solid rgba(0, 217, 255, 0.3)',
+                                borderRadius: '50%',
+                                animation: 'spin 3s linear infinite'
+                            }} />
+
+                            {/* Middle Ring */}
+                            <div style={{
+                                position: 'absolute',
+                                inset: '20px',
+                                border: '2px solid rgba(0, 217, 255, 0.5)',
+                                borderRadius: '50%',
+                                borderTopColor: 'transparent',
+                                borderLeftColor: 'transparent',
+                                animation: 'spin 2s linear infinite reverse'
+                            }} />
+
+                            {/* Inner Ring */}
+                            <div style={{
+                                position: 'absolute',
+                                inset: '40px',
+                                border: '2px solid rgba(0, 217, 255, 0.7)',
+                                borderRadius: '50%',
+                                borderRightColor: 'transparent',
+                                borderBottomColor: 'transparent',
+                                animation: 'spin 1.5s linear infinite'
+                            }} />
+
+                            {/* Center Brain Icon */}
+                            <div style={{
+                                position: 'absolute',
+                                inset: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '4rem',
+                                animation: 'pulse 2s ease-in-out infinite',
+                                filter: 'drop-shadow(0 0 30px rgba(0, 217, 255, 0.8))'
+                            }}>
+                                🧠
+                            </div>
+                        </div>
+
+                        {/* AURON Text */}
+                        <h2 style={{
+                            fontSize: '2.5rem',
+                            fontWeight: '900',
+                            color: '#00D9FF',
+                            textShadow: '0 0 30px rgba(0, 217, 255, 0.8), 0 0 60px rgba(0, 191, 255, 0.6)',
+                            letterSpacing: '0.2em',
+                            margin: 0
+                        }}>
+                            AURON
+                        </h2>
+
+                        {/* Processing Text */}
+                        <p style={{
+                            fontSize: '1.2rem',
+                            color: '#00BFFF',
+                            textShadow: '0 0 20px rgba(0, 217, 255, 0.6)',
+                            fontWeight: '600',
+                            margin: 0
+                        }}>
+                            Processing{dots}
+                        </p>
+
+                        {/* Particle Dots */}
+                        <div style={{
+                            display: 'flex',
+                            gap: '1rem',
+                            marginTop: '1rem'
+                        }}>
+                            {[0, 1, 2].map(i => (
+                                <div key={i} style={{
+                                    width: '12px',
+                                    height: '12px',
+                                    borderRadius: '50%',
+                                    background: '#00D9FF',
+                                    boxShadow: '0 0 20px rgba(0, 217, 255, 0.8)',
+                                    animation: `bounce 1.5s ease-in-out infinite`,
+                                    animationDelay: `${i * 0.2}s`
+                                }} />
+                            ))}
+                        </div>
+                    </div>
+
+                    <style>{`
+                        @keyframes spin {
+                            from { transform: rotate(0deg); }
+                            to { transform: rotate(360deg); }
+                        }
+                        @keyframes pulse {
+                            0%, 100% { transform: scale(1); opacity: 1; }
+                            50% { transform: scale(1.1); opacity: 0.8; }
+                        }
+                        @keyframes bounce {
+                            0%, 100% { transform: translateY(0); }
+                            50% { transform: translateY(-10px); }
+                        }
+                        @keyframes fadeIn {
+                            from { opacity: 0; }
+                            to { opacity: 1; }
+                        }
+                    `}</style>
+                </div>
+            );
+        }
+
+        // Dialogue Modal Component
+        function DialogueModal({ dialogue, onClose, onSendResponse }) {
+            const [showQuestion, setShowQuestion] = useState(false);
+            const [userResponse, setUserResponse] = useState('');
+            const textareaRef = useRef(null);
+
+            if (!dialogue) return null;
+
+            const handleContinue = () => {
+                setShowQuestion(true);
+                // Auto-focus textarea after animation
+                setTimeout(() => textareaRef.current?.focus(), 600);
+            };
+
+            const handleSubmit = () => {
+                if (userResponse.trim()) {
+                    onSendResponse(userResponse.trim());
+                    onClose();
+                }
+            };
+
+            return (
+                <div className="dialogue-modal-overlay" onClick={onClose}>
+                    <div className="dialogue-modal" onClick={(e) => e.stopPropagation()} style={{
+                        transition: 'all 0.3s ease',
+                        maxWidth: showQuestion ? '800px' : '700px'
+                    }}>
+                        {/* Close Button */}
+                        <button className="dialogue-modal-close" onClick={onClose}>
+                            ✕
+                        </button>
+
+                        {/* Guidance - Minimizes when question appears */}
+                        <div style={{
+                            transition: 'all 0.5s ease',
+                            marginBottom: showQuestion ? '1.5rem' : '2.5rem',
+                            opacity: showQuestion ? 0.7 : 1,
+                            transform: showQuestion ? 'scale(0.95)' : 'scale(1)'
+                        }}>
+                            {/* Header */}
+                            <div style={{ marginBottom: showQuestion ? '1rem' : '2.5rem', textAlign: 'center' }}>
+                                <div style={{
+                                    fontSize: showQuestion ? '2rem' : '3rem',
+                                    marginBottom: '0.5rem',
+                                    filter: 'drop-shadow(0 0 20px rgba(0, 191, 255, 0.6))',
+                                    transition: 'all 0.5s ease'
+                                }}>
+                                    🧠
+                                </div>
+                                <h2 className="text-white glow" style={{
+                                    fontSize: showQuestion ? '1.5rem' : '2rem',
+                                    fontWeight: 900,
+                                    marginBottom: '0.5rem',
+                                    letterSpacing: '0.02em',
+                                    transition: 'all 0.5s ease'
+                                }}>
+                                    {!showQuestion ? 'Understanding Your Process' : 'Your Creative Reflection'}
+                                </h2>
+                                {!showQuestion && (
+                                    <p className="text-primary text-sm font-medium">
+                                        Knowledge Digestion
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Guidance Text */}
+                            <div
+                                className="text-white leading-relaxed"
+                                style={{
+                                    fontSize: showQuestion ? '0.95rem' : '1.15rem',
+                                    lineHeight: showQuestion ? '1.6' : '2',
+                                    padding: showQuestion ? '1rem' : '1.5rem',
+                                    background: 'rgba(0, 191, 255, 0.03)',
+                                    borderRadius: '16px',
+                                    border: '1px solid rgba(0, 191, 255, 0.1)',
+                                    transition: 'all 0.5s ease',
+                                    marginBottom: showQuestion ? '0' : '2rem'
+                                }}>
+                                {dialogue.guidance}
+                            </div>
+                        </div>
+
+                        {/* Continue Button */}
+                        {dialogue.reflective_question && !showQuestion && (
+                            <div style={{ textAlign: 'center' }}>
+                                <button
+                                    onClick={handleContinue}
+                                    className="btn-sci-fi px-10 py-5 rounded-2xl font-bold text-white"
+                                    style={{
+                                        fontSize: '1.1rem',
+                                        letterSpacing: '0.05em',
+                                        position: 'relative',
+                                        zIndex: 10
+                                    }}>
+                                    REFLECT DEEPER →
+                                </button>
+                                <p className="text-gray-400 text-xs mt-3">Click to explore your creative patterns</p>
+                            </div>
+                        )}
+
+                        {/* Question + Input Section - Appears prominently */}
+                        {dialogue.reflective_question && showQuestion && (
+                            <div style={{
+                                animation: 'slideUp 0.6s ease',
+                                marginTop: '2rem'
+                            }}>
+                                {/* Question Box - Center Stage */}
+                                <div
+                                    className="p-8 rounded-2xl"
+                                    style={{
+                                        background: 'linear-gradient(135deg, rgba(0, 191, 255, 0.15) 0%, rgba(30, 144, 255, 0.15) 100%)',
+                                        border: '2px solid rgba(0, 191, 255, 0.3)',
+                                        boxShadow: '0 0 40px rgba(0, 191, 255, 0.3)',
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                        marginBottom: '1.5rem'
+                                    }}>
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '4px',
+                                        height: '100%',
+                                        background: 'linear-gradient(180deg, #000DFF 0%, #001AFF 100%)',
+                                        boxShadow: '0 0 20px rgba(0, 191, 255, 0.8)'
+                                    }}></div>
+
+                                    <div style={{ paddingLeft: '1rem' }}>
+                                        <p className="text-primary text-xs font-bold uppercase tracking-wider mb-4 glow" style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.5rem'
+                                        }}>
+                                            <span>💭</span> A Question For You
+                                        </p>
+                                        <p className="text-white leading-relaxed" style={{
+                                            fontSize: '1.3rem',
+                                            lineHeight: '2',
+                                            fontWeight: '500'
+                                        }}>
+                                            {dialogue.reflective_question}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Input Area - For User Response */}
+                                <div>
+                                    <label className="text-gray-300 text-sm mb-2 block">
+                                        Share your thoughts or continue the conversation:
+                                    </label>
+                                    <textarea
+                                        ref={textareaRef}
+                                        value={userResponse}
+                                        onChange={(e) => setUserResponse(e.target.value)}
+                                        onKeyPress={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                handleSubmit();
+                                            }
+                                        }}
+                                        placeholder="Type your response or what's on your mind..."
+                                        className="w-full px-5 py-4 bg-black/40 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                                        rows="4"
+                                        style={{
+                                            fontSize: '1.05rem',
+                                            lineHeight: '1.6'
+                                        }}
+                                    />
+                                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
+                                        <button
+                                            onClick={onClose}
+                                            className="px-6 py-3 rounded-xl font-medium text-gray-400 hover:text-white transition-all"
+                                            style={{
+                                                border: '1px solid rgba(156, 163, 175, 0.3)'
+                                            }}>
+                                            Close
+                                        </button>
+                                        <button
+                                            onClick={handleSubmit}
+                                            disabled={!userResponse.trim()}
+                                            className="btn-sci-fi px-8 py-3 rounded-xl font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                                            style={{ position: 'relative', zIndex: 10 }}>
+                                            Send Response
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Dialogue Message Component (for chat history display)
+        function DialogueMessage({ message, onOpenDialogue }) {
+            if (message.role === 'user') {
+                // User message (simple)
+                return (
+                    <div className="message flex justify-end">
+                        <div className="max-w-[70%] rounded-2xl px-6 py-4 bg-gradient-to-r from-primary/30 to-primary-dark/30 border border-primary/50">
+                            <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">You</p>
+                            <p className="text-white leading-relaxed">{message.content}</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Auron message (simple history marker for dialogues)
+            if (message.isDialogue) {
+                return (
+                    <div className="message flex justify-start">
+                        <div className="max-w-[75%] rounded-2xl px-6 py-5 bg-gray-900 border border-gray-800 hover:border-primary/30 transition-all">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                                <span style={{ fontSize: '1.5rem' }}>🧠</span>
+                                <div>
+                                    <p className="text-xs font-semibold text-primary uppercase tracking-wide glow">
+                                        Auron
+                                    </p>
+                                    <p className="text-gray-400 text-xs">Shared a reflection</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => onOpenDialogue(message.dialogue)}
+                                className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:scale-105 text-sm w-full"
+                                style={{
+                                    background: 'linear-gradient(135deg, #000DFF 0%, #001AFF 100%)',
+                                    boxShadow: '0 0 20px rgba(0, 191, 255, 0.3)',
+                                    marginTop: '0.5rem'
+                                }}>
+                                Open Reflection →
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Regular Auron message (e.g., welcome message)
+            return (
+                <div className="message flex justify-start">
+                    <div className="max-w-[75%] rounded-2xl px-6 py-5 bg-gray-900 border border-gray-800">
+                        <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-3 glow">
+                            Auron
+                        </p>
+                        <p className="text-white leading-relaxed" style={{ lineHeight: '1.7' }}>
+                            {message.content}
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
+        // Reflections View - Horizontal scrolling card gallery
+        function ReflectionsView({ user }) {
+            const [conversations, setConversations] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [selectedConversation, setSelectedConversation] = useState(null);
+            const [conversationDetails, setConversationDetails] = useState(null);
+            const [loadingDetails, setLoadingDetails] = useState(false);
+
+            useEffect(() => {
+                loadConversations();
+            }, []);
+
+            const loadConversations = async () => {
+                try {
+                    const token = localStorage.getItem('auron_auth_token');
+                    if (!token) {
+                        console.warn('No auth token');
+                        return;
+                    }
+
+                    const response = await fetch(`${DIALOGUE_API_BASE}/conversations`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to load conversations');
+                    }
+
+                    const data = await response.json();
+                    console.log('Loaded conversations:', data);
+                    setConversations(data.conversations || []);
+
+                } catch (err) {
+                    console.error('Failed to load conversations:', err);
+                    setConversations([]);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const loadConversationDetails = async (conversation) => {
+                setSelectedConversation(conversation);
+                setLoadingDetails(true);
+
+                try {
+                    // Check if conversation has bunny_key
+                    if (!conversation.bunny_key) {
+                        console.error('No bunny_key found in conversation:', conversation);
+                        throw new Error('Conversation URL not available');
+                    }
+
+                    const token = localStorage.getItem('auron_auth_token');
+                    if (!token) {
+                        console.warn('No auth token');
+                        return;
+                    }
+
+                    // Step 1: Get signed URL from backend (includes IP-based token)
+                    console.log(`Requesting signed URL for: ${conversation.bunny_key}`);
+                    const signedUrlResponse = await fetch(`${DIALOGUE_API_BASE}/get-conversation-url`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            bunny_key: conversation.bunny_key
+                        })
+                    });
+
+                    if (!signedUrlResponse.ok) {
+                        throw new Error(`Failed to get signed URL: ${signedUrlResponse.status}`);
+                    }
+
+                    const { signed_url } = await signedUrlResponse.json();
+                    console.log(`Got signed URL, fetching conversation...`);
+
+                    // Step 2: Fetch conversation from BunnyCDN using signed URL
+                    const response = await fetch(signed_url, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to load conversation from BunnyCDN: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('Loaded conversation from BunnyCDN:', data);
+                    setConversationDetails(data);
+
+                } catch (err) {
+                    console.error('Failed to load conversation details:', err);
+                    setConversationDetails(null);
+                } finally {
+                    setLoadingDetails(false);
+                }
+            };
+
+            const closeModal = () => {
+                setSelectedConversation(null);
+                setConversationDetails(null);
+            };
+
+            if (loading) {
+                return (
+                    <div className="flex-1 flex items-center justify-center" style={{ background: '#000' }}>
+                        <div className="text-center">
+                            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-gray-400">Loading your reflections...</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (conversations.length === 0) {
+                return (
+                    <div className="flex-1 flex items-center justify-center" style={{ background: '#000' }}>
+                        <div className="text-center max-w-lg">
+                            <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>📚</div>
+                            <h2 className="text-2xl font-bold text-white mb-4">No Reflections Yet</h2>
+                            <p className="text-gray-400 mb-6">
+                                Your past conversations with Auron will appear here after 5 minutes of inactivity.
+                            </p>
+                            <p className="text-gray-500 text-sm">
+                                Each conversation becomes a memory that shapes your Neural Music Profile.
+                            </p>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="h-full overflow-hidden" style={{ background: '#000' }}>
+                    <div className="p-12">
+                        {/* Header */}
+                        <div className="text-center mb-12 relative">
+                            <h1 className="text-4xl font-bold glow mb-2" style={{
+                                background: 'linear-gradient(135deg, #00A8FF 0%, #005CFF 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text',
+                                letterSpacing: '0.05em'
+                            }}>
+                                YOUR REFLECTIONS
+                            </h1>
+                            <p className="text-gray-500 text-sm">
+                                {conversations.length} conversation{conversations.length !== 1 ? 's' : ''} with Auron
+                            </p>
+
+                            {/* Refresh Button */}
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    loadConversations();
+                                }}
+                                disabled={loading}
+                                className="absolute right-0 top-0 px-5 py-2 rounded-full text-sm font-medium transition-all bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem'
+                                }}>
+                                <span>🔄</span>
+                                <span>Refresh</span>
+                            </button>
+                        </div>
+
+                        {/* Horizontal Scrolling Cards */}
+                        <div className="relative">
+                            <div className="overflow-x-auto pb-8" style={{
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: '#00A8FF #1a1a1a'
+                            }}>
+                                <div className="flex gap-6" style={{ minWidth: 'min-content' }}>
+                                    {conversations.map((conv, idx) => (
+                                        <div
+                                            key={conv.id || idx}
+                                            className="glass-card rounded-2xl p-6 flex-shrink-0"
+                                            onClick={() => loadConversationDetails(conv)}
+                                            style={{
+                                                width: '380px',
+                                                background: 'rgba(10, 10, 31, 0.6)',
+                                                border: '1px solid rgba(0, 168, 255, 0.2)',
+                                                cursor: 'pointer'
+                                            }}>
+                                            {/* Date */}
+                                            <div className="text-xs text-primary font-semibold uppercase tracking-wider mb-3">
+                                                {new Date(conv.timestamp || conv.created_at).toLocaleDateString('en-US', {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    year: 'numeric'
+                                                })}
+                                            </div>
+
+                                            {/* Summary or first message */}
+                                            <h3 className="text-white font-semibold text-lg mb-3 line-clamp-2">
+                                                {conv.summary || conv.title || 'Conversation with Auron'}
+                                            </h3>
+
+                                            {/* Preview text */}
+                                            {conv.preview && (
+                                                <p className="text-gray-400 text-sm leading-relaxed mb-4 line-clamp-3">
+                                                    {conv.preview}
+                                                </p>
+                                            )}
+
+                                            {/* Metadata */}
+                                            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-800">
+                                                {conv.emotions && conv.emotions.length > 0 && (
+                                                    <div className="flex gap-2">
+                                                        {conv.emotions.slice(0, 3).map((emotion, i) => (
+                                                            <span
+                                                                key={i}
+                                                                className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
+                                                                {emotion}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {conv.message_count && (
+                                                    <span className="text-xs text-gray-500 ml-auto">
+                                                        {conv.message_count} messages
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Scroll Hint */}
+                        {conversations.length > 2 && (
+                            <div className="text-center mt-8">
+                                <p className="text-gray-600 text-xs">
+                                    ← Scroll to explore your conversations →
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Conversation Detail Modal */}
+                    {selectedConversation && (
+                        <div className="dialogue-modal-overlay" onClick={closeModal}>
+                            <div className="dialogue-modal" onClick={(e) => e.stopPropagation()} style={{
+                                maxWidth: '900px',
+                                maxHeight: '85vh',
+                                overflow: 'auto'
+                            }}>
+                                {/* Close Button */}
+                                <button className="dialogue-modal-close" onClick={closeModal}>
+                                    ✕
+                                </button>
+
+                                {/* Header */}
+                                <div className="mb-8 text-center">
+                                    <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📚</div>
+                                    <h2 className="text-white glow text-2xl font-bold mb-2">
+                                        {selectedConversation.summary || 'Conversation with Auron'}
+                                    </h2>
+                                    <p className="text-gray-400 text-sm">
+                                        {new Date(selectedConversation.timestamp || selectedConversation.created_at).toLocaleDateString('en-US', {
+                                            weekday: 'long',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            year: 'numeric'
+                                        })}
+                                    </p>
+                                </div>
+
+                                {/* Loading State */}
+                                {loadingDetails && (
+                                    <div className="text-center py-12">
+                                        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                        <p className="text-gray-400">Loading conversation...</p>
+                                    </div>
+                                )}
+
+                                {/* Conversation Messages */}
+                                {!loadingDetails && conversationDetails && (
+                                    <div className="space-y-6">
+                                        {conversationDetails.messages && conversationDetails.messages.map((msg, idx) => (
+                                            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                <div className={`max-w-[75%] rounded-2xl px-6 py-4 ${
+                                                    msg.role === 'user'
+                                                        ? 'bg-gradient-to-r from-primary/30 to-primary-dark/30 border border-primary/50'
+                                                        : 'bg-gray-900 border border-gray-800'
+                                                }`}>
+                                                    <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{
+                                                        color: msg.role === 'user' ? '#00A8FF' : '#00D9FF'
+                                                    }}>
+                                                        {msg.role === 'user' ? 'You' : 'Auron'}
+                                                    </p>
+                                                    <p className="text-white leading-relaxed" style={{ lineHeight: '1.7' }}>
+                                                        {msg.content}
+                                                    </p>
+                                                    {msg.timestamp && (
+                                                        <p className="text-gray-500 text-xs mt-2">
+                                                            {new Date(msg.timestamp).toLocaleTimeString('en-US', {
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* No messages found */}
+                                {!loadingDetails && conversationDetails && (!conversationDetails.messages || conversationDetails.messages.length === 0) && (
+                                    <div className="text-center py-12">
+                                        <p className="text-gray-400">No messages found in this conversation.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function Dashboard() {
+            const [user, setUser] = useState(null);
+            const [currentView, setCurrentView] = useState('chat');
+            const [conversationCount, setConversationCount] = useState(0);
+            const [profileUnlocked, setProfileUnlocked] = useState(false);
+
+            useEffect(() => {
+                // Check Logto authentication
+                async function checkAuth() {
+                    try {
+                        const isAuth = await window.LogtoAuth.isAuthenticated();
+
+                        if (!isAuth) {
+                            console.log('Not authenticated - redirecting to login...');
+                            window.location.href = 'login.html';
+                            return;
+                        }
+
+                        // Get user info from Logto
+                        const userInfo = await window.LogtoAuth.getUserInfo();
+                        if (userInfo) {
+                            console.log('✓ User authenticated:', userInfo.username);
+                            setUser(userInfo);
+
+                            // Store for backwards compatibility
+                            localStorage.setItem('auron_user', JSON.stringify(userInfo));
+                        } else {
+                            throw new Error('Failed to get user info');
+                        }
+
+                    } catch (err) {
+                        console.error('Auth check failed:', err);
+                        window.location.href = 'login.html';
+                    }
+                }
+
+                checkAuth();
+            }, []);
+
+            useEffect(() => {
+                // Update progress when user is loaded
+                if (user) {
+                    updateProgress();
+                }
+            }, [user]);
+
+            const updateProgress = async () => {
+                if (!user) return;
+
+                // Admin override: always unlock for user 'trasted'
+                const isAdmin = user.username === 'trasted' || user.id.includes('trasted');
+
+                if (isAdmin) {
+                    setProfileUnlocked(true);
+                    setConversationCount(0);
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE}/profile/${user.id}`);
+                    if (response.ok) {
+                        const profile = await response.json();
+                        const count = profile.conversation_count || 0;
+                        setConversationCount(count);
+                        setProfileUnlocked(count >= UNLOCK_THRESHOLD);
+                    }
+                } catch (err) {
+                    console.error('Failed to update progress:', err);
+                }
+            };
+
+            const handleLogout = async () => {
+                try {
+                    console.log('Signing out...');
+                    await window.LogtoAuth.signOut();
+                    // Logto will redirect to index.html (configured as post-signout URI)
+                } catch (err) {
+                    console.error('Sign out failed:', err);
+                    // Fallback: clear storage and redirect manually
+                    localStorage.removeItem('auron_user');
+                    localStorage.removeItem('auron_auth_token');
+                    window.location.href = 'index.html';
+                }
+            };
+
+            if (!user) return <div className="flex items-center justify-center h-screen text-white">Loading...</div>;
+
+            return (
+                <div className="h-screen flex flex-col overflow-hidden">
+                    {/* Professional Header Navigation (Neural Music style - dark theme) */}
+                    <header className="fixed top-0 w-full glass border-b border-white/5 z-50">
+                        <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
+                            {/* Logo */}
+                            <div className="flex items-center gap-4">
+                                <h1 className="text-2xl font-bold tracking-tight" style={{
+                                    color: '#00D9FF',
+                                    textShadow: '0 0 20px rgba(0, 217, 255, 0.8), 0 0 40px rgba(0, 191, 255, 0.6), 0 0 60px rgba(0, 153, 255, 0.4)'
+                                }}>
+                                    AURON
+                                </h1>
+                                <span className="text-gray-500 text-sm font-medium">@{user.username || 'user'}</span>
+                            </div>
+
+                            {/* Navigation + Progress */}
+                            <nav className="flex items-center gap-8">
+                                <button
+                                    className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                                        currentView === 'chat'
+                                            ? 'bg-white/5 text-white'
+                                            : 'text-gray-400 hover:text-white'
+                                    }`}
+                                    onClick={() => setCurrentView('chat')}>
+                                    💬 Dialogue
+                                </button>
+
+                                <button
+                                    className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                                        currentView === 'reflections'
+                                            ? 'bg-white/5 text-white'
+                                            : 'text-gray-400 hover:text-white'
+                                    }`}
+                                    onClick={() => setCurrentView('reflections')}>
+                                    📚 Reflections
+                                </button>
+
+                                <button
+                                    className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                                        !profileUnlocked && 'opacity-50 cursor-not-allowed'
+                                    } ${
+                                        currentView === 'profile'
+                                            ? 'bg-white/5 text-white'
+                                            : 'text-gray-400 hover:text-white'
+                                    }`}
+                                    onClick={() => profileUnlocked && setCurrentView('profile')}>
+                                    🧠 Profile {profileUnlocked ? '🔓' : '🔒'}
+                                </button>
+
+                                {/* Progress Indicator */}
+                                <div className="flex items-center gap-3 px-5 py-2 rounded-full bg-white/5 border border-white/5">
+                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        {conversationCount} / {UNLOCK_THRESHOLD}
+                                    </span>
+                                    <div className="w-16 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full transition-all duration-500"
+                                            style={{
+                                                width: `${Math.min((conversationCount / UNLOCK_THRESHOLD) * 100, 100)}%`,
+                                                background: 'linear-gradient(90deg, #00D9FF 0%, #00BFFF 100%)'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleLogout}
+                                    className="text-sm text-gray-400 hover:text-white transition-colors">
+                                    Sign Out
+                                </button>
+                            </nav>
+                        </div>
+                    </header>
+
+                    {/* Main Content - Generous whitespace, centered */}
+                    <main className="flex-1 pt-24 overflow-hidden">
+                        {currentView === 'chat' ? (
+                            <ChatView user={user} onUpdateProgress={updateProgress} />
+                        ) : currentView === 'reflections' ? (
+                            <ReflectionsView user={user} />
+                        ) : (
+                            <ProfileView user={user} isLocked={!profileUnlocked} conversationCount={conversationCount} />
+                        )}
+                    </main>
+                </div>
+            );
+        }
+
+        function ChatView({ user, onUpdateProgress }) {
+            const [messages, setMessages] = useState([
+                { role: 'auron', content: "Hello. I'm Auron, your creative psychologist. Share what's on your mind — whether it's frustration, curiosity, or something you can't quite name yet. I'm listening." }
+            ]);
+            const [input, setInput] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [currentDialogue, setCurrentDialogue] = useState(null);
+            const messagesEndRef = useRef(null);
+
+            // Session management (backend holds conversation in RAM)
+            const [sessionId, setSessionId] = useState(null);
+            const inactivityTimerRef = useRef(null);
+            const INACTIVITY_TIMEOUT = 5 * 60 * 1000;  // 5 minutes
+
+            useEffect(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, [messages]);
+
+            // Reset 5-minute inactivity timer
+            const resetInactivityTimer = useCallback(() => {
+                if (inactivityTimerRef.current) {
+                    clearTimeout(inactivityTimerRef.current);
+                }
+
+                inactivityTimerRef.current = setTimeout(async () => {
+                    if (sessionId) {
+                        console.log('5 minutes of inactivity - saving session...');
+                        await saveSession();
+                    }
+                }, INACTIVITY_TIMEOUT);
+            }, [sessionId]);
+
+            // Save session to backend (triggers pattern extraction)
+            const saveSession = useCallback(async () => {
+                if (!sessionId) return;
+
+                try {
+                    const token = localStorage.getItem('auron_auth_token');
+                    if (!token) {
+                        console.warn('No auth token - cannot save session');
+                        return;
+                    }
+
+                    console.log(`Saving session: ${sessionId}`);
+                    const response = await fetch(`${DIALOGUE_API_BASE}/save-session`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            session_id: sessionId
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to save session: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    console.log(`✓ Session saved: ${result.patterns_extracted || 0} patterns extracted`);
+
+                    // Reset session
+                    setSessionId(null);
+
+                } catch (err) {
+                    console.error('Failed to save session:', err);
+                }
+            }, [sessionId]);
+
+            // Cleanup timer on unmount
+            useEffect(() => {
+                return () => {
+                    if (inactivityTimerRef.current) {
+                        clearTimeout(inactivityTimerRef.current);
+                    }
+                };
+            }, []);
+
+            const handleSendMessage = async (messageText) => {
+                setMessages(prev => [...prev, { role: 'user', content: messageText }]);
+                setLoading(true);
+
+                try {
+                    // Get JWT token for authentication
+                    const token = localStorage.getItem('auron_auth_token');
+                    if (!token) {
+                        throw new Error('Not authenticated - please log in again');
+                    }
+
+                    const response = await fetch(`${DIALOGUE_API_BASE}/chat`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            message: messageText,
+                            metadata: { session_id: sessionId }  // Send existing session_id (or null for new)
+                        })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to send message');
+
+                    const data = await response.json();
+
+                    // Save session_id from response (backend manages it)
+                    if (data.metadata && data.metadata.session_id) {
+                        setSessionId(data.metadata.session_id);
+                        console.log(`Session ID: ${data.metadata.session_id}`);
+                    }
+
+                    // Parse structured dialogue response
+                    const parsedMessage = typeof data.message === 'string'
+                        ? { guidance: data.message, reflective_question: "What insight from this resonates most with you?" }
+                        : data.message;
+
+                    // Open dialogue modal
+                    setCurrentDialogue(parsedMessage);
+
+                    // Add simple chat bubble to history
+                    setMessages(prev => [...prev, {
+                        role: 'auron',
+                        content: "View Insight →",
+                        isDialogue: true,
+                        dialogue: parsedMessage
+                    }]);
+
+                    // Reset inactivity timer (start 5-min countdown)
+                    resetInactivityTimer();
+
+                    // Update progress after message
+                    setTimeout(onUpdateProgress, 1000);
+
+                } catch (err) {
+                    setMessages(prev => [...prev, { role: 'auron', content: `Error: ${err.message}` }]);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleSend = () => {
+                if (!input.trim() || loading) return;
+                const userMessage = input.trim();
+                setInput('');
+                handleSendMessage(userMessage);
+            };
+
+            return (
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    {/* Loading Screen */}
+                    {loading && <LoadingScreen />}
+
+                    {/* Dialogue Modal */}
+                    {currentDialogue && (
+                        <DialogueModal
+                            dialogue={currentDialogue}
+                            onClose={() => setCurrentDialogue(null)}
+                            onSendResponse={(response) => {
+                                setCurrentDialogue(null);
+                                handleSendMessage(response);
+                            }}
+                        />
+                    )}
+
+                    {/* Messages - Generous whitespace, centered (Neural Music style) */}
+                    <div className="flex-1 overflow-y-auto py-16 px-8">
+                        <div className="max-w-4xl mx-auto space-y-8">
+                            {messages.map((msg, idx) => (
+                                <DialogueMessage
+                                    key={idx}
+                                    message={msg}
+                                    onOpenDialogue={(dialogue) => setCurrentDialogue(dialogue)}
+                                />
+                            ))}
+
+                            <div ref={messagesEndRef} />
+                        </div>
+                    </div>
+
+                    {/* Input - Clean, professional */}
+                    <div className="py-8 px-8 border-t border-white/5">
+                        <div className="max-w-4xl mx-auto flex gap-4">
+                            <input
+                                type="text"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                                placeholder="Share what's on your mind..."
+                                className="flex-1 px-5 py-4 bg-black/40 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            />
+                            <button
+                                onClick={handleSend}
+                                disabled={loading || !input.trim()}
+                                className="px-8 py-4 rounded-xl font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                style={{
+                                    background: loading ? '#666' : 'linear-gradient(135deg, #000DFF 0%, #001AFF 100%)'
+                                }}>
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function ProfileView({ user, isLocked, conversationCount }) {
+            const [profile, setProfile] = useState(null);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                loadProfile();
+            }, []);
+
+            const loadProfile = async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/profile/${user.id}`);
+                    if (!response.ok) {
+                        console.error('Profile fetch failed with status:', response.status);
+                        throw new Error('Profile not found');
+                    }
+
+                    const data = await response.json();
+                    console.log('Profile loaded successfully:', data);
+                    setProfile(data);
+                } catch (err) {
+                    console.error('Failed to load profile:', err);
+                    // Set empty profile on error
+                    setProfile({
+                        dimensions: {
+                            sound_description: null,
+                            sonic_title: "EMERGING IDENTITY",
+                            genre_fusion: [],
+                            neural_spectrum: [],
+                            sound_palette: [],
+                            tonal_dna: [],
+                            rhythmic_dna: [],
+                            emotional_fingerprint: [],
+                            processing_signature: [],
+                            inspirational_triggers: [],
+                            sonic_architecture: []
+                        },
+                        conversation_count: 0
+                    });
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            if (loading) {
+                return (
+                    <div className="flex-1 flex items-center justify-center" style={{ background: '#000' }}>
+                        <div className="text-center">
+                            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-gray-400">Loading your Neural Music Profile...</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            const dims = profile?.dimensions || {};
+            const sonicTitle = dims.sonic_title || 'EMERGING IDENTITY';
+            const soundDescription = dims.sound_description || null;
+            const genreFusion = dims.genre_fusion || [];
+            const neuralSpectrum = dims.neural_spectrum || [];
+            const soundPalette = dims.sound_palette || [];
+            const tonalDNA = dims.tonal_dna || [];
+            const rhythmicDNA = dims.rhythmic_dna || [];
+            const emotionalFingerprint = dims.emotional_fingerprint || [];
+            const processingSignature = dims.processing_signature || [];
+            const inspirationalTriggers = dims.inspirational_triggers || [];
+            const sonicArchitecture = dims.sonic_architecture || [];
+
+            return (
+                <div className="h-full overflow-y-auto relative" style={{ background: '#000' }}>
+                    {/* Content */}
+                    <div className={`p-12 ${isLocked ? 'filter blur-md' : ''}`}>
+                        <div className="max-w-7xl mx-auto space-y-12">
+                            {/* Header */}
+                            <div className="text-center mb-12">
+                                <h1 className="text-4xl font-bold glow mb-2" style={{
+                                    background: 'linear-gradient(135deg, #00A8FF 0%, #005CFF 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text',
+                                    letterSpacing: '0.05em'
+                                }}>
+                                    NEURAL MUSIC PROFILE
+                                </h1>
+                                <p className="text-gray-500 text-sm">Mapping the inner architecture of sound and mind</p>
+                            </div>
+
+                            {/* Top Row: Sonic Title + Genre Fusion */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Sonic Title Card */}
+                                <div className="card-glow rounded-xl p-8" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
+                                    <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Sonic Title</p>
+                                    <h2 className="text-3xl font-black glow mb-4" style={{
+                                        background: 'linear-gradient(135deg, #00A8FF 0%, #005CFF 100%)',
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent',
+                                        backgroundClip: 'text'
+                                    }}>
+                                        {sonicTitle}
+                                    </h2>
+                                    {soundDescription && (
+                                        <p className="text-gray-400 text-sm leading-relaxed">{soundDescription}</p>
+                                    )}
+                                    {!soundDescription && (
+                                        <p className="text-gray-600 text-sm italic">Your sonic identity is emerging...</p>
+                                    )}
+                                </div>
+
+                                {/* Genre Fusion Ring */}
+                                <div className="card-glow rounded-xl p-8" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
+                                    <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Sonic Code / Genre Fusion</p>
+                                    <GenreFusionRing data={genreFusion} />
+                                </div>
+                            </div>
+
+                            {/* Neural Spectrum - Full Width */}
+                            <div className="card-glow rounded-xl p-8" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
+                                <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Neural Spectrum</p>
+                                <NeuralSpectrumBar data={neuralSpectrum} />
+                            </div>
+
+                            {/* Middle Row: Sound System + Tonal DNA + Rhythmic DNA */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div className="card-glow rounded-xl p-6" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
+                                    <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Sound System</p>
+                                    <SoundPaletteOrbital data={soundPalette} />
+                                </div>
+
+                                <div className="card-glow rounded-xl p-6" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
+                                    <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Tonal DNA</p>
+                                    <TonalDNAQuadrant data={tonalDNA} />
+                                </div>
+
+                                <div className="card-glow rounded-xl p-6" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
+                                    <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Rhythmic DNA</p>
+                                    <RhythmicDNAWaveform data={rhythmicDNA} />
+                                </div>
+                            </div>
+
+                            {/* Emotional & Psychological Section */}
+                            <div className="card-glow rounded-xl p-8" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
+                                <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-6">Emotional & Psychological</p>
+                                <EmotionalBubbleNetwork data={emotionalFingerprint} />
+                            </div>
+
+                            {/* Bottom Row: Processing Signature + Inspirational Triggers */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="card-glow rounded-xl p-6" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
+                                    <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Processing Signature</p>
+                                    <DataList data={processingSignature} />
+                                </div>
+
+                                <div className="card-glow rounded-xl p-6" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
+                                    <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Inspirational Triggers</p>
+                                    <InspirationalConstellation data={inspirationalTriggers} />
+                                </div>
+                            </div>
+
+                            {/* Sonic Architecture Tower */}
+                            <div className="card-glow rounded-xl p-8" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
+                                <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-6 text-center">Sonic Architecture</p>
+                                <SonicArchitectureTower data={sonicArchitecture} />
+                            </div>
+
+                            {/* Conversation Count Footer */}
+                            <div className="text-center">
+                                <p className="text-gray-600 text-sm">
+                                    Built from <span className="text-primary font-semibold">{profile?.conversation_count || 0}</span> conversations with Auron
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Lock Overlay */}
+                    {isLocked && (
+                        <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(8px)' }}>
+                            <div className="text-center max-w-lg p-12 card-glow rounded-2xl" style={{ background: 'rgba(10, 10, 15, 0.95)' }}>
+                                <div className="text-7xl mb-6">🔒</div>
+                                <h2 className="text-4xl font-black mb-4 glow" style={{
+                                    background: 'linear-gradient(135deg, #00A8FF 0%, #005CFF 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text'
+                                }}>
+                                    PROFILE LOCKED
+                                </h2>
+                                <p className="text-gray-300 text-lg mb-2">
+                                    Have <span className="text-primary font-bold">{UNLOCK_THRESHOLD - conversationCount} more conversations</span> with Auron to unlock
+                                </p>
+                                <p className="text-gray-500 text-sm mb-6">
+                                    Every conversation builds your 10-dimensional sonic identity
+                                </p>
+                                <div className="w-full bg-gray-800 rounded-full h-4 overflow-hidden mb-3">
+                                    <div
+                                        className="h-full rounded-full transition-all duration-500"
+                                        style={{
+                                            width: `${(conversationCount / UNLOCK_THRESHOLD) * 100}%`,
+                                            background: 'linear-gradient(90deg, #00D9FF 0%, #00BFFF 100%)'
+                                        }}
+                                    />
+                                </div>
+                                <p className="text-gray-400 text-sm">
+                                    {conversationCount} / {UNLOCK_THRESHOLD} conversations
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // 1. Genre Fusion Ring - Circular ring divided into 8 segments
+        function GenreFusionRing({ data }) {
+            const vizRef = useRef(null);
+
+            useEffect(() => {
+                if (!vizRef.current) return;
+                d3.select(vizRef.current).selectAll('*').remove();
+
+                if (!data || data.length === 0) return;
+
+                const width = 320;
+                const height = 320;
+                const radius = Math.min(width, height) / 2 - 20;
+
+                const svg = d3.select(vizRef.current)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height)
+                    .append('g')
+                    .attr('transform', `translate(${width/2}, ${height/2})`);
+
+                const pie = d3.pie().value(d => d.weight || 1).padAngle(0.02);
+                const arc = d3.arc()
+                    .innerRadius(radius * 0.5)
+                    .outerRadius(radius * 0.9);
+
+                const arcs = svg.selectAll('arc')
+                    .data(pie(data.slice(0, 8)))
+                    .enter()
+                    .append('g');
+
+                arcs.append('path')
+                    .attr('d', arc)
+                    .attr('fill', (d, i) => d3.interpolateCool(i / 8))
+                    .attr('stroke', '#00A8FF')
+                    .attr('stroke-width', 2)
+                    .style('opacity', 0.7)
+                    .style('filter', 'drop-shadow(0 0 8px rgba(0, 168, 255, 0.5))');
+
+                arcs.append('text')
+                    .attr('transform', d => `translate(${arc.centroid(d)})`)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', '10px')
+                    .attr('font-weight', 'bold')
+                    .attr('fill', '#FFF')
+                    .text(d => d.data.name.substring(0, 8));
+            }, [data]);
+
+            if (!data || data.length === 0) {
+                return <p className="text-gray-600 text-sm text-center py-12">No genre data yet</p>;
+            }
+
+            return <div ref={vizRef} className="flex justify-center neural-glow"></div>;
+        }
+
+        // 2. Neural Spectrum Bar - Horizontal bar with waveform gradient
+        function NeuralSpectrumBar({ data }) {
+            const vizRef = useRef(null);
+
+            useEffect(() => {
+                if (!vizRef.current) return;
+                d3.select(vizRef.current).selectAll('*').remove();
+
+                const width = vizRef.current.clientWidth || 800;
+                const height = 120;
+                const points = 200;
+
+                const svg = d3.select(vizRef.current)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                // Gradient bar
+                const gradient = svg.append('defs')
+                    .append('linearGradient')
+                    .attr('id', 'spectrum-gradient')
+                    .attr('x1', '0%')
+                    .attr('x2', '100%');
+
+                gradient.append('stop')
+                    .attr('offset', '0%')
+                    .attr('stop-color', '#005CFF')
+                    .attr('stop-opacity', 0.8);
+
+                gradient.append('stop')
+                    .attr('offset', '50%')
+                    .attr('stop-color', '#00A8FF')
+                    .attr('stop-opacity', 0.6);
+
+                gradient.append('stop')
+                    .attr('offset', '100%')
+                    .attr('stop-color', '#AD00FF')
+                    .attr('stop-opacity', 0.8);
+
+                // Waveform
+                const xScale = d3.scaleLinear().domain([0, points]).range([0, width]);
+                const yScale = d3.scaleLinear().domain([-1, 1]).range([height, 0]);
+
+                const line = d3.line()
+                    .x((d, i) => xScale(i))
+                    .y(d => yScale(d))
+                    .curve(d3.curveBasis);
+
+                function generateWave(time) {
+                    return d3.range(points).map(i => {
+                        const x = i / points;
+                        const wave1 = Math.sin((x * 6 + time * 0.01) * Math.PI) * 0.4;
+                        const wave2 = Math.sin((x * 12 + time * 0.02) * Math.PI) * 0.2;
+                        return wave1 + wave2;
+                    });
+                }
+
+                const path = svg.append('path')
+                    .attr('fill', 'none')
+                    .attr('stroke', 'url(#spectrum-gradient)')
+                    .attr('stroke-width', 3)
+                    .style('filter', 'drop-shadow(0 0 12px rgba(0, 168, 255, 0.8))');
+
+                let time = 0;
+                function animate() {
+                    time += 1;
+                    path.attr('d', line(generateWave(time)));
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            }, [data]);
+
+            return <div ref={vizRef} className="w-full neural-glow"></div>;
+        }
+
+        // 3. Sound Palette Orbital - Orbital visualization with rotating nodes
+        function SoundPaletteOrbital({ data }) {
+            const vizRef = useRef(null);
+
+            useEffect(() => {
+                if (!vizRef.current) return;
+                d3.select(vizRef.current).selectAll('*').remove();
+
+                if (!data || data.length === 0) return;
+
+                const width = 280;
+                const height = 240;
+
+                const svg = d3.select(vizRef.current)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                // Draw 3 orbital rings
+                [60, 90, 120].forEach((r, idx) => {
+                    svg.append('circle')
+                        .attr('cx', width / 2)
+                        .attr('cy', height / 2)
+                        .attr('r', r)
+                        .attr('fill', 'none')
+                        .attr('stroke', '#00A8FF')
+                        .attr('stroke-width', 1)
+                        .attr('stroke-opacity', 0.3);
+                });
+
+                // Place nodes on orbits
+                const nodes = data.slice(0, 12).map((d, i) => {
+                    const orbit = [60, 90, 120][i % 3];
+                    const angle = (i / (data.length / 3)) * 2 * Math.PI;
+                    return {
+                        ...d,
+                        x: width / 2 + orbit * Math.cos(angle),
+                        y: height / 2 + orbit * Math.sin(angle),
+                        r: 8 + (d.weight || 1) * 2
+                    };
+                });
+
+                const nodeGroups = svg.selectAll('g.node')
+                    .data(nodes)
+                    .enter()
+                    .append('g')
+                    .attr('class', 'node')
+                    .attr('transform', d => `translate(${d.x}, ${d.y})`);
+
+                nodeGroups.append('circle')
+                    .attr('r', d => d.r)
+                    .attr('fill', '#00A8FF')
+                    .attr('stroke', '#005CFF')
+                    .attr('stroke-width', 2)
+                    .style('opacity', 0.8)
+                    .style('filter', 'drop-shadow(0 0 6px rgba(0, 168, 255, 0.8))');
+
+                nodeGroups.append('text')
+                    .attr('text-anchor', 'middle')
+                    .attr('dy', 4)
+                    .attr('font-size', '8px')
+                    .attr('fill', '#000')
+                    .attr('font-weight', 'bold')
+                    .text(d => d.name.substring(0, 4));
+            }, [data]);
+
+            if (!data || data.length === 0) {
+                return <p className="text-gray-600 text-sm text-center py-12">No sound data yet</p>;
+            }
+
+            return <div ref={vizRef} className="flex justify-center neural-glow"></div>;
+        }
+
+        // 4. Tonal DNA Quadrant - Quadrant visualization showing tonal characteristics
+        function TonalDNAQuadrant({ data }) {
+            const vizRef = useRef(null);
+
+            useEffect(() => {
+                if (!vizRef.current) return;
+                d3.select(vizRef.current).selectAll('*').remove();
+
+                if (!data || data.length === 0) return;
+
+                const width = 280;
+                const height = 240;
+
+                const svg = d3.select(vizRef.current)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                // Draw quadrant lines
+                svg.append('line')
+                    .attr('x1', 0).attr('y1', height / 2)
+                    .attr('x2', width).attr('y2', height / 2)
+                    .attr('stroke', '#00A8FF')
+                    .attr('stroke-width', 1)
+                    .attr('stroke-opacity', 0.4);
+
+                svg.append('line')
+                    .attr('x1', width / 2).attr('y1', 0)
+                    .attr('x2', width / 2).attr('y2', height)
+                    .attr('stroke', '#00A8FF')
+                    .attr('stroke-width', 1)
+                    .attr('stroke-opacity', 0.4);
+
+                // Draw central glow
+                const glow = svg.append('circle')
+                    .attr('cx', width / 2)
+                    .attr('cy', height / 2)
+                    .attr('r', 40)
+                    .attr('fill', '#00A8FF')
+                    .attr('opacity', 0.3)
+                    .style('filter', 'blur(20px)');
+
+                // Labels
+                const labels = [
+                    { text: 'BRIGHT', x: width / 2, y: 15 },
+                    { text: 'DARK', x: width / 2, y: height - 10 },
+                    { text: 'HARMONIC', x: 15, y: height / 2 },
+                    { text: 'DISSONANT', x: width - 75, y: height / 2 }
+                ];
+
+                svg.selectAll('text.label')
+                    .data(labels)
+                    .enter()
+                    .append('text')
+                    .attr('class', 'label')
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', '9px')
+                    .attr('fill', '#00A8FF')
+                    .attr('font-weight', 'bold')
+                    .text(d => d.text);
+            }, [data]);
+
+            if (!data || data.length === 0) {
+                return <p className="text-gray-600 text-sm text-center py-12">No tonal data yet</p>;
+            }
+
+            return <div ref={vizRef} className="flex justify-center neural-glow"></div>;
+        }
+
+        // 5. Rhythmic DNA Waveform - Waveform showing rhythmic patterns
+        function RhythmicDNAWaveform({ data }) {
+            const vizRef = useRef(null);
+
+            useEffect(() => {
+                if (!vizRef.current) return;
+                d3.select(vizRef.current).selectAll('*').remove();
+
+                if (!data || data.length === 0) return;
+
+                const width = 280;
+                const height = 180;
+
+                const svg = d3.select(vizRef.current)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                const xScale = d3.scaleLinear()
+                    .domain([0, data.length])
+                    .range([20, width - 20]);
+
+                const yScale = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.weight || 1)])
+                    .range([height - 30, 30]);
+
+                const area = d3.area()
+                    .x((d, i) => xScale(i))
+                    .y0(height - 30)
+                    .y1(d => yScale(d.weight || 1))
+                    .curve(d3.curveCatmullRom);
+
+                svg.append('path')
+                    .datum(data.slice(0, 20))
+                    .attr('d', area)
+                    .attr('fill', 'url(#rhythmic-gradient)')
+                    .attr('stroke', '#00A8FF')
+                    .attr('stroke-width', 2)
+                    .style('filter', 'drop-shadow(0 0 8px rgba(0, 168, 255, 0.6))');
+
+                const gradient = svg.append('defs')
+                    .append('linearGradient')
+                    .attr('id', 'rhythmic-gradient')
+                    .attr('x1', '0%')
+                    .attr('y1', '0%')
+                    .attr('x2', '0%')
+                    .attr('y2', '100%');
+
+                gradient.append('stop')
+                    .attr('offset', '0%')
+                    .attr('stop-color', '#00A8FF')
+                    .attr('stop-opacity', 0.8);
+
+                gradient.append('stop')
+                    .attr('offset', '100%')
+                    .attr('stop-color', '#005CFF')
+                    .attr('stop-opacity', 0.1);
+            }, [data]);
+
+            if (!data || data.length === 0) {
+                return <p className="text-gray-600 text-sm text-center py-12">No rhythmic data yet</p>;
+            }
+
+            return <div ref={vizRef} className="flex justify-center neural-glow"></div>;
+        }
+
+        // 6. Emotional Bubble Network - Connected bubble network
+        function EmotionalBubbleNetwork({ data }) {
+            const vizRef = useRef(null);
+
+            useEffect(() => {
+                if (!vizRef.current) return;
+                d3.select(vizRef.current).selectAll('*').remove();
+
+                if (!data || data.length === 0) return;
+
+                const width = vizRef.current.clientWidth || 700;
+                const height = 280;
+
+                const svg = d3.select(vizRef.current)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                const simulation = d3.forceSimulation(data.slice(0, 10).map(d => ({
+                    ...d,
+                    r: Math.sqrt((d.weight || 1) * 50) + 25
+                })))
+                    .force('charge', d3.forceManyBody().strength(-50))
+                    .force('center', d3.forceCenter(width / 2, height / 2))
+                    .force('collision', d3.forceCollide().radius(d => d.r + 10));
+
+                const nodeGroups = svg.selectAll('g')
+                    .data(simulation.nodes())
+                    .enter()
+                    .append('g');
+
+                nodeGroups.append('circle')
+                    .attr('r', d => d.r)
+                    .attr('fill', (d, i) => ['#00A8FF', '#AD00FF', '#4ECDC4', '#FFE66D', '#FF6B6B'][i % 5])
+                    .attr('stroke', '#00A8FF')
+                    .attr('stroke-width', 2)
+                    .style('opacity', 0.7)
+                    .style('filter', 'drop-shadow(0 0 10px rgba(0, 168, 255, 0.6))');
+
+                nodeGroups.append('text')
+                    .attr('text-anchor', 'middle')
+                    .attr('dy', 5)
+                    .attr('font-size', d => Math.min(14, d.r / 4))
+                    .attr('font-weight', 'bold')
+                    .attr('fill', '#FFF')
+                    .text(d => d.name);
+
+                simulation.on('tick', () => {
+                    nodeGroups.attr('transform', d => `translate(${d.x}, ${d.y})`);
+                });
+            }, [data]);
+
+            if (!data || data.length === 0) {
+                return <p className="text-gray-600 text-sm text-center py-12">No emotional data yet</p>;
+            }
+
+            return <div ref={vizRef} className="w-full neural-glow"></div>;
+        }
+
+        // 7. Data List - Simple list view for text data
+        function DataList({ data }) {
+            if (!data || data.length === 0) {
+                return <p className="text-gray-600 text-sm">No data yet</p>;
+            }
+
+            return (
+                <div className="space-y-2">
+                    {data.slice(0, 6).map((item, i) => (
+                        <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-black/30 border-l-2 border-primary/50">
+                            <span className="text-white text-sm">{item.name}</span>
+                            <span className="text-xs text-gray-400 bg-primary/10 px-2 py-1 rounded">
+                                {Math.round((item.weight || 1) * 10) / 10}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        // 8. Inspirational Constellation - Star-like constellation pattern
+        function InspirationalConstellation({ data }) {
+            const vizRef = useRef(null);
+
+            useEffect(() => {
+                if (!vizRef.current) return;
+                d3.select(vizRef.current).selectAll('*').remove();
+
+                if (!data || data.length === 0) return;
+
+                const width = 280;
+                const height = 240;
+
+                const svg = d3.select(vizRef.current)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                // Central node
+                svg.append('circle')
+                    .attr('cx', width / 2)
+                    .attr('cy', height / 2)
+                    .attr('r', 20)
+                    .attr('fill', '#00A8FF')
+                    .attr('stroke', '#005CFF')
+                    .attr('stroke-width', 2)
+                    .style('filter', 'drop-shadow(0 0 10px rgba(0, 168, 255, 0.8))');
+
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', height / 2)
+                    .attr('text-anchor', 'middle')
+                    .attr('dy', 5)
+                    .attr('font-size', '10px')
+                    .attr('font-weight', 'bold')
+                    .attr('fill', '#000')
+                    .text('CORE');
+
+                // Surrounding nodes
+                data.slice(0, 8).forEach((item, i) => {
+                    const angle = (i / data.slice(0, 8).length) * 2 * Math.PI;
+                    const radius = 80;
+                    const x = width / 2 + radius * Math.cos(angle);
+                    const y = height / 2 + radius * Math.sin(angle);
+
+                    // Connecting line
+                    svg.append('line')
+                        .attr('x1', width / 2)
+                        .attr('y1', height / 2)
+                        .attr('x2', x)
+                        .attr('y2', y)
+                        .attr('stroke', '#00A8FF')
+                        .attr('stroke-width', 1)
+                        .attr('stroke-opacity', 0.3)
+                        .attr('class', 'pulse-line');
+
+                    // Node
+                    svg.append('circle')
+                        .attr('cx', x)
+                        .attr('cy', y)
+                        .attr('r', 12)
+                        .attr('fill', '#005CFF')
+                        .attr('stroke', '#00A8FF')
+                        .attr('stroke-width', 1.5)
+                        .style('opacity', 0.8)
+                        .style('filter', 'drop-shadow(0 0 6px rgba(0, 168, 255, 0.6))');
+
+                    // Label
+                    svg.append('text')
+                        .attr('x', x)
+                        .attr('y', y + 25)
+                        .attr('text-anchor', 'middle')
+                        .attr('font-size', '9px')
+                        .attr('fill', '#00A8FF')
+                        .text(item.name.substring(0, 8));
+                });
+            }, [data]);
+
+            if (!data || data.length === 0) {
+                return <p className="text-gray-600 text-sm text-center py-12">No trigger data yet</p>;
+            }
+
+            return <div ref={vizRef} className="flex justify-center neural-glow"></div>;
+        }
+
+        // 9. Sonic Architecture Tower - Stacked layer tower
+        function SonicArchitectureTower({ data }) {
+            const vizRef = useRef(null);
+
+            useEffect(() => {
+                if (!vizRef.current) return;
+                d3.select(vizRef.current).selectAll('*').remove();
+
+                if (!data || data.length === 0) return;
+
+                const width = 600;
+                const height = 300;
+
+                const svg = d3.select(vizRef.current)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                const layers = data.slice(0, 6);
+                const layerHeight = 35;
+                const maxWidth = 500;
+
+                layers.forEach((layer, i) => {
+                    const y = height / 2 - ((layers.length * layerHeight) / 2) + (i * layerHeight);
+                    const layerWidth = maxWidth * (0.5 + (layer.weight || 0.5) * 0.5);
+                    const x = (width - layerWidth) / 2;
+
+                    // Layer rectangle
+                    svg.append('rect')
+                        .attr('x', x)
+                        .attr('y', y)
+                        .attr('width', layerWidth)
+                        .attr('height', layerHeight - 5)
+                        .attr('fill', `rgba(0, 168, 255, ${0.2 + i * 0.1})`)
+                        .attr('stroke', '#00A8FF')
+                        .attr('stroke-width', 2)
+                        .attr('rx', 4)
+                        .style('filter', 'drop-shadow(0 0 8px rgba(0, 168, 255, 0.4))');
+
+                    // Layer label
+                    svg.append('text')
+                        .attr('x', width / 2)
+                        .attr('y', y + (layerHeight / 2))
+                        .attr('text-anchor', 'middle')
+                        .attr('dy', 5)
+                        .attr('font-size', '12px')
+                        .attr('font-weight', 'bold')
+                        .attr('fill', '#00A8FF')
+                        .text(layer.name);
+                });
+            }, [data]);
+
+            if (!data || data.length === 0) {
+                return <p className="text-gray-600 text-sm text-center py-12">No architecture data yet</p>;
+            }
+
+            return <div ref={vizRef} className="flex justify-center neural-glow"></div>;
+        }
+
+        ReactDOM.render(<Dashboard />, document.getElementById('root'));
+    </script>
+</body>
+</html>

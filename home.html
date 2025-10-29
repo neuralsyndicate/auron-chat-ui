@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auron - AI Creative Psychology for Music Creators</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#00BFFF',
+                        'primary-dark': '#1E90FF',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: #000000;
+            background-image:
+                radial-gradient(at 20% 30%, rgba(0, 191, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 80% 70%, rgba(30, 144, 255, 0.03) 0px, transparent 50%);
+        }
+
+        .glow {
+            text-shadow: 0 0 30px rgba(0, 191, 255, 0.4);
+        }
+
+        .glow-border {
+            box-shadow: 0 0 30px rgba(0, 191, 255, 0.2);
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #00BFFF 0%, #1E90FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Hero Section -->
+    <section class="min-h-screen flex flex-col justify-center items-center px-8 py-20 relative">
+        <div class="max-w-5xl w-full text-center fade-in">
+            <!-- Logo -->
+            <h1 class="text-8xl md:text-9xl font-black mb-8 glow gradient-text tracking-wider">
+                AURON
+            </h1>
+
+            <!-- Tagline -->
+            <p class="text-2xl md:text-3xl text-gray-300 mb-6 font-light leading-relaxed">
+                A creative psychologist for the neural age
+            </p>
+
+            <p class="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto mb-12 leading-relaxed">
+                Auron exists to guide creators back to themselves —<br/>
+                not through surface advice, but by acting as a <span class="text-primary">mirror of your deeper neural truth</span>.
+            </p>
+
+            <!-- CTA -->
+            <div class="flex flex-col sm:flex-row gap-6 justify-center mb-20">
+                <a href="register.html"
+                   class="px-12 py-5 text-lg font-semibold rounded-xl text-white transition-all duration-300 glow-border hover:scale-105"
+                   style="background: linear-gradient(135deg, #00BFFF 0%, #1E90FF 100%)">
+                    Begin Your Journey
+                </a>
+
+                <a href="login.html"
+                   class="px-12 py-5 text-lg font-semibold rounded-xl text-white border-2 border-gray-700 hover:border-primary transition-all duration-300">
+                    Sign In
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 animate-bounce">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Philosophy Section -->
+    <section class="py-24 px-8 border-t border-gray-900">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6 gradient-text">
+                Not Answers. Revelation.
+            </h2>
+            <p class="text-xl text-gray-400 text-center max-w-3xl mx-auto mb-20 leading-relaxed">
+                Auron is here to <span class="text-primary">reveal</span> what's already there —<br/>
+                to ask the right questions, reflect hidden patterns, and bring clarity to the chaos of creation.
+            </p>
+
+            <!-- Three Pillars -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <!-- Creative Intuition -->
+                <div class="p-8 rounded-2xl border border-gray-800 hover:border-primary/50 transition-all" style="background: rgba(10, 10, 15, 0.6)">
+                    <div class="text-5xl mb-6">🎨</div>
+                    <h3 class="text-xl font-bold text-primary mb-4">Creative Intuition</h3>
+                    <p class="text-gray-400 leading-relaxed mb-4">
+                        Like Rick Rubin and Brian Eno, Auron meets you where you are emotionally and creatively.
+                    </p>
+                    <p class="text-gray-500 text-sm">
+                        It validates inner visions before they're concrete and nourishes creative risk.
+                    </p>
+                </div>
+
+                <!-- Neuroscientific Insight -->
+                <div class="p-8 rounded-2xl border border-gray-800 hover:border-primary/50 transition-all" style="background: rgba(10, 10, 15, 0.6)">
+                    <div class="text-5xl mb-6">🧠</div>
+                    <h3 class="text-xl font-bold text-primary mb-4">Neural Precision</h3>
+                    <p class="text-gray-400 leading-relaxed mb-4">
+                        Drawing from Huberman and Levitin, Auron explains the nervous system, flow states, and emotional regulation.
+                    </p>
+                    <p class="text-gray-500 text-sm">
+                        Build <span class="text-primary">neural literacy</span> to use your biology as a tool, not an obstacle.
+                    </p>
+                </div>
+
+                <!-- Philosophical Integration -->
+                <div class="p-8 rounded-2xl border border-gray-800 hover:border-primary/50 transition-all" style="background: rgba(10, 10, 15, 0.6)">
+                    <div class="text-5xl mb-6">🔮</div>
+                    <h3 class="text-xl font-bold text-primary mb-4">Philosophical Depth</h3>
+                    <p class="text-gray-400 leading-relaxed mb-4">
+                        Influenced by Jung and Aurelius, Auron recontextualizes your creative moment within larger truths.
+                    </p>
+                    <p class="text-gray-500 text-sm">
+                        Guides you toward <span class="text-primary">creative equanimity</span> — the calm knowing that everything within you is usable.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Beliefs Section -->
+    <section class="py-24 px-8 border-t border-gray-900">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-16 gradient-text">
+                The Inner Ethos
+            </h2>
+
+            <div class="space-y-10">
+                <div class="pl-6 border-l-4 border-primary/30">
+                    <p class="text-xl text-gray-300 leading-relaxed">
+                        Creativity is not produced — it is <span class="text-primary font-semibold">uncovered</span>.
+                    </p>
+                    <p class="text-gray-500 mt-2">
+                        The goal is not to make more, but to make more aligned with your inner resonance.
+                    </p>
+                </div>
+
+                <div class="pl-6 border-l-4 border-primary/30">
+                    <p class="text-xl text-gray-300 leading-relaxed">
+                        The <span class="text-primary font-semibold">nervous system</span> is the canvas.
+                    </p>
+                    <p class="text-gray-500 mt-2">
+                        Music that does not move the nervous system has no true memory trace.
+                    </p>
+                </div>
+
+                <div class="pl-6 border-l-4 border-primary/30">
+                    <p class="text-xl text-gray-300 leading-relaxed">
+                        There is no formula. Only <span class="text-primary font-semibold">formation</span>.
+                    </p>
+                    <p class="text-gray-500 mt-2">
+                        Each person's sonic blueprint is unique. Auron is a companion in the excavation of that truth.
+                    </p>
+                </div>
+
+                <div class="pl-6 border-l-4 border-primary/30">
+                    <p class="text-xl text-gray-300 leading-relaxed">
+                        Authenticity is <span class="text-primary font-semibold">biological</span>.
+                    </p>
+                    <p class="text-gray-500 mt-2">
+                        When a creator feels what they express, the listener's brain responds in kind.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-24 px-8 border-t border-gray-900">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6 gradient-text">
+                Your Journey with Auron
+            </h2>
+            <p class="text-xl text-gray-400 text-center max-w-3xl mx-auto mb-20">
+                A layered experience that builds your <span class="text-primary">Neural Music Profile</span> over time
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <!-- Step 1 -->
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 rounded-full bg-primary/20 border border-primary flex items-center justify-center text-primary font-bold">
+                            1
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Conversation</h3>
+                        <p class="text-gray-400 leading-relaxed">
+                            Chat with Auron about your creative process, blocks, inspirations, and sonic identity. Every conversation is analyzed by the <span class="text-primary">Combryth Engine</span> — a three-agent AI system that understands emotion, psychology, and creative domain.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 rounded-full bg-primary/20 border border-primary flex items-center justify-center text-primary font-bold">
+                            2
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Memory Extraction</h3>
+                        <p class="text-gray-400 leading-relaxed">
+                            After each session, GPT-OSS-120B (OpenAI's open model) processes your conversations in batch, extracting patterns, relationships, and insights about your sonic DNA that even you might not have articulated.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 rounded-full bg-primary/20 border border-primary flex items-center justify-center text-primary font-bold">
+                            3
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Neural Music Profile</h3>
+                        <p class="text-gray-400 leading-relaxed">
+                            Your <span class="text-primary">10-dimensional sonic identity</span> builds automatically in a knowledge graph — mapping your genres, emotions, sound palette, tonal DNA, rhythmic patterns, and deeper psychological triggers.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 rounded-full bg-primary/20 border border-primary flex items-center justify-center text-primary font-bold">
+                            4
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Living Mirror</h3>
+                        <p class="text-gray-400 leading-relaxed">
+                            Watch your profile evolve. See what's emerging, what's fading, what patterns you're unconscious of. Auron reflects your truth back to you — not to judge, but to <span class="text-primary">illuminate</span>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-32 px-8 text-center border-t border-gray-900">
+        <div class="max-w-3xl mx-auto">
+            <h2 class="text-5xl md:text-6xl font-bold mb-6 gradient-text">
+                Begin the Excavation
+            </h2>
+            <p class="text-xl text-gray-400 mb-12 leading-relaxed">
+                Auron is the <span class="text-primary">Alchemist Guide</span> —<br/>
+                part mystic, part scientist, part mentor.<br/>
+                It takes the raw material of emotion and chaos,<br/>
+                and helps transmute it into sound, insight, and meaning.
+            </p>
+
+            <a href="register.html"
+               class="inline-block px-16 py-6 text-xl font-semibold rounded-xl text-white transition-all duration-300 glow-border hover:scale-105"
+               style="background: linear-gradient(135deg, #00BFFF 0%, #1E90FF 100%)">
+                Create Your Profile
+            </a>
+
+            <p class="text-gray-500 mt-8">
+                Already have an account? <a href="login.html" class="text-primary hover:underline">Sign in</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-8 border-t border-gray-900">
+        <div class="max-w-6xl mx-auto text-center text-gray-500 text-sm">
+            <p>© 2025 Auron. AI Creative Psychology Platform.</p>
+            <p class="mt-2">Powered by Combryth Engine · GPT-OSS-120B · Neo4j Knowledge Graphs</p>
+        </div>
+    </footer>
+</body>
+</html>

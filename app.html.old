@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auron - AI Creative Psychology Platform</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <!-- Tailwind Config - Neural Syndicate Professional Theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Minimal professional palette
+                        'ns-black': '#000000',
+                        'ns-white': '#FFFFFF',
+                        'ns-blue': '#000DFF',  // Used sparingly
+                    },
+                    fontFamily: {
+                        display: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Inter', 'system-ui', 'sans-serif'],
+                        body: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Minimal Custom CSS - Professional Liquid Glass Only -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif;
+            background: #000000;
+            color: #FFFFFF;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            letter-spacing: -0.01em;
+        }
+
+        /* Professional Liquid Glass Surface */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(60px);
+            -webkit-backdrop-filter: blur(60px);
+            box-shadow:
+                0 0 0 0.5px rgba(255, 255, 255, 0.05) inset,
+                0 0 0 1px rgba(0, 0, 0, 0.5),
+                0 8px 32px rgba(0, 0, 0, 0.6),
+                0 0 80px rgba(0, 13, 255, 0.02);
+        }
+
+        .glass-border {
+            border: 0.5px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Subtle Blue Glow (used sparingly) */
+        .glow-blue {
+            box-shadow: 0 0 60px rgba(0, 13, 255, 0.06);
+        }
+
+        /* Professional Transitions */
+        .transition-professional {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* LANDING PAGE */
+        .landing {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: var(--space-5);
+            text-align: center;
+        }
+
+        .landing-logo {
+            font-family: var(--font-display);
+            font-size: 64px;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: var(--space-3);
+            letter-spacing: -0.02em;
+            /* Subtle dark blue glow - barely visible */
+            text-shadow: 0 0 60px rgba(0, 13, 255, 0.08);
+        }
+
+        .landing-tagline {
+            font-size: 20px;
+            font-weight: 400;
+            color: var(--gray-400);
+            margin-bottom: var(--space-6);
+            max-width: 500px;
+            line-height: 1.7;
+            letter-spacing: -0.005em;
+        }
+
+        .landing-cta {
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        /* Professional Button System */
+        .btn {
+            padding: 14px 32px;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: var(--font-body);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s var(--ease);
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+            letter-spacing: -0.005em;
+        }
+
+        .btn-primary {
+            background: var(--white);
+            color: var(--black);
+            box-shadow:
+                0 0 0 0.5px rgba(255, 255, 255, 0.1) inset,
+                0 4px 16px rgba(0, 0, 0, 0.4),
+                0 0 40px rgba(0, 13, 255, 0.05);  /* Subtle blue glow */
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 0 0 0.5px rgba(255, 255, 255, 0.1) inset,
+                0 6px 24px rgba(0, 0, 0, 0.5),
+                0 0 60px rgba(0, 13, 255, 0.08);  /* Slightly more blue on hover */
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            backdrop-filter: blur(60px);
+            -webkit-backdrop-filter: blur(60px);
+            color: var(--white);
+            box-shadow: var(--glass-shadow);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow:
+                0 0 0 0.5px rgba(255, 255, 255, 0.08) inset,
+                0 0 0 1px rgba(0, 0, 0, 0.5),
+                0 6px 24px rgba(0, 0, 0, 0.5),
+                0 0 60px rgba(0, 13, 255, 0.04);
+        }
+
+        /* REGISTER PAGE */
+        .register-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .register-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 13, 255, 0.1);
+        }
+
+        .register-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .register-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 16px;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 13, 255, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* DASHBOARD */
+        .dashboard {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 0;
+        }
+
+        .sidebar-logo {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--primary);
+            padding: 0 30px;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+        }
+
+        .nav-item {
+            padding: 16px 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 13, 255, 0.05);
+        }
+
+        .nav-item.active {
+            background: rgba(0, 13, 255, 0.1);
+            border-left-color: var(--primary);
+        }
+
+        .nav-item.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+        }
+
+        .nav-label {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .lock-badge {
+            margin-left: auto;
+            font-size: 16px;
+        }
+
+        .progress-section {
+            padding: 20px 30px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .progress-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .progress-stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .progress-bar-container {
+            height: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-header {
+            padding: 30px 40px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .content-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .content-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .content-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        /* CHAT VIEW */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 16px 20px;
+            border-radius: 16px;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, rgba(0, 13, 255, 0.3) 0%, rgba(0, 13, 255, 0.3) 100%);
+            border: 1px solid var(--primary);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.auron .message-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 15px;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .input-container input:focus {
+            border-color: var(--primary);
+        }
+
+        .input-container button {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .input-container button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 13, 255, 0.4);
+        }
+
+        .input-container button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* PROFILE VIEW */
+        .profile-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .sonic-card {
+            background: linear-gradient(135deg, rgba(0, 13, 255, 0.1) 0%, rgba(0, 13, 255, 0.05) 100%);
+            border: 1px solid var(--primary);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sonic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 13, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            to { left: 200%; }
+        }
+
+        .sonic-title {
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(0, 13, 255, 0.5);
+        }
+
+        .dimensions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .dimension-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .dimension-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 20px rgba(0, 13, 255, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .dimension-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dimension-title::before {
+            content: '';
+            width: 3px;
+            height: 18px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .node-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .node-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border-left: 2px solid var(--primary);
+        }
+
+        .node-name {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .node-badge {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: rgba(0, 13, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 10px;
+        }
+
+        .viz-container {
+            width: 100%;
+            height: 250px;
+            position: relative;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 13, 255, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Utility */
+        .hidden {
+            display: none !important;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- VIEWS -->
+    <div id="landingView" class="landing hidden">
+        <div class="landing-logo">AURON</div>
+        <p class="landing-tagline">
+            AI Creative Psychology Platform<br>
+            Understand your sonic identity through conversation
+        </p>
+        <div class="landing-cta">
+            <button class="btn btn-primary" onclick="app.showRegister()">Get Started</button>
+            <button class="btn btn-secondary" onclick="app.showLogin()">I Have an Account</button>
+        </div>
+    </div>
+
+    <div id="registerView" class="register-container hidden">
+        <div class="register-card">
+            <h1 class="register-title">Create Account</h1>
+            <p class="register-subtitle">Start building your Neural Music Profile</p>
+
+            <form id="registerForm" onsubmit="app.handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" id="registerUsername"
+                           placeholder="Enter your username" required minlength="3">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="registerEmail"
+                           placeholder="your@email.com" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                    Create Account
+                </button>
+
+                <p style="text-align: center; margin-top: 20px; color: var(--text-secondary); font-size: 14px;">
+                    Already have an account?
+                    <a href="#" onclick="app.showLogin()" style="color: var(--primary);">Sign in</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <div id="loginView" class="register-container hidden">
+        <div class="register-card">
+            <h1 class="register-title">Welcome Back</h1>
+            <p class="register-subtitle">Continue your sonic journey</p>
+
+            <form id="loginForm" onsubmit="app.handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" id="loginUsername"
+                           placeholder="Enter your username" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                    Sign In
+                </button>
+
+                <p style="text-align: center; margin-top: 20px; color: var(--text-secondary); font-size: 14px;">
+                    Don't have an account?
+                    <a href="#" onclick="app.showRegister()" style="color: var(--primary);">Create one</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <div id="dashboardView" class="dashboard hidden">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">AURON</div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-view="chat" onclick="app.switchView('chat')">
+                    <span class="nav-icon">💬</span>
+                    <span class="nav-label">Dialogue</span>
+                </div>
+
+                <div class="nav-item" data-view="profile" id="profileNavItem">
+                    <span class="nav-icon">🧠</span>
+                    <span class="nav-label">Neural Music Profile</span>
+                    <span class="lock-badge" id="profileLock">🔒</span>
+                </div>
+            </nav>
+
+            <div class="progress-section">
+                <div class="progress-title">Your Progress</div>
+                <div class="progress-stat">
+                    <span>Conversations</span>
+                    <span id="conversationCount">0</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                </div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 10px;">
+                    <span id="progressMessage">Dialogue with Auron to unlock your profile</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- CHAT VIEW -->
+            <div id="chatView" class="content-section">
+                <div class="content-header">
+                    <div class="content-title">Dialogue with Auron</div>
+                    <div class="content-subtitle">Your creative psychologist AI</div>
+                </div>
+                <div class="content-body" style="padding: 0; display: flex; flex-direction: column;">
+                    <div class="chat-container">
+                        <div class="messages-container" id="messagesContainer">
+                            <div class="message auron">
+                                <div>
+                                    <div class="message-label">Auron</div>
+                                    <div class="message-content">
+                                        Hello. I'm Auron, your creative psychologist. Share what's on your mind — whether it's frustration, curiosity, or something you can't quite name yet. I'm listening.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-container">
+                            <input type="text" id="messageInput" placeholder="Share what's on your mind..."
+                                   onkeypress="if(event.key === 'Enter') app.sendMessage()">
+                            <button id="sendButton" onclick="app.sendMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFILE VIEW -->
+            <div id="profileView" class="content-section hidden">
+                <div class="content-header">
+                    <div class="content-title">Neural Music Profile</div>
+                    <div class="content-subtitle">Your sonic identity mapped through AI</div>
+                </div>
+                <div class="content-body">
+                    <div id="profileContainer" class="profile-container">
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // APP CONFIGURATION
+        const API_BASE = 'http://86.38.182.54:8001';
+        const DIALOGUE_API_BASE = 'http://100.123.105.115:8000';  // Tailscale → M4 Pro
+        const UNLOCK_THRESHOLD = 10; // conversations needed to unlock profile
+
+        // APP STATE
+        const app = {
+            user: null,
+            sessionId: null,
+            conversationHistory: [],
+            sessionManager: null,
+            currentView: 'chat',
+
+            init() {
+                // Check if user is logged in
+                const storedUser = localStorage.getItem('auron_user');
+                if (storedUser) {
+                    this.user = JSON.parse(storedUser);
+                    this.showDashboard();
+                } else {
+                    this.showLanding();
+                }
+            },
+
+            // NAVIGATION
+            showLanding() {
+                this.hideAllViews();
+                document.getElementById('landingView').classList.remove('hidden');
+            },
+
+            showRegister() {
+                this.hideAllViews();
+                document.getElementById('registerView').classList.remove('hidden');
+            },
+
+            showLogin() {
+                this.hideAllViews();
+                document.getElementById('loginView').classList.remove('hidden');
+            },
+
+            async showDashboard() {
+                this.hideAllViews();
+                document.getElementById('dashboardView').classList.remove('hidden');
+
+                // Initialize session manager
+                if (!this.sessionManager) {
+                    this.sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+                    this.sessionManager = new SessionManager(this.user.id, API_BASE);
+                    this.sessionManager.startSession();
+                }
+
+                // Update progress
+                await this.updateProgress();
+            },
+
+            hideAllViews() {
+                document.querySelectorAll('#landingView, #registerView, #loginView, #dashboardView').forEach(el => {
+                    el.classList.add('hidden');
+                });
+            },
+
+            switchView(view) {
+                // Check if profile is locked
+                if (view === 'profile' && this.isProfileLocked()) {
+                    alert(`Unlock your Neural Music Profile by having ${UNLOCK_THRESHOLD} conversations with Auron!`);
+                    return;
+                }
+
+                this.currentView = view;
+
+                // Update nav
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                document.querySelector(`.nav-item[data-view="${view}"]`).classList.add('active');
+
+                // Update content
+                document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
+                document.getElementById(`${view}View`).classList.remove('hidden');
+
+                // Load profile data if switching to profile
+                if (view === 'profile') {
+                    this.loadProfile();
+                }
+            },
+
+            // AUTHENTICATION
+            async handleRegister(event) {
+                event.preventDefault();
+
+                const username = document.getElementById('registerUsername').value;
+                const email = document.getElementById('registerEmail').value;
+
+                // Generate user ID (hash of username + timestamp)
+                const userId = `user_${btoa(username).replace(/=/g, '')}_${Date.now()}`;
+
+                try {
+                    // Initialize user in Neo4j
+                    const response = await fetch(`${API_BASE}/user/initialize/${userId}`, {
+                        method: 'POST'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to create account');
+                    }
+
+                    // Store user
+                    this.user = { id: userId, username, email };
+                    localStorage.setItem('auron_user', JSON.stringify(this.user));
+
+                    // Go to dashboard
+                    this.showDashboard();
+
+                } catch (error) {
+                    alert('Registration failed: ' + error.message);
+                }
+            },
+
+            async handleLogin(event) {
+                event.preventDefault();
+
+                const username = document.getElementById('loginUsername').value;
+
+                // For demo: recreate user ID from username
+                // In production, you'd have proper authentication
+                const userId = `user_${btoa(username).replace(/=/g, '')}_`;
+
+                // Verify user exists (by trying to get their profile)
+                try {
+                    // For now, just store and proceed (no verification)
+                    this.user = { id: userId + Date.now(), username };
+                    localStorage.setItem('auron_user', JSON.stringify(this.user));
+                    this.showDashboard();
+                } catch (error) {
+                    alert('User not found');
+                }
+            },
+
+            logout() {
+                localStorage.removeItem('auron_user');
+                this.user = null;
+                this.sessionManager = null;
+                this.showLanding();
+            },
+
+            // CHAT
+            async sendMessage() {
+                const input = document.getElementById('messageInput');
+                const message = input.value.trim();
+
+                if (!message) return;
+
+                const sendButton = document.getElementById('sendButton');
+                input.disabled = true;
+                sendButton.disabled = true;
+
+                // Add user message
+                this.addMessage(message, true);
+                input.value = '';
+
+                try {
+                    // Get JWT token for authentication
+                    const token = localStorage.getItem('auron_auth_token');
+                    if (!token) {
+                        throw new Error('Not authenticated - please log in again');
+                    }
+
+                    const response = await fetch(`${DIALOGUE_API_BASE}/chat`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            conversation_history: this.conversationHistory,
+                            metadata: { session_id: this.sessionId }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    // Parse structured dialogue response
+                    const parsedMessage = typeof data.message === 'string'
+                        ? { guidance: data.message, reflective_question: "What insight from this resonates most with you?" }
+                        : data.message;
+
+                    // Add Auron's response with structured dialogue
+                    this.addMessage(parsedMessage, false);
+
+                    // Update conversation history
+                    this.conversationHistory.push(
+                        { role: 'user', content: message },
+                        { role: 'assistant', content: data.message }
+                    );
+
+                    // Reset inactivity timer
+                    if (this.sessionManager) {
+                        this.sessionManager.resetInactivityTimer();
+                    }
+
+                    // Update progress
+                    await this.updateProgress();
+
+                } catch (error) {
+                    this.addMessage(`Error: ${error.message}`, false);
+                }
+
+                input.disabled = false;
+                sendButton.disabled = false;
+                input.focus();
+            },
+
+            addMessage(content, isUser) {
+                const container = document.getElementById('messagesContainer');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user' : 'auron'}`;
+
+                if (isUser) {
+                    // Simple user message
+                    messageDiv.innerHTML = `
+                        <div>
+                            <div class="message-label">You</div>
+                            <div class="message-content">${content}</div>
+                        </div>
+                    `;
+                } else {
+                    // Structured Auron dialogue
+                    const isStructured = typeof content === 'object' && content !== null;
+                    const guidance = isStructured ? content.guidance : content;
+                    const reflectiveQuestion = isStructured ? content.reflective_question : null;
+                    const messageId = 'msg_' + Date.now();
+
+                    messageDiv.innerHTML = `
+                        <div>
+                            <div class="message-label glow">Auron</div>
+                            <div class="message-content" style="line-height: 1.7;">${guidance}</div>
+                            ${reflectiveQuestion ? `
+                                <button
+                                    onclick="app.revealQuestion('${messageId}')"
+                                    id="continue-${messageId}"
+                                    class="continue-btn"
+                                    style="margin-top: 1rem; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; background: linear-gradient(135deg, #000DFF 0%, #001AFF 100%); border: none; color: white; cursor: pointer; box-shadow: 0 0 20px rgba(0, 13, 255, 0.3); transition: transform 0.2s;">
+                                    Continue →
+                                </button>
+                                <div id="question-${messageId}" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(0, 13, 255, 0.05); border-left: 4px solid #000DFF; border-radius: 0.75rem;">
+                                    <div class="message-label" style="font-size: 0.75rem;">Reflective Question</div>
+                                    <div class="message-content" style="line-height: 1.7; margin-top: 0.5rem;">${reflectiveQuestion}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+
+                container.appendChild(messageDiv);
+                container.scrollTop = container.scrollHeight;
+            },
+
+            revealQuestion(messageId) {
+                const button = document.getElementById(`continue-${messageId}`);
+                const question = document.getElementById(`question-${messageId}`);
+                if (button && question) {
+                    button.style.display = 'none';
+                    question.style.display = 'block';
+                    question.style.animation = 'fadeIn 0.4s ease-in';
+                }
+            },
+
+            // PROGRESS TRACKING
+            async updateProgress() {
+                try {
+                    // Get conversation count from Neo4j via profile endpoint
+                    const response = await fetch(`${API_BASE}/profile/${this.user.id}`);
+
+                    let conversationCount = 0;
+                    if (response.ok) {
+                        const profile = await response.json();
+                        conversationCount = profile.conversation_count || 0;
+                    }
+
+                    // Update UI
+                    document.getElementById('conversationCount').textContent = conversationCount;
+
+                    const progress = Math.min((conversationCount / UNLOCK_THRESHOLD) * 100, 100);
+                    document.getElementById('progressBar').style.width = `${progress}%`;
+
+                    // Update lock status
+                    const isUnlocked = conversationCount >= UNLOCK_THRESHOLD;
+                    const profileNavItem = document.getElementById('profileNavItem');
+                    const profileLock = document.getElementById('profileLock');
+                    const progressMessage = document.getElementById('progressMessage');
+
+                    if (isUnlocked) {
+                        profileNavItem.classList.remove('locked');
+                        profileLock.textContent = '🔓';
+                        profileNavItem.onclick = () => this.switchView('profile');
+                        progressMessage.textContent = 'Profile unlocked! View your neural music identity';
+                    } else {
+                        profileNavItem.classList.add('locked');
+                        profileLock.textContent = '🔒';
+                        profileNavItem.onclick = null;
+                        progressMessage.textContent = `${UNLOCK_THRESHOLD - conversationCount} more conversations to unlock profile`;
+                    }
+
+                } catch (error) {
+                    console.error('Failed to update progress:', error);
+                }
+            },
+
+            isProfileLocked() {
+                const count = parseInt(document.getElementById('conversationCount').textContent);
+                return count < UNLOCK_THRESHOLD;
+            },
+
+            // PROFILE
+            async loadProfile() {
+                const container = document.getElementById('profileContainer');
+                container.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
+
+                try {
+                    const response = await fetch(`${API_BASE}/profile/${this.user.id}`);
+
+                    if (!response.ok) {
+                        throw new Error('Profile not found');
+                    }
+
+                    const profile = await response.json();
+                    this.renderProfile(profile);
+
+                } catch (error) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>Profile Not Ready</h3>
+                            <p>${error.message}</p>
+                        </div>
+                    `;
+                }
+            },
+
+            renderProfile(profile) {
+                const dims = profile.dimensions;
+                const container = document.getElementById('profileContainer');
+
+                container.innerHTML = `
+                    <div class="sonic-card">
+                        <div class="sonic-title">${dims.sonic_title || 'EMERGING IDENTITY'}</div>
+                        <p style="color: var(--text-secondary);">
+                            Built from ${profile.conversation_count} conversations with Auron
+                        </p>
+                    </div>
+
+                    <div class="dimensions-grid">
+                        ${this.renderDimension('Genre Fusion', dims.genre_fusion)}
+                        ${this.renderDimension('Neural Spectrum', dims.neural_spectrum)}
+                        ${this.renderDimension('Sound Palette', dims.sound_palette)}
+                        ${this.renderDimension('Tonal DNA', dims.tonal_dna)}
+                        ${this.renderDimension('Rhythmic DNA', dims.rhythmic_dna)}
+                        ${this.renderDimension('Emotional Impact', dims.emotional_impact)}
+                        ${this.renderDimension('Processing Signature', dims.processing_signature)}
+                        ${this.renderDimension('Inspirational Triggers', dims.inspirational_triggers)}
+                        ${this.renderDimension('Sonic Architecture', dims.sonic_architecture)}
+                    </div>
+                `;
+            },
+
+            renderDimension(title, data) {
+                if (!data || data.length === 0) {
+                    return `
+                        <div class="dimension-card">
+                            <div class="dimension-title">${title}</div>
+                            <p style="color: var(--text-secondary); font-size: 14px;">No data yet</p>
+                        </div>
+                    `;
+                }
+
+                const items = data.slice(0, 5).map(item => `
+                    <div class="node-item">
+                        <span class="node-name">${item.name}</span>
+                        <span class="node-badge">${item.mentions || item.count || 0}×</span>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="dimension-card">
+                        <div class="dimension-title">${title}</div>
+                        <div class="node-list">${items}</div>
+                    </div>
+                `;
+            }
+        };
+
+        // SESSION MANAGER (from previous implementation)
+        class SessionManager {
+            constructor(userId, memoryServiceUrl) {
+                this.userId = userId;
+                this.memoryServiceUrl = memoryServiceUrl;
+                this.sessionTimeout = 10 * 60 * 1000; // 10 minutes
+                this.inactivityTimer = null;
+                this.sessionActive = false;
+                this.processingInProgress = false;
+            }
+
+            startSession() {
+                this.sessionActive = true;
+                this.resetInactivityTimer();
+                console.log('[Session] Started for user:', this.userId);
+            }
+
+            resetInactivityTimer() {
+                if (!this.sessionActive) return;
+
+                if (this.inactivityTimer) {
+                    clearTimeout(this.inactivityTimer);
+                }
+
+                this.inactivityTimer = setTimeout(() => {
+                    console.log('[Session] 10 minutes of inactivity - processing session');
+                    this.processSession('inactivity_timeout');
+                }, this.sessionTimeout);
+            }
+
+            async processSession(trigger) {
+                if (!this.sessionActive || this.processingInProgress) return;
+
+                console.log(`[Session] Processing triggered by: ${trigger}`);
+                this.processingInProgress = true;
+
+                // For beforeunload, fire-and-forget (browser doesn't wait for response)
+                if (trigger === 'beforeunload') {
+                    fetch(
+                        `${this.memoryServiceUrl}/memory/process-session/${this.userId}`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            keepalive: true,  // Critical: keeps request alive after page closes
+                        }
+                    );
+                    console.log('[Session] Extraction request sent (fire-and-forget)');
+                    return;
+                }
+
+                // For other triggers (inactivity), await response normally
+                try {
+                    const response = await fetch(
+                        `${this.memoryServiceUrl}/memory/process-session/${this.userId}`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                        }
+                    );
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('[Session] Processing complete:', result);
+
+                        // Update progress after processing
+                        if (app && app.updateProgress) {
+                            await app.updateProgress();
+                        }
+                    }
+                } catch (error) {
+                    console.error('[Session] Processing error:', error);
+                } finally {
+                    this.sessionActive = false;
+                    this.processingInProgress = false;
+                    if (this.inactivityTimer) {
+                        clearTimeout(this.inactivityTimer);
+                    }
+                }
+            }
+
+            endSession() {
+                if (!this.sessionActive) return;
+                console.log('[Session] Ending session - triggering extraction');
+                this.processSession('beforeunload');  // CRITICAL: Must be 'beforeunload' for keepalive to work!
+            }
+        }
+
+        // Handle page unload
+        window.addEventListener('beforeunload', (event) => {
+            console.log('[DEBUG] beforeunload event fired!');
+            console.log('[DEBUG] app.sessionManager exists?', !!app.sessionManager);
+            if (app.sessionManager) {
+                console.log('[DEBUG] Calling endSession()');
+                app.sessionManager.endSession();
+            } else {
+                console.log('[DEBUG] No sessionManager - session not started');
+            }
+        });
+
+        // Initialize app
+        console.log('[DEBUG] Initializing app...');
+        app.init();
+        console.log('[DEBUG] App initialized');
+
+        // Make app globally accessible for debugging
+        window.auronApp = app;
+    </script>
+</body>
+</html>

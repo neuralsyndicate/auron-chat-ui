@@ -1,0 +1,32 @@
+name: Deploy to BunnyCDN
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to BunnyCDN Storage
+        uses: ayeressian/bunnycdn-storage-deploy@v2.3.0
+        with:
+          source: "."
+          destination: "/public"
+          storageZoneName: ${{ secrets.BUNNY_STORAGE_NAME }}
+          storagePassword: ${{ secrets.BUNNY_STORAGE_PASSWORD }}
+          accessKey: ${{ secrets.BUNNY_STORAGE_PASSWORD }}
+          storageEndpoint: "storage.bunnycdn.com"
+          upload: "true"
+          remove: "false"
+          purgePullZone: "true"
+
+      - name: Deployment complete
+        run: |
+          echo "✅ Deployment successful!"
+          echo "Frontend URL: https://neural-neural-test-test.b-cdn.net/public/"

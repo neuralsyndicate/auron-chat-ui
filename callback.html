@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signing In - Auron</title>
+
+    <!-- Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            background: #000000;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 13, 255, 0.2);
+            border-top: 3px solid #000DFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 13, 255, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(0, 13, 255, 0.6); }
+        }
+
+        .glow-pulse {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex items-center justify-center p-8">
+        <div class="text-center">
+            <div class="spinner mx-auto mb-8 glow-pulse"></div>
+            <h1 class="text-2xl font-semibold text-white mb-2">Signing you in...</h1>
+            <p class="text-gray-400">Please wait a moment</p>
+            <p id="status" class="text-sm text-gray-500 mt-4"></p>
+        </div>
+    </div>
+
+    <!-- Logto Browser SDK via ES Module -->
+    <script type="module">
+        import LogtoClient from 'https://esm.run/@logto/browser';
+        window.LogtoClient = LogtoClient;
+        window.logtoConfig = {
+            endpoint: 'https://auth.neuralsyndicate.com/',
+            appId: 'a5m87e4osv2y7vv8asbwu',
+            resources: ['http://100.123.105.115:8000'],
+            scopes: ['read:conversations', 'write:conversations', 'read:profile']
+        };
+        console.log('✓ Logto SDK loaded successfully');
+    </script>
+
+    <script src="logto-config.js?v=2"></script>
+
+    <script>
+        const statusEl = document.getElementById('status');
+
+        async function handleCallback() {
+            try {
+                // First, check if there's an error in the URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const errorParam = urlParams.get('error');
+                const errorDescription = urlParams.get('error_description');
+
+                if (errorParam) {
+                    console.error('Logto returned error:', errorParam);
+                    console.error('Error description:', errorDescription);
+                    throw new Error(`Logto error: ${errorParam} - ${errorDescription || 'No description'}`);
+                }
+
+                statusEl.textContent = 'Initializing...';
+
+                // Wait for LogtoClient to be available (ES module loading)
+                let attempts = 0;
+                while (typeof window.LogtoClient === 'undefined' && attempts < 50) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+
+                if (typeof window.LogtoClient === 'undefined') {
+                    throw new Error('Logto SDK failed to load');
+                }
+
+                statusEl.textContent = 'Processing authentication...';
+
+                // Handle the OAuth callback
+                await window.LogtoAuth.handleSignInCallback();
+
+                statusEl.textContent = 'Retrieving user info...';
+
+                // Get user info and store it
+                const user = await window.LogtoAuth.getUserInfo();
+
+                if (user) {
+                    console.log('✓ User authenticated:', user.username);
+
+                    // Store user info for dashboard
+                    localStorage.setItem('auron_user', JSON.stringify(user));
+
+                    // Get access token for API authentication (OAuth2 best practice)
+                    try {
+                        const client = await window.LogtoAuth.initLogto();
+                        const accessToken = await client.getAccessToken('http://100.123.105.115:8000');
+                        if (accessToken) {
+                            localStorage.setItem('auron_access_token', accessToken);
+                            console.log('✓ Access token stored');
+                        }
+                    } catch (tokenErr) {
+                        console.warn('Could not get access token:', tokenErr);
+                        // Continue anyway - dashboard can request it
+                    }
+
+                    statusEl.textContent = 'Success! Redirecting to dashboard...';
+
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 500);
+                } else {
+                    throw new Error('Failed to retrieve user information');
+                }
+
+            } catch (err) {
+                console.error('Callback error:', err);
+                console.error('Error message:', err.message);
+                console.error('Error stack:', err.stack);
+                statusEl.textContent = 'Sign-in failed: ' + err.message;
+
+                // Show error and redirect back to login
+                setTimeout(() => {
+                    alert('Authentication failed: ' + err.message);
+                    window.location.href = 'login.html';
+                }, 3000);
+            }
+        }
+
+        // Start callback handling when page loads
+        handleCallback();
+    </script>
+</body>
+</html>

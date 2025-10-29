@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auron - AI Creative Psychology</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React & Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#00BFFF',
+                        'primary-dark': '#1E90FF',
+                        'dark': '#0a0a0f',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: #000000;
+            background-image:
+                radial-gradient(at 20% 30%, rgba(0, 191, 255, 0.05) 0px, transparent 50%),
+                radial-gradient(at 80% 70%, rgba(30, 144, 255, 0.05) 0px, transparent 50%);
+        }
+
+        .glow {
+            text-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
+        }
+
+        .glow-border {
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.3);
+        }
+
+        .shimmer {
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Configuration
+        const API_BASE = 'http://86.38.182.54:8001';
+
+        function App() {
+            return (
+                <div className="min-h-screen flex items-center justify-center p-8">
+                    <div className="max-w-4xl w-full text-center">
+                        {/* Logo */}
+                        <h1 className="text-8xl font-black mb-6 glow"
+                            style={{
+                                background: 'linear-gradient(135deg, #00BFFF 0%, #1E90FF 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text',
+                                letterSpacing: '8px'
+                            }}>
+                            AURON
+                        </h1>
+
+                        {/* Tagline */}
+                        <p className="text-gray-400 text-xl mb-4 max-w-2xl mx-auto leading-relaxed">
+                            AI Creative Psychology Platform
+                        </p>
+                        <p className="text-gray-500 text-lg mb-12 max-w-xl mx-auto">
+                            Understand your sonic identity through conversation with AI
+                        </p>
+
+                        {/* CTA Buttons */}
+                        <div className="flex gap-6 justify-center">
+                            <a href="register.html"
+                               className="px-10 py-4 text-lg font-semibold rounded-xl text-white transition-all duration-300 glow-border"
+                               style={{
+                                   background: 'linear-gradient(135deg, #00BFFF 0%, #1E90FF 100%)'
+                               }}
+                               onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-3px)'}
+                               onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                Get Started
+                            </a>
+
+                            <a href="login.html"
+                               className="px-10 py-4 text-lg font-semibold rounded-xl text-white border-2 border-gray-700 hover:border-primary transition-all duration-300"
+                               onMouseOver={(e) => e.currentTarget.style.borderColor = '#00BFFF'}
+                               onMouseOut={(e) => e.currentTarget.style.borderColor = '#374151'}>
+                                Sign In
+                            </a>
+                        </div>
+
+                        {/* Feature Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20">
+                            <FeatureCard
+                                icon="💬"
+                                title="Chat with Auron"
+                                description="Your AI creative psychologist understands your sonic journey"
+                            />
+                            <FeatureCard
+                                icon="🧠"
+                                title="Neural Music Profile"
+                                description="10-dimensional map of your inner sonic identity"
+                            />
+                            <FeatureCard
+                                icon="📊"
+                                title="Track Progress"
+                                description="Watch your profile evolve through conversations"
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function FeatureCard({ icon, title, description }) {
+            return (
+                <div className="p-6 rounded-xl border border-gray-800 hover:border-primary transition-all duration-300"
+                     style={{ background: 'rgba(15, 15, 20, 0.6)' }}>
+                    <div className="text-4xl mb-3">{icon}</div>
+                    <h3 className="text-white font-bold text-lg mb-2">{title}</h3>
+                    <p className="text-gray-400 text-sm">{description}</p>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
