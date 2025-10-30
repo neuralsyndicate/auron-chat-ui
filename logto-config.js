@@ -5,7 +5,7 @@ const LOGTO_CONFIG = {
     endpoint: 'https://auth.neuralsyndicate.com/',
     appId: 'a5m87e4osv2y7vv8asbwu',
     // API Resource for secure access tokens (OAuth2 best practice)
-    resources: ['http://100.123.105.115:8000'],  // Auron Backend API
+    resources: ['https://api.neuralsyndicate.com'],  // Auron Backend API
     scopes: ['read:conversations', 'write:conversations', 'read:profile']
 };
 

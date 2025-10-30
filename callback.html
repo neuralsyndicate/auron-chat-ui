@@ -60,7 +60,7 @@
         window.logtoConfig = {
             endpoint: 'https://auth.neuralsyndicate.com/',
             appId: 'a5m87e4osv2y7vv8asbwu',
-            resources: ['http://100.123.105.115:8000'],
+            resources: ['https://api.neuralsyndicate.com'],
             scopes: ['read:conversations', 'write:conversations', 'read:profile']
         };
         console.log('✓ Logto SDK loaded successfully');
@@ -116,7 +116,7 @@
                     // Get access token for API authentication (OAuth2 best practice)
                     try {
                         const client = await window.LogtoAuth.initLogto();
-                        const accessToken = await client.getAccessToken('http://100.123.105.115:8000');
+                        const accessToken = await client.getAccessToken('https://api.neuralsyndicate.com');
                         if (accessToken) {
                             localStorage.setItem('auron_access_token', accessToken);
                             console.log('✓ Access token stored');
