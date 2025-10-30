@@ -85,14 +85,25 @@ async function signOut() {
     try {
         const client = await initLogto();
         await client.signOut(POST_SIGNOUT_URI);
-
-        // Clear any cached user data
+    } catch (err) {
+        console.error('Sign out from Logto failed:', err);
+        // Continue to clear local data even if remote signout fails
+    } finally {
+        // Always clear cached data (handles invalid/old sessions)
         localStorage.removeItem('auron_user');
         localStorage.removeItem('auron_auth_token');
         localStorage.removeItem('auron_access_token');
-    } catch (err) {
-        console.error('Sign out failed:', err);
-        throw err;
+        localStorage.removeItem('auron_id_token');
+
+        // Clear all Logto SDK storage (handles old app ID sessions)
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('logto:')) {
+                localStorage.removeItem(key);
+            }
+        });
+
+        // Force redirect to landing page
+        window.location.href = POST_SIGNOUT_URI;
     }
 }
 
