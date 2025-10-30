@@ -1489,8 +1489,8 @@
                 setLoading(true);
 
                 try {
-                    // Get JWT token for authentication
-                    const token = localStorage.getItem('auron_auth_token');
+                    // Get access token for authentication
+                    const token = await getAuthToken();
                     if (!token) {
                         throw new Error('Not authenticated - please log in again');
                     }
