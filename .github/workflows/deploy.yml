@@ -24,7 +24,7 @@ jobs:
           storageEndpoint: "storage.bunnycdn.com"
           upload: "true"
           remove: "false"
-          purgePullZone: "true"
+          purgePullZone: "false"
 
       - name: Deployment complete
         run: |
