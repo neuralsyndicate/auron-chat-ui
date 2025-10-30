@@ -914,7 +914,7 @@
 
             const loadConversations = async () => {
                 try {
-                    const token = localStorage.getItem('auron_auth_token');
+                    const token = await getAuthToken();
                     if (!token) {
                         console.warn('No auth token');
                         return;
@@ -954,9 +954,10 @@
                         throw new Error('Conversation URL not available');
                     }
 
-                    const token = localStorage.getItem('auron_auth_token');
+                    const token = await getAuthToken();
                     if (!token) {
                         console.warn('No auth token');
+                        setLoadingDetails(false);
                         return;
                     }
 
