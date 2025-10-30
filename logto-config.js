@@ -119,6 +119,7 @@ async function getAccessToken(resource) {
 
         // Fallback: try to get ID token instead
         try {
+            const client = await initLogto();  // Re-initialize client for fallback
             const idToken = await client.getIdToken();
             return idToken;
         } catch (idErr) {
