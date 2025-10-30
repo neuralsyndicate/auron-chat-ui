@@ -901,7 +901,7 @@
         }
 
         // Reflections View - Horizontal scrolling card gallery
-        function ReflectionsView({ user }) {
+        function ReflectionsView({ user, setCurrentView, setLoadedSessionId }) {
             const [conversations, setConversations] = useState([]);
             const [loading, setLoading] = useState(true);
             const [selectedConversation, setSelectedConversation] = useState(null);
@@ -948,12 +948,6 @@
                 setLoadingDetails(true);
 
                 try {
-                    // Check if conversation has bunny_key
-                    if (!conversation.bunny_key) {
-                        console.error('No bunny_key found in conversation:', conversation);
-                        throw new Error('Conversation URL not available');
-                    }
-
                     const token = await getAuthToken();
                     if (!token) {
                         console.warn('No auth token');
@@ -961,40 +955,27 @@
                         return;
                     }
 
-                    // Step 1: Get signed URL from backend (includes IP-based token)
-                    console.log(`Requesting signed URL for: ${conversation.bunny_key}`);
-                    const signedUrlResponse = await fetch(`${DIALOGUE_API_BASE}/get-conversation-url`, {
+                    // Use new backend endpoint that handles decryption
+                    const conversationId = conversation.id || conversation.conversation_id;
+                    console.log(`Loading conversation: ${conversationId}`);
+
+                    const response = await fetch(`${DIALOGUE_API_BASE}/get-conversation`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            bunny_key: conversation.bunny_key
+                            conversation_id: conversationId
                         })
                     });
 
-                    if (!signedUrlResponse.ok) {
-                        throw new Error(`Failed to get signed URL: ${signedUrlResponse.status}`);
-                    }
-
-                    const { signed_url } = await signedUrlResponse.json();
-                    console.log(`Got signed URL, fetching conversation...`);
-
-                    // Step 2: Fetch conversation from BunnyCDN using signed URL
-                    const response = await fetch(signed_url, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-
                     if (!response.ok) {
-                        throw new Error(`Failed to load conversation from BunnyCDN: ${response.status}`);
+                        throw new Error(`Failed to load conversation: ${response.status}`);
                     }
 
                     const data = await response.json();
-                    console.log('Loaded conversation from BunnyCDN:', data);
+                    console.log('Loaded conversation:', data);
                     setConversationDetails(data);
 
                 } catch (err) {
@@ -1002,6 +983,48 @@
                     setConversationDetails(null);
                 } finally {
                     setLoadingDetails(false);
+                }
+            };
+
+            const continueConversation = async (conversation) => {
+                try {
+                    const token = await getAuthToken();
+                    if (!token) {
+                        console.warn('No auth token');
+                        return;
+                    }
+
+                    const conversationId = conversation.id || conversation.conversation_id;
+                    console.log(`Continuing conversation: ${conversationId}`);
+
+                    const response = await fetch(`${DIALOGUE_API_BASE}/load-session`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            conversation_id: conversationId
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to load session: ${response.status}`);
+                    }
+
+                    const session = await response.json();
+                    console.log('Session loaded into RAM:', session);
+
+                    // Set the loaded session ID so ChatView can use it
+                    setLoadedSessionId(session.session_id);
+
+                    // Navigate to chat view with loaded session
+                    closeModal();
+                    setCurrentView('chat');
+
+                } catch (err) {
+                    console.error('Failed to continue conversation:', err);
+                    alert('Failed to continue conversation. Please try again.');
                 }
             };
 
@@ -1187,34 +1210,53 @@
 
                                 {/* Conversation Messages */}
                                 {!loadingDetails && conversationDetails && (
-                                    <div className="space-y-6">
-                                        {conversationDetails.messages && conversationDetails.messages.map((msg, idx) => (
-                                            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                                <div className={`max-w-[75%] rounded-2xl px-6 py-4 ${
-                                                    msg.role === 'user'
-                                                        ? 'bg-gradient-to-r from-primary/30 to-primary-dark/30 border border-primary/50'
-                                                        : 'bg-gray-900 border border-gray-800'
-                                                }`}>
-                                                    <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{
-                                                        color: msg.role === 'user' ? '#00A8FF' : '#00D9FF'
-                                                    }}>
-                                                        {msg.role === 'user' ? 'You' : 'Auron'}
-                                                    </p>
-                                                    <p className="text-white leading-relaxed" style={{ lineHeight: '1.7' }}>
-                                                        {msg.content}
-                                                    </p>
-                                                    {msg.timestamp && (
-                                                        <p className="text-gray-500 text-xs mt-2">
-                                                            {new Date(msg.timestamp).toLocaleTimeString('en-US', {
-                                                                hour: '2-digit',
-                                                                minute: '2-digit'
-                                                            })}
+                                    <>
+                                        <div className="space-y-6 mb-8">
+                                            {conversationDetails.messages && conversationDetails.messages.map((msg, idx) => (
+                                                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                    <div className={`max-w-[75%] rounded-2xl px-6 py-4 ${
+                                                        msg.role === 'user'
+                                                            ? 'bg-gradient-to-r from-primary/30 to-primary-dark/30 border border-primary/50'
+                                                            : 'bg-gray-900 border border-gray-800'
+                                                    }`}>
+                                                        <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{
+                                                            color: msg.role === 'user' ? '#00A8FF' : '#00D9FF'
+                                                        }}>
+                                                            {msg.role === 'user' ? 'You' : 'Auron'}
                                                         </p>
-                                                    )}
+                                                        <p className="text-white leading-relaxed" style={{ lineHeight: '1.7' }}>
+                                                            {msg.content}
+                                                        </p>
+                                                        {msg.timestamp && (
+                                                            <p className="text-gray-500 text-xs mt-2">
+                                                                {new Date(msg.timestamp).toLocaleTimeString('en-US', {
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit'
+                                                                })}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Continue Conversation Button */}
+                                        <div className="text-center pt-6 border-t border-gray-800">
+                                            <button
+                                                onClick={() => continueConversation(selectedConversation)}
+                                                className="px-8 py-3 rounded-full font-semibold text-white transition-all hover:scale-105"
+                                                style={{
+                                                    background: 'linear-gradient(135deg, #00A8FF 0%, #005CFF 100%)',
+                                                    boxShadow: '0 4px 20px rgba(0, 168, 255, 0.3)'
+                                                }}
+                                            >
+                                                Continue This Chat →
+                                            </button>
+                                            <p className="text-gray-500 text-xs mt-3">
+                                                Load this conversation to continue where you left off
+                                            </p>
+                                        </div>
+                                    </>
                                 )}
 
                                 {/* No messages found */}
@@ -1235,6 +1277,7 @@
             const [currentView, setCurrentView] = useState('chat');
             const [conversationCount, setConversationCount] = useState(0);
             const [profileUnlocked, setProfileUnlocked] = useState(false);
+            const [loadedSessionId, setLoadedSessionId] = useState(null);
 
             useEffect(() => {
                 // Check Logto authentication
@@ -1395,9 +1438,9 @@
                     {/* Main Content - Generous whitespace, centered */}
                     <main className="flex-1 pt-24 overflow-hidden">
                         {currentView === 'chat' ? (
-                            <ChatView user={user} onUpdateProgress={updateProgress} />
+                            <ChatView user={user} onUpdateProgress={updateProgress} loadedSessionId={loadedSessionId} />
                         ) : currentView === 'reflections' ? (
-                            <ReflectionsView user={user} />
+                            <ReflectionsView user={user} setCurrentView={setCurrentView} setLoadedSessionId={setLoadedSessionId} />
                         ) : (
                             <ProfileView user={user} isLocked={!profileUnlocked} conversationCount={conversationCount} />
                         )}
@@ -1406,7 +1449,7 @@
             );
         }
 
-        function ChatView({ user, onUpdateProgress }) {
+        function ChatView({ user, onUpdateProgress, loadedSessionId }) {
             const [messages, setMessages] = useState([
                 { role: 'auron', content: "Hello. I'm Auron, your creative psychologist. Share what's on your mind — whether it's frustration, curiosity, or something you can't quite name yet. I'm listening." }
             ]);
@@ -1420,6 +1463,16 @@
             const [syncing, setSyncing] = useState(false);
             const inactivityTimerRef = useRef(null);
             const INACTIVITY_TIMEOUT = 5 * 60 * 1000;  // 5 minutes
+
+            // Handle loaded session from Reflections
+            useEffect(() => {
+                if (loadedSessionId) {
+                    console.log('Loading session from Reflections:', loadedSessionId);
+                    setSessionId(loadedSessionId);
+                    // Note: Messages are already loaded in backend RAM
+                    // We don't need to fetch them again - backend will include history in next response
+                }
+            }, [loadedSessionId]);
 
             useEffect(() => {
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
