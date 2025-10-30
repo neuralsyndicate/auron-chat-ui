@@ -1416,6 +1416,7 @@
 
             // Session management (backend holds conversation in RAM)
             const [sessionId, setSessionId] = useState(null);
+            const [syncing, setSyncing] = useState(false);
             const inactivityTimerRef = useRef(null);
             const INACTIVITY_TIMEOUT = 5 * 60 * 1000;  // 5 minutes
 
@@ -1440,11 +1441,14 @@
             // Save session to backend (triggers pattern extraction)
             const saveSession = useCallback(async () => {
                 if (!sessionId) return;
+                if (syncing) return;  // Prevent duplicate saves
 
                 try {
-                    const token = localStorage.getItem('auron_auth_token');
+                    setSyncing(true);
+                    const token = await getAuthToken();
                     if (!token) {
                         console.warn('No auth token - cannot save session');
+                        setSyncing(false);
                         return;
                     }
 
@@ -1472,8 +1476,17 @@
 
                 } catch (err) {
                     console.error('Failed to save session:', err);
+                } finally {
+                    setSyncing(false);
                 }
-            }, [sessionId]);
+            }, [sessionId, syncing]);
+
+            // Manual sync handler
+            const handleManualSync = useCallback(async () => {
+                if (!sessionId || syncing) return;
+                console.log('Manual sync triggered');
+                await saveSession();
+            }, [sessionId, syncing, saveSession]);
 
             // Cleanup timer on unmount
             useEffect(() => {
@@ -1605,6 +1618,18 @@
                                 }}>
                                 Send
                             </button>
+                            {sessionId && (
+                                <button
+                                    onClick={handleManualSync}
+                                    disabled={syncing || !sessionId}
+                                    className="px-6 py-4 rounded-xl font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all border border-gray-600 hover:border-gray-400"
+                                    style={{
+                                        background: syncing ? '#444' : 'rgba(0, 0, 0, 0.4)'
+                                    }}
+                                    title="Save conversation to your Reflections">
+                                    {syncing ? '↻ Syncing...' : '↻ Sync'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
