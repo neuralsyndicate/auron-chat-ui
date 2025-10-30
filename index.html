@@ -13,8 +13,17 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Logto SDK -->
-    <script src="https://logto.dev/js/v1.0.0-beta.0"></script>
+    <!-- Logto Browser SDK via ES Module -->
+    <script type="module">
+        import LogtoClient from 'https://esm.run/@logto/browser';
+        window.LogtoClient = LogtoClient;
+        window.logtoConfig = {
+            endpoint: 'https://auth.neuralsyndicate.com/',
+            appId: 'a5m87e4osv2y7vv8asbwu',
+        };
+        console.log('✓ Logto SDK loaded successfully');
+    </script>
+
     <script src="./logto-config.js?v=3"></script>
 
     <script>
