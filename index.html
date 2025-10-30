@@ -13,6 +13,10 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- Logto SDK -->
+    <script src="https://logto.dev/js/v1.0.0-beta.0"></script>
+    <script src="./logto-config.js?v=3"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -140,15 +144,15 @@
 
             <!-- CTA -->
             <div class="flex flex-col sm:flex-row gap-6 justify-center mb-20">
-                <a href="register.html"
-                   class="btn-sci-fi px-12 py-5 text-lg font-semibold rounded-xl text-white relative z-10">
+                <button onclick="signIn()"
+                   class="btn-sci-fi px-12 py-5 text-lg font-semibold rounded-xl text-white relative z-10 cursor-pointer">
                     Begin Your Journey
-                </a>
+                </button>
 
-                <a href="login.html"
-                   class="glass-card px-12 py-5 text-lg font-semibold rounded-xl text-white border border-white/10 hover:border-primary/50">
+                <button onclick="signIn()"
+                   class="glass-card px-12 py-5 text-lg font-semibold rounded-xl text-white border border-white/10 hover:border-primary/50 cursor-pointer">
                     Sign In
-                </a>
+                </button>
             </div>
         </div>
 
@@ -346,14 +350,14 @@
                 and helps transmute it into sound, insight, and meaning.
             </p>
 
-            <a href="register.html"
-               class="inline-block px-16 py-6 text-xl font-semibold rounded-xl text-white transition-all duration-300 glow-border hover:scale-105"
+            <button onclick="signIn()"
+               class="inline-block px-16 py-6 text-xl font-semibold rounded-xl text-white transition-all duration-300 glow-border hover:scale-105 cursor-pointer"
                style="background: linear-gradient(135deg, #000DFF 0%, #001AFF 100%)">
                 Create Your Profile
-            </a>
+            </button>
 
             <p class="text-gray-500 mt-8">
-                Already have an account? <a href="login.html" class="text-primary hover:underline">Sign in</a>
+                Already have an account? <button onclick="signIn()" class="text-primary hover:underline cursor-pointer bg-transparent border-none">Sign in</button>
             </p>
         </div>
     </section>
@@ -365,6 +369,37 @@
             <p class="mt-2">Powered by Combryth Engine · GPT-OSS-120B · Neo4j Knowledge Graphs</p>
         </div>
     </footer>
+
+    <script>
+        // Check if user is already authenticated and redirect to chat
+        async function checkAuth() {
+            try {
+                const client = await initLogto();
+                const isAuthenticated = await client.isAuthenticated();
+
+                if (isAuthenticated) {
+                    // User is already logged in, redirect to chat
+                    window.location.href = '/chat.html';
+                }
+            } catch (err) {
+                console.error('Auth check failed:', err);
+            }
+        }
+
+        // Sign in with Logto
+        async function signIn() {
+            try {
+                const client = await initLogto();
+                await client.signIn(window.location.origin + '/callback.html');
+            } catch (err) {
+                console.error('Sign in failed:', err);
+                alert('Sign in failed. Please try again.');
+            }
+        }
+
+        // Check auth on page load
+        checkAuth();
+    </script>
 
 </body>
 </html>

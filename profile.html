@@ -3,590 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neural Music Profile</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <title>Profile - Auron</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React & Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Logto SDK -->
+    <script src="https://logto.dev/js/v1.0.0-beta.0"></script>
+    <script src="./logto-config.js?v=3"></script>
+
+    <!-- Our Modules -->
+    <script src="./js/config.js"></script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/api.js"></script>
+    <script src="./js/shared.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#000DFF',
+                        'primary-dark': '#001AFF',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0a0a0f;
-            color: #e5e7eb;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-
-        .header h1 {
-            font-size: 42px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #00BFFF 0%, #1E90FF 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
-        }
-
-        .header p {
-            color: #9ca3af;
-            font-size: 14px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        /* Loading State */
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 400px;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(0, 191, 255, 0.2);
-            border-top-color: #00BFFF;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Sonic Title Card */
-        .sonic-title-card {
-            background: linear-gradient(135deg, rgba(0, 191, 255, 0.1) 0%, rgba(30, 144, 255, 0.05) 100%);
-            border: 1px solid rgba(0, 191, 255, 0.3);
-            border-radius: 20px;
-            padding: 40px;
-            margin-bottom: 40px;
-            box-shadow: 0 8px 32px rgba(0, 191, 255, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sonic-title-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 191, 255, 0.1), transparent);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            to { left: 200%; }
-        }
-
-        .sonic-title {
-            font-size: 48px;
-            font-weight: 900;
-            color: #00BFFF;
-            margin-bottom: 10px;
-            letter-spacing: 3px;
-            text-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
-        }
-
-        .sonic-description {
-            color: #9ca3af;
-            font-size: 16px;
-            line-height: 1.6;
-        }
-
-        /* Grid Layout */
-        .dimensions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
-        }
-
-        .dimension-card {
-            background: rgba(15, 15, 20, 0.9);
-            border: 1px solid rgba(0, 191, 255, 0.2);
-            border-radius: 16px;
-            padding: 30px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .dimension-card:hover {
-            border-color: rgba(0, 191, 255, 0.5);
-            box-shadow: 0 8px 32px rgba(0, 191, 255, 0.2);
-            transform: translateY(-5px);
-        }
-
-        .dimension-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #00BFFF;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .dimension-title::before {
-            content: '';
-            width: 4px;
-            height: 20px;
-            background: linear-gradient(180deg, #00BFFF 0%, #1E90FF 100%);
-            border-radius: 2px;
-        }
-
-        /* Genre Wheel */
-        .genre-wheel {
-            width: 100%;
-            height: 300px;
-            position: relative;
-        }
-
-        /* Spectrum Visualization */
-        .spectrum-viz {
-            width: 100%;
-            height: 150px;
-            position: relative;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        /* Node List */
-        .node-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .node-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            border-left: 3px solid #00BFFF;
-        }
-
-        .node-name {
-            font-size: 14px;
-            color: #e5e7eb;
-            font-weight: 500;
-        }
-
-        .node-mentions {
-            font-size: 12px;
-            color: #9ca3af;
-            background: rgba(0, 191, 255, 0.1);
-            padding: 4px 12px;
-            border-radius: 12px;
-        }
-
-        /* Bubble Chart */
-        .bubble-chart {
-            width: 100%;
-            height: 300px;
-            position: relative;
-        }
-
-        /* Error State */
-        .error-message {
-            background: rgba(220, 38, 38, 0.1);
-            border: 1px solid rgba(220, 38, 38, 0.3);
-            border-radius: 12px;
-            padding: 20px;
-            color: #f87171;
-            text-align: center;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #9ca3af;
-        }
-
-        .empty-state h3 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: #e5e7eb;
-        }
-
-        .empty-state p {
-            margin-bottom: 20px;
-        }
-
-        .empty-state a {
-            color: #00BFFF;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .empty-state a:hover {
-            text-decoration: underline;
+            background: #000000;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>NEURAL MUSIC PROFILE</h1>
-            <p>Mapping the inner architecture of sound and mind</p>
-        </div>
+    <div id="root"></div>
 
-        <div id="profileContainer">
-            <div class="loading">
-                <div class="loading-spinner"></div>
-                <p>Loading your neural music profile...</p>
-            </div>
-        </div>
-    </div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { Navigation, LoadingScreen } = window.SharedComponents;
 
-    <script>
-        // Configuration
-        const API_BASE = 'http://86.38.182.54:8001';
-        const userId = new URLSearchParams(window.location.search).get('user') || 'user_test123';
+        function ProfileApp() {
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [profile, setProfile] = useState(null);
 
-        // Fetch and render profile
-        async function loadProfile() {
-            const container = document.getElementById('profileContainer');
+            useEffect(() => {
+                checkAuth();
+            }, []);
 
-            try {
-                const response = await fetch(`${API_BASE}/profile/${userId}`);
-
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        renderEmptyState(container);
-                        return;
-                    }
-                    throw new Error(`Failed to load profile: ${response.status}`);
+            async function checkAuth() {
+                const userData = await window.AuthUtils.requireAuth();
+                if (userData) {
+                    setUser(userData);
+                    await loadProfile();
+                    setLoading(false);
                 }
-
-                const profile = await response.json();
-                renderProfile(container, profile);
-
-            } catch (error) {
-                console.error('Error loading profile:', error);
-                renderError(container, error.message);
-            }
-        }
-
-        function renderEmptyState(container) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <h3>Your Neural Music Profile is Waiting</h3>
-                    <p>Start chatting with Auron to build your sonic identity.</p>
-                    <a href="index.html">Start Chatting →</a>
-                </div>
-            `;
-        }
-
-        function renderError(container, message) {
-            container.innerHTML = `
-                <div class="error-message">
-                    <strong>Error:</strong> ${message}
-                </div>
-            `;
-        }
-
-        function renderProfile(container, profile) {
-            const dimensions = profile.dimensions;
-
-            container.innerHTML = `
-                <!-- Sonic Title Card -->
-                <div class="sonic-title-card">
-                    <div class="sonic-title">${dimensions.sonic_title || 'EMERGING IDENTITY'}</div>
-                    <div class="sonic-description">
-                        Based on ${profile.conversation_count} conversations with Auron
-                    </div>
-                </div>
-
-                <!-- Dimensions Grid -->
-                <div class="dimensions-grid">
-                    <!-- 1. Genre Fusion -->
-                    <div class="dimension-card">
-                        <div class="dimension-title">Genre Fusion</div>
-                        <div id="genreWheel" class="genre-wheel"></div>
-                    </div>
-
-                    <!-- 2. Neural Spectrum -->
-                    <div class="dimension-card">
-                        <div class="dimension-title">Neural Spectrum Reading</div>
-                        <div id="neuralSpectrum" class="spectrum-viz"></div>
-                        <div style="margin-top: 15px;">
-                            ${renderSpectrumData(dimensions.neural_spectrum)}
-                        </div>
-                    </div>
-
-                    <!-- 3. Sound Palette -->
-                    <div class="dimension-card">
-                        <div class="dimension-title">Sound Palette</div>
-                        <div class="node-list">
-                            ${renderNodeList(dimensions.sound_palette)}
-                        </div>
-                    </div>
-
-                    <!-- 4. Tonal DNA -->
-                    <div class="dimension-card">
-                        <div class="dimension-title">Tonal DNA Map</div>
-                        <div class="node-list">
-                            ${renderNodeList(dimensions.tonal_dna)}
-                        </div>
-                    </div>
-
-                    <!-- 5. Rhythmic DNA -->
-                    <div class="dimension-card">
-                        <div class="dimension-title">Rhythmic DNA</div>
-                        <div class="node-list">
-                            ${renderNodeList(dimensions.rhythmic_dna)}
-                        </div>
-                    </div>
-
-                    <!-- 6. Emotional Impact -->
-                    <div class="dimension-card">
-                        <div class="dimension-title">Emotional & Psychological Impact</div>
-                        <div id="emotionalBubbles" class="bubble-chart"></div>
-                    </div>
-
-                    <!-- 7. Processing Signature -->
-                    <div class="dimension-card">
-                        <div class="dimension-title">Processing Signature</div>
-                        <div class="node-list">
-                            ${renderNodeList(dimensions.processing_signature)}
-                        </div>
-                    </div>
-
-                    <!-- 8. Inspirational Triggers -->
-                    <div class="dimension-card">
-                        <div class="dimension-title">Inspirational Triggers</div>
-                        <div class="node-list">
-                            ${renderTriggersList(dimensions.inspirational_triggers)}
-                        </div>
-                    </div>
-
-                    <!-- 9. Sonic Architecture -->
-                    <div class="dimension-card">
-                        <div class="dimension-title">Sonic Architecture</div>
-                        <div class="node-list">
-                            ${renderNodeList(dimensions.sonic_architecture)}
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // Render D3 visualizations
-            renderGenreWheel(dimensions.genre_fusion);
-            renderNeuralSpectrum(dimensions.neural_spectrum);
-            renderEmotionalBubbles(dimensions.emotional_impact);
-        }
-
-        function renderNodeList(nodes) {
-            if (!nodes || nodes.length === 0) {
-                return '<p style="color: #6b7280; font-size: 14px;">No data yet. Keep chatting with Auron!</p>';
             }
 
-            return nodes.map(node => `
-                <div class="node-item">
-                    <span class="node-name">${node.name}</span>
-                    <span class="node-mentions">${node.mentions || node.count || 0}×</span>
-                </div>
-            `).join('');
-        }
-
-        function renderTriggersList(triggers) {
-            if (!triggers || triggers.length === 0) {
-                return '<p style="color: #6b7280; font-size: 14px;">No triggers identified yet</p>';
+            async function loadProfile() {
+                try {
+                    const data = await window.API.getProfile();
+                    setProfile(data);
+                } catch (err) {
+                    console.error('Failed to load profile:', err);
+                    // Fallback to basic user data
+                    setProfile({ error: err.message });
+                }
             }
 
-            return triggers.map(trigger => `
-                <div class="node-item">
-                    <span class="node-name">
-                        ${trigger.name}
-                        ${trigger.is_conscious ? '(conscious)' : '(unconscious)'}
-                    </span>
-                    <span class="node-mentions">${trigger.mentions}×</span>
-                </div>
-            `).join('');
-        }
-
-        function renderSpectrumData(spectrum) {
-            if (!spectrum || spectrum.length === 0) {
-                return '<p style="color: #6b7280; font-size: 14px;">No spectrum data yet</p>';
+            async function handleSignOut() {
+                await window.AuthUtils.signOut();
             }
 
-            return spectrum.map(s => `
-                <div class="node-item">
-                    <span class="node-name">${s.type}</span>
-                    <span class="node-mentions">${Math.round(s.avg_arousal * 100)}% arousal</span>
+            if (loading) {
+                return <LoadingScreen />;
+            }
+
+            return (
+                <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#000' }}>
+                    <Navigation currentPage="/profile.html" user={user} onSignOut={handleSignOut} />
+
+                    <div style={{ flex: 1, padding: '2rem' }}>
+                        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                            <h1 style={{
+                                fontSize: '2.5rem',
+                                fontWeight: '900',
+                                color: '#00D9FF',
+                                textShadow: '0 0 20px rgba(0, 217, 255, 0.6)',
+                                marginBottom: '2rem'
+                            }}>
+                                Your Profile
+                            </h1>
+
+                            <div style={{
+                                background: 'rgba(255, 255, 255, 0.03)',
+                                border: '1px solid rgba(255, 255, 255, 0.05)',
+                                borderRadius: '1rem',
+                                padding: '2rem'
+                            }}>
+                                {/* User Avatar */}
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '1.5rem',
+                                    marginBottom: '2rem',
+                                    paddingBottom: '2rem',
+                                    borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+                                }}>
+                                    {user.picture ? (
+                                        <img
+                                            src={user.picture}
+                                            alt={user.name}
+                                            style={{
+                                                width: '80px',
+                                                height: '80px',
+                                                borderRadius: '50%',
+                                                border: '2px solid #00D9FF'
+                                            }}
+                                        />
+                                    ) : (
+                                        <div style={{
+                                            width: '80px',
+                                            height: '80px',
+                                            borderRadius: '50%',
+                                            background: 'linear-gradient(135deg, #000DFF 0%, #001AFF 100%)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '2rem'
+                                        }}>
+                                            👤
+                                        </div>
+                                    )}
+
+                                    <div>
+                                        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '0.25rem' }}>
+                                            {user.name}
+                                        </h2>
+                                        {user.email && (
+                                            <p style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>
+                                                {user.email}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* User Stats */}
+                                <div style={{ marginBottom: '2rem' }}>
+                                    <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'white', marginBottom: '1rem' }}>
+                                        Statistics
+                                    </h3>
+
+                                    {profile?.error ? (
+                                        <p style={{ color: '#EF4444' }}>
+                                            Could not load profile stats: {profile.error}
+                                        </p>
+                                    ) : (
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                                            <div style={{
+                                                padding: '1rem',
+                                                background: 'rgba(0, 13, 255, 0.1)',
+                                                border: '1px solid rgba(0, 13, 255, 0.2)',
+                                                borderRadius: '0.5rem',
+                                                textAlign: 'center'
+                                            }}>
+                                                <p style={{ fontSize: '2rem', fontWeight: '700', color: '#00D9FF', marginBottom: '0.25rem' }}>
+                                                    {profile?.conversations_count || 0}
+                                                </p>
+                                                <p style={{ color: '#9CA3AF', fontSize: '0.85rem' }}>Conversations</p>
+                                            </div>
+
+                                            <div style={{
+                                                padding: '1rem',
+                                                background: 'rgba(0, 13, 255, 0.1)',
+                                                border: '1px solid rgba(0, 13, 255, 0.2)',
+                                                borderRadius: '0.5rem',
+                                                textAlign: 'center'
+                                            }}>
+                                                <p style={{ fontSize: '2rem', fontWeight: '700', color: '#00D9FF', marginBottom: '0.25rem' }}>
+                                                    {profile?.patterns_count || 0}
+                                                </p>
+                                                <p style={{ color: '#9CA3AF', fontSize: '0.85rem' }}>Patterns</p>
+                                            </div>
+
+                                            <div style={{
+                                                padding: '1rem',
+                                                background: 'rgba(0, 13, 255, 0.1)',
+                                                border: '1px solid rgba(0, 13, 255, 0.2)',
+                                                borderRadius: '0.5rem',
+                                                textAlign: 'center'
+                                            }}>
+                                                <p style={{ fontSize: '2rem', fontWeight: '700', color: '#00D9FF', marginBottom: '0.25rem' }}>
+                                                    {profile?.days_active || 0}
+                                                </p>
+                                                <p style={{ color: '#9CA3AF', fontSize: '0.85rem' }}>Days Active</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Account Info */}
+                                <div>
+                                    <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'white', marginBottom: '1rem' }}>
+                                        Account Information
+                                    </h3>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                                            <span style={{ color: '#9CA3AF' }}>User ID</span>
+                                            <span style={{ color: 'white', fontFamily: 'monospace', fontSize: '0.85rem' }}>{user.id}</span>
+                                        </div>
+
+                                        {user.email && (
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                                                <span style={{ color: '#9CA3AF' }}>Email</span>
+                                                <span style={{ color: 'white' }}>{user.email}</span>
+                                            </div>
+                                        )}
+
+                                        {profile?.joined_at && (
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0' }}>
+                                                <span style={{ color: '#9CA3AF' }}>Joined</span>
+                                                <span style={{ color: 'white' }}>
+                                                    {new Date(profile.joined_at).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            `).join('');
+            );
         }
 
-        // D3 Visualizations
-        function renderGenreWheel(genres) {
-            if (!genres || genres.length === 0) return;
-
-            const width = 300;
-            const height = 300;
-            const radius = Math.min(width, height) / 2 - 40;
-
-            const svg = d3.select('#genreWheel')
-                .append('svg')
-                .attr('width', width)
-                .attr('height', height)
-                .append('g')
-                .attr('transform', `translate(${width/2}, ${height/2})`);
-
-            const pie = d3.pie()
-                .value(d => d.mentions)
-                .sort(null);
-
-            const arc = d3.arc()
-                .innerRadius(radius * 0.6)
-                .outerRadius(radius);
-
-            const color = d3.scaleOrdinal()
-                .domain(genres.map(g => g.name))
-                .range(['#00BFFF', '#1E90FF', '#4169E1', '#0080FF', '#00CED1', '#1C86EE']);
-
-            const arcs = svg.selectAll('arc')
-                .data(pie(genres))
-                .enter()
-                .append('g');
-
-            arcs.append('path')
-                .attr('d', arc)
-                .attr('fill', d => color(d.data.name))
-                .attr('stroke', '#0a0a0f')
-                .attr('stroke-width', 2)
-                .style('opacity', 0.8)
-                .on('mouseover', function() {
-                    d3.select(this).style('opacity', 1);
-                })
-                .on('mouseout', function() {
-                    d3.select(this).style('opacity', 0.8);
-                });
-
-            arcs.append('text')
-                .attr('transform', d => `translate(${arc.centroid(d)})`)
-                .attr('text-anchor', 'middle')
-                .attr('fill', '#fff')
-                .attr('font-size', '11px')
-                .attr('font-weight', '600')
-                .text(d => d.data.name);
-        }
-
-        function renderNeuralSpectrum(spectrum) {
-            if (!spectrum || spectrum.length === 0) return;
-
-            const width = document.getElementById('neuralSpectrum').offsetWidth;
-            const height = 150;
-
-            const svg = d3.select('#neuralSpectrum')
-                .append('svg')
-                .attr('width', width)
-                .attr('height', height);
-
-            // Create waveform based on arousal levels
-            const points = 50;
-            const data = d3.range(points).map(i => {
-                const avgArousal = spectrum[0]?.avg_arousal || 0.5;
-                return {
-                    x: (i / points) * width,
-                    y: height/2 + Math.sin(i * 0.3) * avgArousal * 50
-                };
-            });
-
-            const line = d3.line()
-                .x(d => d.x)
-                .y(d => d.y)
-                .curve(d3.curveCardinal);
-
-            svg.append('path')
-                .datum(data)
-                .attr('fill', 'none')
-                .attr('stroke', '#00BFFF')
-                .attr('stroke-width', 3)
-                .attr('d', line)
-                .style('filter', 'drop-shadow(0 0 8px rgba(0, 191, 255, 0.6))');
-        }
-
-        function renderEmotionalBubbles(emotions) {
-            if (!emotions || emotions.length === 0) return;
-
-            const width = document.getElementById('emotionalBubbles').offsetWidth;
-            const height = 300;
-
-            const svg = d3.select('#emotionalBubbles')
-                .append('svg')
-                .attr('width', width)
-                .attr('height', height);
-
-            const simulation = d3.forceSimulation(emotions)
-                .force('charge', d3.forceManyBody().strength(5))
-                .force('center', d3.forceCenter(width / 2, height / 2))
-                .force('collision', d3.forceCollide().radius(d => Math.sqrt(d.mentions) * 8 + 5));
-
-            const sizeScale = d3.scaleSqrt()
-                .domain([0, d3.max(emotions, d => d.mentions)])
-                .range([10, 40]);
-
-            const colorScale = d3.scaleLinear()
-                .domain([-1, 0, 1])
-                .range(['#FF6B6B', '#9ca3af', '#00BFFF']);
-
-            const bubbles = svg.selectAll('circle')
-                .data(emotions)
-                .enter()
-                .append('g');
-
-            bubbles.append('circle')
-                .attr('r', d => sizeScale(d.mentions))
-                .attr('fill', d => colorScale(d.valence || 0))
-                .attr('stroke', '#fff')
-                .attr('stroke-width', 2)
-                .style('opacity', 0.7);
-
-            bubbles.append('text')
-                .attr('text-anchor', 'middle')
-                .attr('dy', 4)
-                .attr('fill', '#fff')
-                .attr('font-size', '11px')
-                .attr('font-weight', '600')
-                .text(d => d.name.substring(0, 8));
-
-            simulation.on('tick', () => {
-                bubbles.attr('transform', d => `translate(${d.x}, ${d.y})`);
-            });
-        }
-
-        // Initialize
-        loadProfile();
+        ReactDOM.render(<ProfileApp />, document.getElementById('root'));
     </script>
 </body>
 </html>
