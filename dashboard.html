@@ -943,94 +943,15 @@
                 }
             };
 
-            const loadConversationDetails = async (conversation) => {
-                setSelectedConversation(conversation);
-                setLoadingDetails(true);
+            const openConversationInChat = (conversation) => {
+                const conversationId = conversation.conversation_id || conversation.id;
+                console.log(`Opening conversation in chat view: ${conversationId}`);
 
-                try {
-                    const token = await getAuthToken();
-                    if (!token) {
-                        console.warn('No auth token');
-                        setLoadingDetails(false);
-                        return;
-                    }
+                // Pass conversation_id to ChatView
+                setLoadedSessionId(conversationId);
 
-                    // Use new backend endpoint that handles decryption
-                    const conversationId = conversation.id || conversation.conversation_id;
-                    console.log(`Loading conversation: ${conversationId}`);
-
-                    const response = await fetch(`${DIALOGUE_API_BASE}/get-conversation`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            conversation_id: conversationId
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Failed to load conversation: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    console.log('Loaded conversation:', data);
-                    setConversationDetails(data);
-
-                } catch (err) {
-                    console.error('Failed to load conversation details:', err);
-                    setConversationDetails(null);
-                } finally {
-                    setLoadingDetails(false);
-                }
-            };
-
-            const continueConversation = async (conversation) => {
-                try {
-                    const token = await getAuthToken();
-                    if (!token) {
-                        console.warn('No auth token');
-                        return;
-                    }
-
-                    const conversationId = conversation.id || conversation.conversation_id;
-                    console.log(`Continuing conversation: ${conversationId}`);
-
-                    const response = await fetch(`${DIALOGUE_API_BASE}/load-session`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            conversation_id: conversationId
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Failed to load session: ${response.status}`);
-                    }
-
-                    const session = await response.json();
-                    console.log('Session loaded into RAM:', session);
-
-                    // Set the loaded session ID so ChatView can use it
-                    setLoadedSessionId(session.session_id);
-
-                    // Navigate to chat view with loaded session
-                    closeModal();
-                    setCurrentView('chat');
-
-                } catch (err) {
-                    console.error('Failed to continue conversation:', err);
-                    alert('Failed to continue conversation. Please try again.');
-                }
-            };
-
-            const closeModal = () => {
-                setSelectedConversation(null);
-                setConversationDetails(null);
+                // Navigate to chat view
+                setCurrentView('chat');
             };
 
             if (loading) {
@@ -1108,7 +1029,7 @@
                                         <div
                                             key={conv.id || idx}
                                             className="glass-card rounded-2xl p-6 flex-shrink-0"
-                                            onClick={() => loadConversationDetails(conv)}
+                                            onClick={() => openConversationInChat(conv)}
                                             style={{
                                                 width: '380px',
                                                 background: 'rgba(10, 10, 31, 0.6)',
@@ -1171,103 +1092,6 @@
                         )}
                     </div>
 
-                    {/* Conversation Detail Modal */}
-                    {selectedConversation && (
-                        <div className="dialogue-modal-overlay" onClick={closeModal}>
-                            <div className="dialogue-modal" onClick={(e) => e.stopPropagation()} style={{
-                                maxWidth: '900px',
-                                maxHeight: '85vh',
-                                overflow: 'auto'
-                            }}>
-                                {/* Close Button */}
-                                <button className="dialogue-modal-close" onClick={closeModal}>
-                                    ✕
-                                </button>
-
-                                {/* Header */}
-                                <div className="mb-8 text-center">
-                                    <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📚</div>
-                                    <h2 className="text-white glow text-2xl font-bold mb-2">
-                                        {selectedConversation.summary || 'Conversation with Auron'}
-                                    </h2>
-                                    <p className="text-gray-400 text-sm">
-                                        {new Date(selectedConversation.timestamp || selectedConversation.created_at).toLocaleDateString('en-US', {
-                                            weekday: 'long',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            year: 'numeric'
-                                        })}
-                                    </p>
-                                </div>
-
-                                {/* Loading State */}
-                                {loadingDetails && (
-                                    <div className="text-center py-12">
-                                        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                                        <p className="text-gray-400">Loading conversation...</p>
-                                    </div>
-                                )}
-
-                                {/* Conversation Messages */}
-                                {!loadingDetails && conversationDetails && (
-                                    <>
-                                        <div className="space-y-6 mb-8">
-                                            {conversationDetails.messages && conversationDetails.messages.map((msg, idx) => (
-                                                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                                    <div className={`max-w-[75%] rounded-2xl px-6 py-4 ${
-                                                        msg.role === 'user'
-                                                            ? 'bg-gradient-to-r from-primary/30 to-primary-dark/30 border border-primary/50'
-                                                            : 'bg-gray-900 border border-gray-800'
-                                                    }`}>
-                                                        <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{
-                                                            color: msg.role === 'user' ? '#00A8FF' : '#00D9FF'
-                                                        }}>
-                                                            {msg.role === 'user' ? 'You' : 'Auron'}
-                                                        </p>
-                                                        <p className="text-white leading-relaxed" style={{ lineHeight: '1.7' }}>
-                                                            {msg.content}
-                                                        </p>
-                                                        {msg.timestamp && (
-                                                            <p className="text-gray-500 text-xs mt-2">
-                                                                {new Date(msg.timestamp).toLocaleTimeString('en-US', {
-                                                                    hour: '2-digit',
-                                                                    minute: '2-digit'
-                                                                })}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        {/* Continue Conversation Button */}
-                                        <div className="text-center pt-6 border-t border-gray-800">
-                                            <button
-                                                onClick={() => continueConversation(selectedConversation)}
-                                                className="px-8 py-3 rounded-full font-semibold text-white transition-all hover:scale-105"
-                                                style={{
-                                                    background: 'linear-gradient(135deg, #00A8FF 0%, #005CFF 100%)',
-                                                    boxShadow: '0 4px 20px rgba(0, 168, 255, 0.3)'
-                                                }}
-                                            >
-                                                Continue This Chat →
-                                            </button>
-                                            <p className="text-gray-500 text-xs mt-3">
-                                                Load this conversation to continue where you left off
-                                            </p>
-                                        </div>
-                                    </>
-                                )}
-
-                                {/* No messages found */}
-                                {!loadingDetails && conversationDetails && (!conversationDetails.messages || conversationDetails.messages.length === 0) && (
-                                    <div className="text-center py-12">
-                                        <p className="text-gray-400">No messages found in this conversation.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
                 </div>
             );
         }
@@ -1461,16 +1285,49 @@
             // Session management (backend holds conversation in RAM)
             const [sessionId, setSessionId] = useState(null);
             const [syncing, setSyncing] = useState(false);
+            const [needsLoadSession, setNeedsLoadSession] = useState(false);
             const inactivityTimerRef = useRef(null);
             const INACTIVITY_TIMEOUT = 5 * 60 * 1000;  // 5 minutes
 
-            // Handle loaded session from Reflections
+            // Load past conversation from Reflections
             useEffect(() => {
                 if (loadedSessionId) {
-                    console.log('Loading session from Reflections:', loadedSessionId);
-                    setSessionId(loadedSessionId);
-                    // Note: Messages are already loaded in backend RAM
-                    // We don't need to fetch them again - backend will include history in next response
+                    console.log('Loading past conversation:', loadedSessionId);
+
+                    const loadPastMessages = async () => {
+                        try {
+                            setLoading(true);
+                            const token = await getAuthToken();
+
+                            const response = await fetch(`${DIALOGUE_API_BASE}/get-conversation`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    conversation_id: loadedSessionId
+                                })
+                            });
+
+                            if (!response.ok) throw new Error('Failed to load conversation');
+
+                            const data = await response.json();
+                            console.log('Past conversation loaded:', data);
+
+                            // Replace default message with past conversation
+                            setMessages(data.messages || []);
+                            setSessionId(loadedSessionId);
+                            setNeedsLoadSession(true);  // Flag: needs to be loaded into RAM when user sends message
+
+                        } catch (err) {
+                            console.error('Failed to load past conversation:', err);
+                        } finally {
+                            setLoading(false);
+                        }
+                    };
+
+                    loadPastMessages();
                 }
             }, [loadedSessionId]);
 
@@ -1560,6 +1417,27 @@
                     const token = await getAuthToken();
                     if (!token) {
                         throw new Error('Not authenticated - please log in again');
+                    }
+
+                    // If this is a loaded conversation (not yet in RAM), load it first
+                    if (needsLoadSession && sessionId) {
+                        console.log('Auto-loading session into RAM:', sessionId);
+
+                        const loadResponse = await fetch(`${DIALOGUE_API_BASE}/load-session`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                conversation_id: sessionId
+                            })
+                        });
+
+                        if (loadResponse.ok) {
+                            console.log('✓ Session loaded into backend RAM');
+                            setNeedsLoadSession(false);  // Only load once
+                        }
                     }
 
                     const response = await fetch(`${DIALOGUE_API_BASE}/chat`, {
