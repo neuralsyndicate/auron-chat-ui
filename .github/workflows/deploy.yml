@@ -24,7 +24,8 @@ jobs:
           storageEndpoint: "storage.bunnycdn.com"
           upload: "true"
           remove: "false"
-          purgePullZone: "false"
+          purgePullZone: "true"  # Auto-purge cache after deploy
+          pullZoneId: ${{ secrets.BUNNY_PULL_ZONE_ID }}
 
       - name: Deployment complete
         run: |
