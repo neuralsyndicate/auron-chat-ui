@@ -473,6 +473,7 @@
 
         const API_BASE = 'http://86.38.182.54:8001';
         const DIALOGUE_API_BASE = 'https://api.neuralsyndicate.com';  // Backend via Cloudflare Tunnel
+        const BFF_API_BASE = 'https://api.combryth-backbone.ch';  // BFF for Neural Music Profile
         const UNLOCK_THRESHOLD = 10;
 
         // Helper function to get auth token
@@ -1578,14 +1579,30 @@
 
             const loadProfile = async () => {
                 try {
-                    const response = await fetch(`${API_BASE}/profile/${user.id}`);
+                    // Get authentication token
+                    const token = await getAuthToken();
+                    if (!token) {
+                        console.error('No authentication token available');
+                        throw new Error('Authentication required');
+                    }
+
+                    // Call BFF API with JWT authentication
+                    const response = await fetch(`${BFF_API_BASE}/profile`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
                     if (!response.ok) {
                         console.error('Profile fetch failed with status:', response.status);
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('Error details:', errorData);
                         throw new Error('Profile not found');
                     }
 
                     const data = await response.json();
-                    console.log('Profile loaded successfully:', data);
+                    console.log('Profile loaded successfully from BFF:', data);
                     setProfile(data);
                 } catch (err) {
                     console.error('Failed to load profile:', err);
