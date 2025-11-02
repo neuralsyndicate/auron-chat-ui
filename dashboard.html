@@ -1209,7 +1209,7 @@
                 try {
                     const token = await getAuthToken();
 
-                    // Send message with full conversation history
+                    // Send message with full conversation history + original session_id
                     const response = await fetch(`${DIALOGUE_API_BASE}/chat`, {
                         method: 'POST',
                         headers: {
@@ -1218,7 +1218,8 @@
                         },
                         body: JSON.stringify({
                             message: userMessage,
-                            conversation_history: conversationHistory
+                            conversation_history: conversationHistory,
+                            session_id: conversationId  // Continue existing conversation with original ID
                         })
                     });
 
