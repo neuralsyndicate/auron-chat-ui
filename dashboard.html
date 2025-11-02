@@ -1355,6 +1355,10 @@
             const [profileUnlocked, setProfileUnlocked] = useState(false);
             const [loadedSessionId, setLoadedSessionId] = useState(null);
 
+            // Session management for sync button
+            const [sessionId, setSessionId] = useState(null);
+            const [syncing, setSyncing] = useState(false);
+
             useEffect(() => {
                 // Check Logto authentication
                 async function checkAuth() {
@@ -1434,6 +1438,54 @@
                 }
             };
 
+            // Save session to backend (triggers pattern extraction)
+            const saveSession = useCallback(async () => {
+                if (!sessionId) return;
+                if (syncing) return;  // Prevent duplicate saves
+
+                try {
+                    setSyncing(true);
+                    const token = await getAuthToken();
+                    if (!token) {
+                        console.warn('No auth token - cannot save session');
+                        setSyncing(false);
+                        return;
+                    }
+
+                    console.log(`Saving session: ${sessionId}`);
+                    const response = await fetch(`${DIALOGUE_API_BASE}/save-session`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ session_id: sessionId })
+                    });
+
+                    if (response.ok) {
+                        console.log('✓ Session saved successfully');
+                        updateProgress();  // Refresh conversation count
+                    } else {
+                        console.error('Failed to save session:', response.status);
+                    }
+
+                    // Clear session after save
+                    setSessionId(null);
+
+                } catch (err) {
+                    console.error('Failed to save session:', err);
+                } finally {
+                    setSyncing(false);
+                }
+            }, [sessionId, syncing]);
+
+            // Manual sync handler
+            const handleManualSync = useCallback(async () => {
+                if (!sessionId || syncing) return;
+                console.log('Manual sync triggered');
+                await saveSession();
+            }, [sessionId, syncing, saveSession]);
+
             if (!user) return <div className="flex items-center justify-center h-screen text-white">Loading...</div>;
 
             return (
@@ -1502,6 +1554,20 @@
                                     </div>
                                 </div>
 
+                                {/* Sync Button */}
+                                <button
+                                    onClick={handleManualSync}
+                                    disabled={!sessionId || syncing}
+                                    className="px-4 py-2 rounded-full text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                    style={{
+                                        background: sessionId && !syncing ? 'rgba(0, 217, 255, 0.1)' : 'rgba(100, 100, 100, 0.1)',
+                                        color: sessionId && !syncing ? '#00D9FF' : '#666',
+                                        border: `1px solid ${sessionId && !syncing ? 'rgba(0, 217, 255, 0.3)' : 'rgba(100, 100, 100, 0.2)'}`
+                                    }}
+                                    title={!sessionId ? 'No conversation to sync' : syncing ? 'Syncing...' : 'Save conversation to Reflections'}>
+                                    {syncing ? '↻ Syncing...' : '↻ Sync'}
+                                </button>
+
                                 <button
                                     onClick={handleLogout}
                                     className="text-sm text-gray-400 hover:text-white transition-colors">
@@ -1514,7 +1580,14 @@
                     {/* Main Content - Generous whitespace, centered */}
                     <main className="flex-1 pt-24 overflow-hidden">
                         {currentView === 'chat' ? (
-                            <ChatView user={user} onUpdateProgress={updateProgress} loadedSessionId={loadedSessionId} />
+                            <ChatView
+                                user={user}
+                                onUpdateProgress={updateProgress}
+                                loadedSessionId={loadedSessionId}
+                                sessionId={sessionId}
+                                setSessionId={setSessionId}
+                                setSyncing={setSyncing}
+                            />
                         ) : currentView === 'reflections' ? (
                             <ReflectionsView user={user} setCurrentView={setCurrentView} setLoadedSessionId={setLoadedSessionId} />
                         ) : (
@@ -1533,7 +1606,7 @@
             );
         }
 
-        function ChatView({ user, onUpdateProgress, loadedSessionId }) {
+        function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessionId, setSyncing }) {
             const [messages, setMessages] = useState([
                 { role: 'auron', content: "Hello. I'm Auron, your creative psychologist. Share what's on your mind — whether it's frustration, curiosity, or something you can't quite name yet. I'm listening." }
             ]);
@@ -1543,11 +1616,7 @@
             const messagesEndRef = useRef(null);
 
             // Session management (backend holds conversation in RAM)
-            const [sessionId, setSessionId] = useState(null);
-            const [syncing, setSyncing] = useState(false);
             const [needsLoadSession, setNeedsLoadSession] = useState(false);
-            const inactivityTimerRef = useRef(null);
-            const INACTIVITY_TIMEOUT = 5 * 60 * 1000;  // 5 minutes
 
             // Load past conversation from Reflections
             useEffect(() => {
@@ -1620,79 +1689,6 @@
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             }, [messages]);
 
-            // Reset 5-minute inactivity timer
-            const resetInactivityTimer = useCallback(() => {
-                if (inactivityTimerRef.current) {
-                    clearTimeout(inactivityTimerRef.current);
-                }
-
-                inactivityTimerRef.current = setTimeout(async () => {
-                    if (sessionId) {
-                        console.log('5 minutes of inactivity - saving session...');
-                        await saveSession();
-                    }
-                }, INACTIVITY_TIMEOUT);
-            }, [sessionId]);
-
-            // Save session to backend (triggers pattern extraction)
-            const saveSession = useCallback(async () => {
-                if (!sessionId) return;
-                if (syncing) return;  // Prevent duplicate saves
-
-                try {
-                    setSyncing(true);
-                    const token = await getAuthToken();
-                    if (!token) {
-                        console.warn('No auth token - cannot save session');
-                        setSyncing(false);
-                        return;
-                    }
-
-                    console.log(`Saving session: ${sessionId}`);
-                    const response = await fetch(`${DIALOGUE_API_BASE}/save-session`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            session_id: sessionId
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Failed to save session: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    console.log(`✓ Session saved: ${result.patterns_extracted || 0} patterns extracted`);
-
-                    // Reset session
-                    setSessionId(null);
-
-                } catch (err) {
-                    console.error('Failed to save session:', err);
-                } finally {
-                    setSyncing(false);
-                }
-            }, [sessionId, syncing]);
-
-            // Manual sync handler
-            const handleManualSync = useCallback(async () => {
-                if (!sessionId || syncing) return;
-                console.log('Manual sync triggered');
-                await saveSession();
-            }, [sessionId, syncing, saveSession]);
-
-            // Cleanup timer on unmount
-            useEffect(() => {
-                return () => {
-                    if (inactivityTimerRef.current) {
-                        clearTimeout(inactivityTimerRef.current);
-                    }
-                };
-            }, []);
-
             const handleSendMessage = async (messageText) => {
                 setMessages(prev => [...prev, { role: 'user', content: messageText }]);
                 setLoading(true);
@@ -1763,9 +1759,6 @@
                         dialogue: parsedMessage
                     }]);
 
-                    // Reset inactivity timer (start 5-min countdown)
-                    resetInactivityTimer();
-
                     // Update progress after message
                     setTimeout(onUpdateProgress, 1000);
 
@@ -1835,18 +1828,6 @@
                                 }}>
                                 Send
                             </button>
-                            {sessionId && (
-                                <button
-                                    onClick={handleManualSync}
-                                    disabled={syncing || !sessionId}
-                                    className="px-6 py-4 rounded-xl font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all border border-gray-600 hover:border-gray-400"
-                                    style={{
-                                        background: syncing ? '#444' : 'rgba(0, 0, 0, 0.4)'
-                                    }}
-                                    title="Save conversation to your Reflections">
-                                    {syncing ? '↻ Syncing...' : '↻ Sync'}
-                                </button>
-                            )}
                         </div>
                     </div>
                 </div>
