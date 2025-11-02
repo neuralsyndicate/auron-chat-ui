@@ -1132,15 +1132,6 @@
                             </div>
                         )}
                     </div>
-
-                    {/* Reflection Viewer Modal (Full Screen) */}
-                    {loadedSessionId && (
-                        <ReflectionViewer
-                            conversationId={loadedSessionId}
-                            onClose={() => setLoadedSessionId(null)}
-                        />
-                    )}
-
                 </div>
             );
         }
@@ -1440,6 +1431,14 @@
                             <ProfileView user={user} isLocked={!profileUnlocked} conversationCount={conversationCount} />
                         )}
                     </main>
+
+                    {/* Reflection Viewer Modal (Full Screen) */}
+                    {loadedSessionId && (
+                        <ReflectionViewer
+                            conversationId={loadedSessionId}
+                            onClose={() => setLoadedSessionId(null)}
+                        />
+                    )}
                 </div>
             );
         }
