@@ -1316,21 +1316,33 @@
 
                             if (!verifyResponse.ok) throw new Error('Failed to verify conversation access');
 
-                            const { bunny_object_key } = await verifyResponse.json();
-                            console.log('Access verified, fetching from BunnyCDN:', bunny_object_key);
+                            const { signed_url } = await verifyResponse.json();
+                            console.log('Access verified, fetching from CDN with signed URL');
 
-                            // Step 2: Fetch directly from BunnyCDN Storage (uses AccessKey header for CORS)
-                            const bunnyUrl = `${BUNNY_STORAGE_URL}/${bunny_object_key}`;
-                            const bunnyResponse = await fetch(bunnyUrl, {
-                                headers: {
-                                    'AccessKey': BUNNY_PASSWORD
-                                }
-                            });
+                            // Step 2: Fetch from BunnyCDN Pull Zone (token-authenticated)
+                            const bunnyResponse = await fetch(signed_url);
 
-                            if (!bunnyResponse.ok) throw new Error('Failed to fetch from BunnyCDN');
+                            if (!bunnyResponse.ok) throw new Error('Failed to fetch from BunnyCDN CDN');
 
-                            const conversationData = await bunnyResponse.json();
-                            console.log('Conversation loaded from BunnyCDN:', conversationData);
+                            // Check if encrypted (binary) or plain JSON
+                            const contentType = bunnyResponse.headers.get('content-type');
+                            console.log('Content-Type:', contentType);
+
+                            let conversationData;
+                            if (contentType && contentType.includes('application/json')) {
+                                // Plain JSON
+                                conversationData = await bunnyResponse.json();
+                            } else {
+                                // Encrypted binary - need to decrypt
+                                const encryptedData = await bunnyResponse.arrayBuffer();
+                                console.log('Encrypted data size:', encryptedData.byteLength);
+
+                                // TODO: Implement decryption
+                                // For now, show error
+                                throw new Error('Conversation is encrypted - decryption not yet implemented');
+                            }
+
+                            console.log('Conversation loaded from CDN:', conversationData);
 
                             // Replace default message with past conversation
                             setMessages(conversationData.messages || []);
