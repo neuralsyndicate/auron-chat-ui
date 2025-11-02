@@ -1213,7 +1213,7 @@
                                 'Authorization': `Bearer ${token}`,
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify({ session_id: conversationId })
+                            body: JSON.stringify({ conversation_id: conversationId })
                         });
 
                         if (!loadResponse.ok) {
