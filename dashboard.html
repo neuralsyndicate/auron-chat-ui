@@ -1319,11 +1319,11 @@
                             const { bunny_object_key } = await verifyResponse.json();
                             console.log('Access verified, fetching from BunnyCDN:', bunny_object_key);
 
-                            // Step 2: Fetch directly from BunnyCDN
+                            // Step 2: Fetch directly from BunnyCDN Storage (uses AccessKey header for CORS)
                             const bunnyUrl = `${BUNNY_STORAGE_URL}/${bunny_object_key}`;
                             const bunnyResponse = await fetch(bunnyUrl, {
                                 headers: {
-                                    'Authorization': 'Basic ' + btoa(`combryth-data:${BUNNY_PASSWORD}`)
+                                    'AccessKey': BUNNY_PASSWORD
                                 }
                             });
 
