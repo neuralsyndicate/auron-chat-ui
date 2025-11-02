@@ -1143,6 +1143,7 @@
             const [error, setError] = useState(null);
             const [input, setInput] = useState('');
             const [chatLoading, setChatLoading] = useState(false);
+            const [sessionLoaded, setSessionLoaded] = useState(false);
             const messagesEndRef = useRef(null);
 
             useEffect(() => {
@@ -1203,15 +1204,25 @@
                 try {
                     const token = await getAuthToken();
 
-                    // Load session into combryth-engine RAM
-                    await fetch(`${DIALOGUE_API_BASE}/session/load`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ session_id: conversationId })
-                    });
+                    // Load session into combryth-engine RAM (only once per session)
+                    if (!sessionLoaded) {
+                        console.log('Loading session into RAM:', conversationId);
+                        const loadResponse = await fetch(`${DIALOGUE_API_BASE}/session/load`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ session_id: conversationId })
+                        });
+
+                        if (!loadResponse.ok) {
+                            console.warn('Session load failed, continuing anyway');
+                        } else {
+                            console.log('✓ Session loaded into RAM');
+                            setSessionLoaded(true);
+                        }
+                    }
 
                     // Send message
                     const response = await fetch(`${DIALOGUE_API_BASE}/chat`, {
