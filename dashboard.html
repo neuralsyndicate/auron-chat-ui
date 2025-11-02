@@ -1136,15 +1136,22 @@
             );
         }
 
-        // Reflection Viewer Component (Full Screen Modal)
+        // Reflection Viewer Component (Full Screen Modal with Liquid Glass & Chat)
         function ReflectionViewer({ conversationId, onClose }) {
             const [messages, setMessages] = useState([]);
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
+            const [input, setInput] = useState('');
+            const [chatLoading, setChatLoading] = useState(false);
+            const messagesEndRef = useRef(null);
 
             useEffect(() => {
                 loadConversation();
             }, [conversationId]);
+
+            useEffect(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, [messages]);
 
             const loadConversation = async () => {
                 try {
@@ -1183,77 +1190,336 @@
                 }
             };
 
+            const handleSendMessage = async () => {
+                if (!input.trim() || chatLoading) return;
+
+                const userMessage = input.trim();
+                setInput('');
+                setChatLoading(true);
+
+                // Add user message immediately
+                setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+
+                try {
+                    const token = await getAuthToken();
+
+                    // Load session into combryth-engine RAM
+                    await fetch(`${DIALOGUE_API_BASE}/session/load`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ session_id: conversationId })
+                    });
+
+                    // Send message
+                    const response = await fetch(`${DIALOGUE_API_BASE}/chat`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            session_id: conversationId,
+                            message: userMessage
+                        })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to send message');
+
+                    const data = await response.json();
+                    setMessages(prev => [...prev, { role: 'auron', content: data.response }]);
+
+                } catch (err) {
+                    console.error('Failed to send message:', err);
+                    setMessages(prev => [...prev, {
+                        role: 'auron',
+                        content: 'Sorry, I encountered an error. Please try again.'
+                    }]);
+                } finally {
+                    setChatLoading(false);
+                }
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                }
+            };
+
             return (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center"
+                    className="fixed inset-0 z-50"
                     style={{
-                        background: 'rgba(0, 0, 0, 0.95)',
-                        backdropFilter: 'blur(10px)'
+                        background: 'radial-gradient(circle at 50% 0%, rgba(0, 95, 255, 0.15) 0%, rgba(0, 0, 0, 0.95) 50%)',
+                        backdropFilter: 'blur(20px)',
+                        animation: 'shimmer-bg 8s ease-in-out infinite'
                     }}>
 
-                    {/* Close Button */}
+                    {/* Animated shimmer overlay */}
+                    <div className="absolute inset-0 opacity-30" style={{
+                        background: 'linear-gradient(45deg, transparent 30%, rgba(0, 217, 255, 0.1) 50%, transparent 70%)',
+                        backgroundSize: '200% 200%',
+                        animation: 'shimmer-move 3s linear infinite'
+                    }} />
+
+                    {/* Close Button with liquid glass effect */}
                     <button
                         onClick={onClose}
-                        className="absolute top-8 right-8 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
-                        style={{ color: '#00D9FF', fontSize: '24px' }}>
+                        className="absolute top-8 right-8 w-12 h-12 rounded-full flex items-center justify-center transition-all z-10"
+                        style={{
+                            background: 'rgba(0, 217, 255, 0.1)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(0, 217, 255, 0.3)',
+                            color: '#00D9FF',
+                            fontSize: '24px',
+                            boxShadow: '0 0 20px rgba(0, 217, 255, 0.3)'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(0, 217, 255, 0.2)';
+                            e.currentTarget.style.boxShadow = '0 0 30px rgba(0, 217, 255, 0.5)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(0, 217, 255, 0.1)';
+                            e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 217, 255, 0.3)';
+                        }}>
                         ✕
                     </button>
 
-                    {/* Content */}
-                    <div className="w-full max-w-4xl mx-auto px-8 h-full flex flex-col">
+                    {/* Main Container with Liquid Glass */}
+                    <div className="w-full max-w-5xl mx-auto px-8 h-full flex flex-col relative">
 
-                        {/* Header */}
-                        <div className="py-8 border-b border-white/10">
-                            <h2 className="text-3xl font-bold text-center" style={{
-                                background: 'linear-gradient(135deg, #00D9FF 0%, #005CFF 100%)',
+                        {/* Liquid Glass Header */}
+                        <div className="py-8 mt-8 rounded-3xl relative overflow-hidden" style={{
+                            background: 'rgba(0, 217, 255, 0.05)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(0, 217, 255, 0.2)',
+                            boxShadow: '0 8px 32px 0 rgba(0, 217, 255, 0.15), inset 0 0 20px rgba(0, 217, 255, 0.1)'
+                        }}>
+                            {/* Shimmer effect inside header */}
+                            <div className="absolute inset-0 opacity-20" style={{
+                                background: 'linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.3), transparent)',
+                                animation: 'shimmer-slide 2s ease-in-out infinite'
+                            }} />
+
+                            <h2 className="text-4xl font-bold text-center relative z-10" style={{
+                                background: 'linear-gradient(135deg, #00D9FF 0%, #005CFF 50%, #00D9FF 100%)',
+                                backgroundSize: '200% auto',
                                 WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent'
+                                WebkitTextFillColor: 'transparent',
+                                animation: 'shimmer-text 3s linear infinite',
+                                textShadow: '0 0 40px rgba(0, 217, 255, 0.3)'
                             }}>
-                                Reflection
+                                ✨ Reflection ✨
                             </h2>
                         </div>
 
-                        {/* Messages */}
-                        <div className="flex-1 overflow-y-auto py-8" style={{
-                            scrollbarWidth: 'thin',
-                            scrollbarColor: '#00A8FF #1a1a1a'
+                        {/* Messages Container with Liquid Glass */}
+                        <div className="flex-1 overflow-hidden my-6 rounded-3xl relative" style={{
+                            background: 'rgba(0, 0, 0, 0.4)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(0, 217, 255, 0.15)',
+                            boxShadow: 'inset 0 0 40px rgba(0, 217, 255, 0.05)'
                         }}>
-                            {loading && (
-                                <div className="text-center text-gray-400 py-12">
-                                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                                    Loading reflection...
-                                </div>
-                            )}
-
-                            {error && (
-                                <div className="text-center text-red-400 py-12">
-                                    Error: {error}
-                                </div>
-                            )}
-
-                            {!loading && !error && messages.map((msg, idx) => (
-                                <div
-                                    key={idx}
-                                    className="mb-8 animate-fade-in"
-                                    style={{ animationDelay: `${idx * 0.1}s` }}>
-
-                                    {/* Role Label */}
-                                    <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{
-                                        color: msg.role === 'user' ? '#00D9FF' : '#00BFFF'
-                                    }}>
-                                        {msg.role === 'user' ? 'You' : 'Auron'}
+                            <div className="h-full overflow-y-auto px-8 py-6" style={{
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: '#00A8FF rgba(0, 0, 0, 0.3)'
+                            }}>
+                                {loading && (
+                                    <div className="text-center text-gray-400 py-12">
+                                        <div className="w-16 h-16 border-4 rounded-full mx-auto mb-4 relative" style={{
+                                            borderColor: 'rgba(0, 217, 255, 0.2)',
+                                            borderTopColor: '#00D9FF',
+                                            animation: 'spin 1s linear infinite'
+                                        }}>
+                                            <div className="absolute inset-0 rounded-full" style={{
+                                                boxShadow: '0 0 20px rgba(0, 217, 255, 0.5)',
+                                                animation: 'pulse 2s ease-in-out infinite'
+                                            }} />
+                                        </div>
+                                        <span className="glow">Loading reflection...</span>
                                     </div>
+                                )}
 
-                                    {/* Message Content */}
-                                    <div className="text-base leading-relaxed" style={{
-                                        color: msg.role === 'user' ? '#fff' : '#e0e0e0'
+                                {error && (
+                                    <div className="text-center text-red-400 py-12 rounded-2xl" style={{
+                                        background: 'rgba(255, 0, 0, 0.1)',
+                                        backdropFilter: 'blur(10px)',
+                                        border: '1px solid rgba(255, 0, 0, 0.3)'
                                     }}>
-                                        {msg.content}
+                                        Error: {error}
                                     </div>
-                                </div>
-                            ))}
+                                )}
+
+                                {!loading && !error && messages.map((msg, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="mb-6 animate-fade-in"
+                                        style={{
+                                            animationDelay: `${idx * 0.05}s`,
+                                            opacity: 0,
+                                            animation: 'fadeIn 0.5s ease-out forwards'
+                                        }}>
+
+                                        {/* Liquid Glass Message Bubble */}
+                                        <div className={`rounded-2xl p-6 relative overflow-hidden ${msg.role === 'user' ? 'ml-auto max-w-[80%]' : 'mr-auto max-w-[85%]'}`} style={{
+                                            background: msg.role === 'user'
+                                                ? 'rgba(0, 217, 255, 0.08)'
+                                                : 'rgba(0, 95, 255, 0.06)',
+                                            backdropFilter: 'blur(15px)',
+                                            border: `1px solid ${msg.role === 'user' ? 'rgba(0, 217, 255, 0.25)' : 'rgba(0, 95, 255, 0.2)'}`,
+                                            boxShadow: msg.role === 'user'
+                                                ? '0 4px 20px rgba(0, 217, 255, 0.15), inset 0 0 20px rgba(0, 217, 255, 0.05)'
+                                                : '0 4px 20px rgba(0, 95, 255, 0.1), inset 0 0 20px rgba(0, 95, 255, 0.03)',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.boxShadow = msg.role === 'user'
+                                                ? '0 8px 30px rgba(0, 217, 255, 0.25), inset 0 0 30px rgba(0, 217, 255, 0.08)'
+                                                : '0 8px 30px rgba(0, 95, 255, 0.15), inset 0 0 30px rgba(0, 95, 255, 0.05)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.boxShadow = msg.role === 'user'
+                                                ? '0 4px 20px rgba(0, 217, 255, 0.15), inset 0 0 20px rgba(0, 217, 255, 0.05)'
+                                                : '0 4px 20px rgba(0, 95, 255, 0.1), inset 0 0 20px rgba(0, 95, 255, 0.03)';
+                                        }}>
+
+                                            {/* Shimmer effect on hover */}
+                                            <div className="absolute inset-0 opacity-0 transition-opacity hover:opacity-100" style={{
+                                                background: 'linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent)',
+                                                backgroundSize: '200% 200%',
+                                                animation: 'shimmer-move 2s linear infinite'
+                                            }} />
+
+                                            {/* Role Label */}
+                                            <div className="text-xs font-bold uppercase tracking-widest mb-3 relative z-10" style={{
+                                                color: msg.role === 'user' ? '#00D9FF' : '#00BFFF',
+                                                textShadow: '0 0 10px currentColor'
+                                            }}>
+                                                {msg.role === 'user' ? '✦ You' : '✦ Auron'}
+                                            </div>
+
+                                            {/* Message Content */}
+                                            <div className="text-base leading-relaxed relative z-10" style={{
+                                                color: msg.role === 'user' ? '#fff' : '#e8e8e8'
+                                            }}>
+                                                {msg.content}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {chatLoading && (
+                                    <div className="mb-6">
+                                        <div className="rounded-2xl p-6 mr-auto max-w-[85%]" style={{
+                                            background: 'rgba(0, 95, 255, 0.06)',
+                                            backdropFilter: 'blur(15px)',
+                                            border: '1px solid rgba(0, 95, 255, 0.2)'
+                                        }}>
+                                            <div className="flex gap-2">
+                                                <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0s' }}></div>
+                                                <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                                <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div ref={messagesEndRef} />
+                            </div>
+                        </div>
+
+                        {/* Liquid Glass Chat Input */}
+                        <div className="mb-8 rounded-3xl relative overflow-hidden" style={{
+                            background: 'rgba(0, 217, 255, 0.05)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(0, 217, 255, 0.25)',
+                            boxShadow: '0 8px 32px 0 rgba(0, 217, 255, 0.2), inset 0 0 30px rgba(0, 217, 255, 0.08)'
+                        }}>
+                            {/* Shimmer border animation */}
+                            <div className="absolute inset-0 opacity-50 pointer-events-none" style={{
+                                background: 'linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.4), transparent)',
+                                backgroundSize: '200% 100%',
+                                animation: 'shimmer-slide 3s ease-in-out infinite'
+                            }} />
+
+                            <div className="flex items-center gap-4 p-4 relative z-10">
+                                <input
+                                    type="text"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    placeholder="Continue the conversation..."
+                                    disabled={chatLoading}
+                                    className="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-500 text-base"
+                                    style={{ caretColor: '#00D9FF' }}
+                                />
+                                <button
+                                    onClick={handleSendMessage}
+                                    disabled={!input.trim() || chatLoading}
+                                    className="px-6 py-3 rounded-xl font-semibold transition-all"
+                                    style={{
+                                        background: input.trim() && !chatLoading
+                                            ? 'linear-gradient(135deg, #00D9FF 0%, #005CFF 100%)'
+                                            : 'rgba(100, 100, 100, 0.3)',
+                                        border: '1px solid rgba(0, 217, 255, 0.3)',
+                                        color: input.trim() && !chatLoading ? '#fff' : '#666',
+                                        boxShadow: input.trim() && !chatLoading
+                                            ? '0 0 20px rgba(0, 217, 255, 0.4)'
+                                            : 'none',
+                                        cursor: input.trim() && !chatLoading ? 'pointer' : 'not-allowed'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (input.trim() && !chatLoading) {
+                                            e.currentTarget.style.boxShadow = '0 0 30px rgba(0, 217, 255, 0.6)';
+                                            e.currentTarget.style.transform = 'scale(1.05)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.boxShadow = input.trim() && !chatLoading
+                                            ? '0 0 20px rgba(0, 217, 255, 0.4)'
+                                            : 'none';
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                    }}>
+                                    {chatLoading ? 'Sending...' : 'Send'}
+                                </button>
+                            </div>
                         </div>
                     </div>
+
+                    {/* Keyframes for animations */}
+                    <style>{`
+                        @keyframes shimmer-bg {
+                            0%, 100% { opacity: 0.5; }
+                            50% { opacity: 1; }
+                        }
+                        @keyframes shimmer-move {
+                            0% { background-position: -200% 0; }
+                            100% { background-position: 200% 0; }
+                        }
+                        @keyframes shimmer-slide {
+                            0% { transform: translateX(-100%); }
+                            100% { transform: translateX(100%); }
+                        }
+                        @keyframes shimmer-text {
+                            0% { background-position: 0% center; }
+                            100% { background-position: 200% center; }
+                        }
+                        @keyframes fadeIn {
+                            from { opacity: 0; transform: translateY(10px); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+                        @keyframes spin {
+                            from { transform: rotate(0deg); }
+                            to { transform: rotate(360deg); }
+                        }
+                        @keyframes pulse {
+                            0%, 100% { opacity: 1; }
+                            50% { opacity: 0.5; }
+                        }
+                    `}</style>
                 </div>
             );
         }
