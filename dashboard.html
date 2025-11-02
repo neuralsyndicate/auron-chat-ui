@@ -989,13 +989,10 @@
 
             const openConversationInChat = (conversation) => {
                 const conversationId = conversation.conversation_id || conversation.id;
-                console.log(`Opening conversation in chat view: ${conversationId}`);
+                console.log(`Opening reflection viewer: ${conversationId}`);
 
-                // Pass conversation_id to ChatView
+                // Open in reflection viewer (stay in reflections view)
                 setLoadedSessionId(conversationId);
-
-                // Navigate to chat view
-                setCurrentView('chat');
             };
 
             if (loading) {
@@ -1136,6 +1133,136 @@
                         )}
                     </div>
 
+                    {/* Reflection Viewer Modal (Full Screen) */}
+                    {loadedSessionId && (
+                        <ReflectionViewer
+                            conversationId={loadedSessionId}
+                            onClose={() => setLoadedSessionId(null)}
+                        />
+                    )}
+
+                </div>
+            );
+        }
+
+        // Reflection Viewer Component (Full Screen Modal)
+        function ReflectionViewer({ conversationId, onClose }) {
+            const [messages, setMessages] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                loadConversation();
+            }, [conversationId]);
+
+            const loadConversation = async () => {
+                try {
+                    setLoading(true);
+                    setError(null);
+                    const token = await getAuthToken();
+
+                    // Step 1: Verify access with BFF
+                    const verifyResponse = await fetch(`${BFF_API_BASE}/get-conversation`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ conversation_id: conversationId })
+                    });
+
+                    if (!verifyResponse.ok) throw new Error('Failed to verify conversation access');
+
+                    const { signed_url, encryption_key } = await verifyResponse.json();
+
+                    // Step 2: Fetch from BunnyCDN
+                    const bunnyResponse = await fetch(signed_url);
+                    if (!bunnyResponse.ok) throw new Error('Failed to fetch from BunnyCDN CDN');
+
+                    // Step 3: Decrypt
+                    const encryptedData = await bunnyResponse.arrayBuffer();
+                    const conversationData = await decryptConversation(encryptedData, encryption_key);
+
+                    setMessages(conversationData.messages || []);
+                } catch (err) {
+                    console.error('Failed to load reflection:', err);
+                    setError(err.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center"
+                    style={{
+                        background: 'rgba(0, 0, 0, 0.95)',
+                        backdropFilter: 'blur(10px)'
+                    }}>
+
+                    {/* Close Button */}
+                    <button
+                        onClick={onClose}
+                        className="absolute top-8 right-8 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
+                        style={{ color: '#00D9FF', fontSize: '24px' }}>
+                        ✕
+                    </button>
+
+                    {/* Content */}
+                    <div className="w-full max-w-4xl mx-auto px-8 h-full flex flex-col">
+
+                        {/* Header */}
+                        <div className="py-8 border-b border-white/10">
+                            <h2 className="text-3xl font-bold text-center" style={{
+                                background: 'linear-gradient(135deg, #00D9FF 0%, #005CFF 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
+                            }}>
+                                Reflection
+                            </h2>
+                        </div>
+
+                        {/* Messages */}
+                        <div className="flex-1 overflow-y-auto py-8" style={{
+                            scrollbarWidth: 'thin',
+                            scrollbarColor: '#00A8FF #1a1a1a'
+                        }}>
+                            {loading && (
+                                <div className="text-center text-gray-400 py-12">
+                                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                    Loading reflection...
+                                </div>
+                            )}
+
+                            {error && (
+                                <div className="text-center text-red-400 py-12">
+                                    Error: {error}
+                                </div>
+                            )}
+
+                            {!loading && !error && messages.map((msg, idx) => (
+                                <div
+                                    key={idx}
+                                    className="mb-8 animate-fade-in"
+                                    style={{ animationDelay: `${idx * 0.1}s` }}>
+
+                                    {/* Role Label */}
+                                    <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{
+                                        color: msg.role === 'user' ? '#00D9FF' : '#00BFFF'
+                                    }}>
+                                        {msg.role === 'user' ? 'You' : 'Auron'}
+                                    </div>
+
+                                    {/* Message Content */}
+                                    <div className="text-base leading-relaxed" style={{
+                                        color: msg.role === 'user' ? '#fff' : '#e0e0e0'
+                                    }}>
+                                        {msg.content}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             );
         }
