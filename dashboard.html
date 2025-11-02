@@ -1137,7 +1137,7 @@
         }
 
         // Reflection Viewer Component (Clean Full Screen Modal)
-        function ReflectionViewer({ conversationId, onClose }) {
+        function ReflectionViewer({ conversationId, onClose, setSessionId }) {
             const [messages, setMessages] = useState([]);
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
@@ -1225,6 +1225,12 @@
                     if (!response.ok) throw new Error('Failed to send message');
 
                     const data = await response.json();
+
+                    // Save session_id to enable sync button in header
+                    if (data.metadata && data.metadata.session_id) {
+                        setSessionId(data.metadata.session_id);
+                        console.log(`✓ Session active: ${data.metadata.session_id}`);
+                    }
 
                     // Handle both structured dialogue response and simple message
                     const auronMessage = data.message?.guidance || data.response || data.message;
@@ -1600,6 +1606,7 @@
                         <ReflectionViewer
                             conversationId={loadedSessionId}
                             onClose={() => setLoadedSessionId(null)}
+                            setSessionId={setSessionId}
                         />
                     )}
                 </div>
