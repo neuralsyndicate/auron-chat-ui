@@ -499,6 +499,12 @@
             return null;
         }
 
+        // Helper function to get user ID
+        async function getUserId() {
+            const userInfo = await window.LogtoAuth.getUserInfo();
+            return userInfo?.sub || null;
+        }
+
         // Beautiful Loading Screen Component
         function LoadingScreen() {
             const [dots, setDots] = useState('');
@@ -921,7 +927,7 @@
                         return;
                     }
 
-                    const response = await fetch(`${DIALOGUE_API_BASE}/conversations`, {
+                    const response = await fetch(`${BFF_API_BASE}/conversations/${await getUserId()}`, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -1300,7 +1306,7 @@
                             setLoading(true);
                             const token = await getAuthToken();
 
-                            const response = await fetch(`${DIALOGUE_API_BASE}/get-conversation`, {
+                            const response = await fetch(`${BFF_API_BASE}/get-conversation`, {
                                 method: 'POST',
                                 headers: {
                                     'Authorization': `Bearer ${token}`,
