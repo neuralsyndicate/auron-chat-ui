@@ -1207,7 +1207,7 @@
                     // Load session into combryth-engine RAM (only once per session)
                     if (!sessionLoaded) {
                         console.log('Loading session into RAM:', conversationId);
-                        const loadResponse = await fetch(`${DIALOGUE_API_BASE}/session/load`, {
+                        const loadResponse = await fetch(`${DIALOGUE_API_BASE}/load-session`, {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
