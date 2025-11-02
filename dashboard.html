@@ -474,6 +474,8 @@
         const API_BASE = 'http://86.38.182.54:8001';
         const DIALOGUE_API_BASE = 'https://api.neuralsyndicate.com';  // Backend via Cloudflare Tunnel
         const BFF_API_BASE = 'https://api.combryth-backbone.ch';  // BFF for Neural Music Profile
+        const BUNNY_STORAGE_URL = 'https://storage.bunnycdn.com/combryth-data';  // BunnyCDN Storage
+        const BUNNY_PASSWORD = 'f528b697-2867-40b5-bf1710764185-4b99-4621';  // Read-only password
         const UNLOCK_THRESHOLD = 10;
 
         // Helper function to get auth token
@@ -1300,7 +1302,8 @@
                             setLoading(true);
                             const token = await getAuthToken();
 
-                            const response = await fetch(`${BFF_API_BASE}/get-conversation`, {
+                            // Step 1: Verify access with BFF
+                            const verifyResponse = await fetch(`${BFF_API_BASE}/get-conversation`, {
                                 method: 'POST',
                                 headers: {
                                     'Authorization': `Bearer ${token}`,
@@ -1311,13 +1314,26 @@
                                 })
                             });
 
-                            if (!response.ok) throw new Error('Failed to load conversation');
+                            if (!verifyResponse.ok) throw new Error('Failed to verify conversation access');
 
-                            const data = await response.json();
-                            console.log('Past conversation loaded:', data);
+                            const { bunny_object_key } = await verifyResponse.json();
+                            console.log('Access verified, fetching from BunnyCDN:', bunny_object_key);
+
+                            // Step 2: Fetch directly from BunnyCDN
+                            const bunnyUrl = `${BUNNY_STORAGE_URL}/${bunny_object_key}`;
+                            const bunnyResponse = await fetch(bunnyUrl, {
+                                headers: {
+                                    'Authorization': 'Basic ' + btoa(`combryth-data:${BUNNY_PASSWORD}`)
+                                }
+                            });
+
+                            if (!bunnyResponse.ok) throw new Error('Failed to fetch from BunnyCDN');
+
+                            const conversationData = await bunnyResponse.json();
+                            console.log('Conversation loaded from BunnyCDN:', conversationData);
 
                             // Replace default message with past conversation
-                            setMessages(data.messages || []);
+                            setMessages(conversationData.messages || []);
                             setSessionId(loadedSessionId);
                             setNeedsLoadSession(true);  // Flag: needs to be loaded into RAM when user sends message
 
