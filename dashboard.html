@@ -501,6 +501,47 @@
             return null;
         }
 
+        // AES-256-GCM Decryption for conversations
+        async function decryptConversation(encryptedData, encryptionKeyB64) {
+            try {
+                // Decode base64 encryption key
+                const keyBytes = Uint8Array.from(atob(encryptionKeyB64), c => c.charCodeAt(0));
+
+                // Extract IV (first 12 bytes) and ciphertext
+                const dataView = new Uint8Array(encryptedData);
+                const iv = dataView.slice(0, 12);
+                const ciphertext = dataView.slice(12);
+
+                console.log('IV length:', iv.length);
+                console.log('Ciphertext length:', ciphertext.length);
+                console.log('Key length:', keyBytes.length);
+
+                // Import encryption key
+                const key = await crypto.subtle.importKey(
+                    'raw',
+                    keyBytes,
+                    { name: 'AES-GCM' },
+                    false,
+                    ['decrypt']
+                );
+
+                // Decrypt using AES-256-GCM
+                const decrypted = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    ciphertext
+                );
+
+                // Parse decrypted JSON
+                const jsonString = new TextDecoder().decode(decrypted);
+                return JSON.parse(jsonString);
+
+            } catch (err) {
+                console.error('Decryption failed:', err);
+                throw new Error(`Failed to decrypt conversation: ${err.message}`);
+            }
+        }
+
         // Beautiful Loading Screen Component
         function LoadingScreen() {
             const [dots, setDots] = useState('');
@@ -1316,7 +1357,7 @@
 
                             if (!verifyResponse.ok) throw new Error('Failed to verify conversation access');
 
-                            const { signed_url } = await verifyResponse.json();
+                            const { signed_url, encryption_key } = await verifyResponse.json();
                             console.log('Access verified, fetching from CDN with signed URL');
 
                             // Step 2: Fetch from BunnyCDN Pull Zone (token-authenticated)
@@ -1333,13 +1374,12 @@
                                 // Plain JSON
                                 conversationData = await bunnyResponse.json();
                             } else {
-                                // Encrypted binary - need to decrypt
+                                // Encrypted binary - decrypt it
                                 const encryptedData = await bunnyResponse.arrayBuffer();
                                 console.log('Encrypted data size:', encryptedData.byteLength);
 
-                                // TODO: Implement decryption
-                                // For now, show error
-                                throw new Error('Conversation is encrypted - decryption not yet implemented');
+                                // Decrypt the conversation with user-specific key from BFF
+                                conversationData = await decryptConversation(encryptedData, encryption_key);
                             }
 
                             console.log('Conversation loaded from CDN:', conversationData);
