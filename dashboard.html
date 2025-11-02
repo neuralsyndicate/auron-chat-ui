@@ -1143,7 +1143,6 @@
             const [error, setError] = useState(null);
             const [input, setInput] = useState('');
             const [chatLoading, setChatLoading] = useState(false);
-            const [sessionLoaded, setSessionLoaded] = useState(false);
             const messagesEndRef = useRef(null);
 
             useEffect(() => {
@@ -1198,33 +1197,19 @@
                 setInput('');
                 setChatLoading(true);
 
-                // Add user message immediately
+                // Capture conversation history BEFORE adding new message
+                const conversationHistory = messages.map(msg => ({
+                    role: msg.role === 'auron' ? 'assistant' : msg.role,
+                    content: msg.content
+                }));
+
+                // Add user message immediately for UI
                 setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
 
                 try {
                     const token = await getAuthToken();
 
-                    // Load session into combryth-engine RAM (only once per session)
-                    if (!sessionLoaded) {
-                        console.log('Loading session into RAM:', conversationId);
-                        const loadResponse = await fetch(`${DIALOGUE_API_BASE}/load-session`, {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ conversation_id: conversationId })
-                        });
-
-                        if (!loadResponse.ok) {
-                            console.warn('Session load failed, continuing anyway');
-                        } else {
-                            console.log('✓ Session loaded into RAM');
-                            setSessionLoaded(true);
-                        }
-                    }
-
-                    // Send message
+                    // Send message with full conversation history
                     const response = await fetch(`${DIALOGUE_API_BASE}/chat`, {
                         method: 'POST',
                         headers: {
@@ -1232,15 +1217,18 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            session_id: conversationId,
-                            message: userMessage
+                            message: userMessage,
+                            conversation_history: conversationHistory
                         })
                     });
 
                     if (!response.ok) throw new Error('Failed to send message');
 
                     const data = await response.json();
-                    setMessages(prev => [...prev, { role: 'auron', content: data.response }]);
+
+                    // Handle both structured dialogue response and simple message
+                    const auronMessage = data.message?.guidance || data.response || data.message;
+                    setMessages(prev => [...prev, { role: 'auron', content: auronMessage }]);
 
                 } catch (err) {
                     console.error('Failed to send message:', err);
