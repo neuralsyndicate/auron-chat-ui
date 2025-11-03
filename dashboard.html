@@ -1403,8 +1403,33 @@
                 // Update progress when user is loaded
                 if (user) {
                     updateProgress();
+                    checkForUnsyncedSessions();
                 }
             }, [user]);
+
+            // Check for unsynced sessions on page load (Option B from spec)
+            const checkForUnsyncedSessions = async () => {
+                try {
+                    const token = await getAuthToken();
+                    if (!token) return;
+
+                    const response = await fetch(`${DIALOGUE_API_BASE}/active-sessions`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (response.ok) {
+                        const { has_unsynced, sessions } = await response.json();
+
+                        if (has_unsynced && sessions && sessions.length > 0) {
+                            // Enable sync button with the first unsynced session
+                            setSessionId(sessions[0].session_id);
+                            console.log(`✓ Found unsynced session: ${sessions[0].session_id}`);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to check for unsynced sessions:', err);
+                }
+            };
 
             const updateProgress = async () => {
                 if (!user) return;
