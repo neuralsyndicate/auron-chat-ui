@@ -1938,10 +1938,16 @@
             }
 
             const dims = profile?.dimensions || {};
-            const sonicTitle = dims.sonic_title || 'EMERGING IDENTITY';
-            const soundDescription = dims.sound_description || null;
+
+            // Handle nested sound_description object
+            const soundDescObj = dims.sound_description || {};
+            const sonicTitle = soundDescObj.sonic_title || 'EMERGING IDENTITY';
+            const soundDescription = soundDescObj.description || soundDescObj.sonic_description || null;
+
+            // Handle neural_spectrum object (has position and direction)
+            const neuralSpectrum = dims.neural_spectrum || {};
+
             const genreFusion = dims.genre_fusion || [];
-            const neuralSpectrum = dims.neural_spectrum || [];
             const soundPalette = dims.sound_palette || [];
             const tonalDNA = dims.tonal_dna || [];
             const rhythmicDNA = dims.rhythmic_dna || [];
@@ -2152,6 +2158,10 @@
         function NeuralSpectrumBar({ data }) {
             const vizRef = useRef(null);
 
+            // Extract position and direction from data object
+            const position = typeof data === 'object' ? (data.position ?? 0.5) : 0.5;
+            const direction = typeof data === 'object' ? (data.direction || 'neutral') : 'neutral';
+
             useEffect(() => {
                 if (!vizRef.current) return;
                 d3.select(vizRef.current).selectAll('*').remove();
@@ -2165,7 +2175,7 @@
                     .attr('width', width)
                     .attr('height', height);
 
-                // Gradient bar
+                // Gradient bar - color shifts based on position
                 const gradient = svg.append('defs')
                     .append('linearGradient')
                     .attr('id', 'spectrum-gradient')
@@ -2196,11 +2206,13 @@
                     .y(d => yScale(d))
                     .curve(d3.curveBasis);
 
+                // Generate wave influenced by position (0.0 = analytical/sharp, 1.0 = sympathetic/smooth)
                 function generateWave(time) {
                     return d3.range(points).map(i => {
                         const x = i / points;
-                        const wave1 = Math.sin((x * 6 + time * 0.01) * Math.PI) * 0.4;
-                        const wave2 = Math.sin((x * 12 + time * 0.02) * Math.PI) * 0.2;
+                        const frequency = 6 + (1 - position) * 4; // Higher frequency for analytical
+                        const wave1 = Math.sin((x * frequency + time * 0.01) * Math.PI) * (0.3 + position * 0.2);
+                        const wave2 = Math.sin((x * 12 + time * 0.02) * Math.PI) * 0.15;
                         return wave1 + wave2;
                     });
                 }
@@ -2211,6 +2223,18 @@
                     .attr('stroke-width', 3)
                     .style('filter', 'drop-shadow(0 0 12px rgba(0, 168, 255, 0.8))');
 
+                // Position indicator
+                const markerX = position * width;
+                svg.append('line')
+                    .attr('x1', markerX)
+                    .attr('x2', markerX)
+                    .attr('y1', 0)
+                    .attr('y2', height)
+                    .attr('stroke', '#00FFFF')
+                    .attr('stroke-width', 2)
+                    .attr('stroke-dasharray', '4,4')
+                    .style('opacity', 0.6);
+
                 let time = 0;
                 function animate() {
                     time += 1;
@@ -2218,9 +2242,18 @@
                     requestAnimationFrame(animate);
                 }
                 animate();
-            }, [data]);
+            }, [data, position]);
 
-            return <div ref={vizRef} className="w-full neural-glow"></div>;
+            return (
+                <div className="w-full">
+                    <div ref={vizRef} className="w-full neural-glow mb-2"></div>
+                    <div className="flex justify-between items-center text-xs text-gray-500 px-2">
+                        <span>Analytical</span>
+                        <span className="text-primary font-semibold text-sm capitalize">{direction} ({(position * 100).toFixed(0)}%)</span>
+                        <span>Sympathetic</span>
+                    </div>
+                </div>
+            );
         }
 
         // 3. Sound Palette Orbital - Orbital visualization with rotating nodes
