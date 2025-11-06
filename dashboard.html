@@ -1947,14 +1947,24 @@
             // Handle neural_spectrum object (has position and direction)
             const neuralSpectrum = dims.neural_spectrum || {};
 
+            // Extract nested arrays and objects from the actual data structure
             const genreFusion = dims.genre_fusion || [];
             const soundPalette = dims.sound_palette || [];
-            const tonalDNA = dims.tonal_dna || [];
-            const rhythmicDNA = dims.rhythmic_dna || [];
-            const emotionalFingerprint = dims.emotional_fingerprint || [];
+
+            // tonal_dna is an object with numeric properties, not an array
+            const tonalDNA = dims.tonal_dna || {};
+            const rhythmicDNA = dims.rhythmic_dna || {};
+
+            // emotional_fingerprint.nodes is the array
+            const emotionalFingerprint = (dims.emotional_fingerprint?.nodes) || [];
+
             const processingSignature = dims.processing_signature || [];
-            const inspirationalTriggers = dims.inspirational_triggers || [];
-            const sonicArchitecture = dims.sonic_architecture || [];
+
+            // inspirational_triggers.sources is the array
+            const inspirationalTriggers = (dims.inspirational_triggers?.sources) || [];
+
+            // sonic_architecture is an object with layering_approach and tension_release
+            const sonicArchitecture = dims.sonic_architecture || {};
 
             return (
                 <div className="h-full overflow-y-auto relative" style={{ background: '#000' }}>
@@ -2333,11 +2343,14 @@
         function TonalDNAQuadrant({ data }) {
             const vizRef = useRef(null);
 
-            useEffect(() => {
-                if (!vizRef.current) return;
-                d3.select(vizRef.current).selectAll('*').remove();
+            // Extract values from object structure {dark_bright: 0.7, minimal_maximal: 0.6}
+            const darkBright = typeof data === 'object' && data !== null ? (data.dark_bright ?? 0.5) : 0.5;
+            const minimalMaximal = typeof data === 'object' && data !== null ? (data.minimal_maximal ?? 0.5) : 0.5;
+            const hasData = typeof data === 'object' && data !== null && (data.dark_bright !== undefined || data.minimal_maximal !== undefined);
 
-                if (!data || !Array.isArray(data) || data.length === 0) return;
+            useEffect(() => {
+                if (!vizRef.current || !hasData) return;
+                d3.select(vizRef.current).selectAll('*').remove();
 
                 const width = 280;
                 const height = 240;
@@ -2362,21 +2375,12 @@
                     .attr('stroke-width', 1)
                     .attr('stroke-opacity', 0.4);
 
-                // Draw central glow
-                const glow = svg.append('circle')
-                    .attr('cx', width / 2)
-                    .attr('cy', height / 2)
-                    .attr('r', 40)
-                    .attr('fill', '#00A8FF')
-                    .attr('opacity', 0.3)
-                    .style('filter', 'blur(20px)');
-
                 // Labels
                 const labels = [
                     { text: 'BRIGHT', x: width / 2, y: 15 },
                     { text: 'DARK', x: width / 2, y: height - 10 },
-                    { text: 'HARMONIC', x: 15, y: height / 2 },
-                    { text: 'DISSONANT', x: width - 75, y: height / 2 }
+                    { text: 'MINIMAL', x: 20, y: height / 2 + 5 },
+                    { text: 'MAXIMAL', x: width - 30, y: height / 2 + 5 }
                 ];
 
                 svg.selectAll('text.label')
@@ -2391,13 +2395,53 @@
                     .attr('fill', '#00A8FF')
                     .attr('font-weight', 'bold')
                     .text(d => d.text);
-            }, [data]);
 
-            if (!data || data.length === 0) {
+                // Plot position based on values
+                // dark_bright: 0=dark (bottom), 1=bright (top)
+                // minimal_maximal: 0=minimal (left), 1=maximal (right)
+                const x = minimalMaximal * width;
+                const y = (1 - darkBright) * height; // Invert Y for screen coordinates
+
+                // Draw position marker
+                svg.append('circle')
+                    .attr('cx', x)
+                    .attr('cy', y)
+                    .attr('r', 12)
+                    .attr('fill', '#00FFFF')
+                    .attr('opacity', 0.8)
+                    .style('filter', 'drop-shadow(0 0 12px rgba(0, 255, 255, 0.9))');
+
+                svg.append('circle')
+                    .attr('cx', x)
+                    .attr('cy', y)
+                    .attr('r', 6)
+                    .attr('fill', '#FFFFFF')
+                    .attr('opacity', 1);
+
+                // Crosshair lines from center to point
+                svg.append('line')
+                    .attr('x1', width / 2)
+                    .attr('y1', height / 2)
+                    .attr('x2', x)
+                    .attr('y2', y)
+                    .attr('stroke', '#00FFFF')
+                    .attr('stroke-width', 1)
+                    .attr('stroke-dasharray', '3,3')
+                    .attr('opacity', 0.5);
+            }, [data, darkBright, minimalMaximal, hasData]);
+
+            if (!hasData) {
                 return <p className="text-gray-600 text-sm text-center py-12">No tonal data yet</p>;
             }
 
-            return <div ref={vizRef} className="flex justify-center neural-glow"></div>;
+            return (
+                <div>
+                    <div ref={vizRef} className="flex justify-center neural-glow mb-2"></div>
+                    <div className="text-center text-xs text-gray-500">
+                        <span>{(darkBright * 100).toFixed(0)}% Bright, {(minimalMaximal * 100).toFixed(0)}% Maximal</span>
+                    </div>
+                </div>
+            );
         }
 
         // 5. Rhythmic DNA Waveform - Waveform showing rhythmic patterns
@@ -2630,63 +2674,33 @@
             return <div ref={vizRef} className="flex justify-center neural-glow"></div>;
         }
 
-        // 9. Sonic Architecture Tower - Stacked layer tower
+        // 9. Sonic Architecture - Display layering approach and tension/release
         function SonicArchitectureTower({ data }) {
-            const vizRef = useRef(null);
+            // Extract text properties from object structure
+            const layeringApproach = typeof data === 'object' && data !== null ? (data.layering_approach || data.layering) : null;
+            const tensionRelease = typeof data === 'object' && data !== null ? (data.tension_release || data.tension) : null;
+            const hasData = layeringApproach || tensionRelease;
 
-            useEffect(() => {
-                if (!vizRef.current) return;
-                d3.select(vizRef.current).selectAll('*').remove();
-
-                if (!data || !Array.isArray(data) || data.length === 0) return;
-
-                const width = 600;
-                const height = 300;
-
-                const svg = d3.select(vizRef.current)
-                    .append('svg')
-                    .attr('width', width)
-                    .attr('height', height);
-
-                const layers = data.slice(0, 6);
-                const layerHeight = 35;
-                const maxWidth = 500;
-
-                layers.forEach((layer, i) => {
-                    const y = height / 2 - ((layers.length * layerHeight) / 2) + (i * layerHeight);
-                    const layerWidth = maxWidth * (0.5 + (layer.weight || 0.5) * 0.5);
-                    const x = (width - layerWidth) / 2;
-
-                    // Layer rectangle
-                    svg.append('rect')
-                        .attr('x', x)
-                        .attr('y', y)
-                        .attr('width', layerWidth)
-                        .attr('height', layerHeight - 5)
-                        .attr('fill', `rgba(0, 168, 255, ${0.2 + i * 0.1})`)
-                        .attr('stroke', '#00A8FF')
-                        .attr('stroke-width', 2)
-                        .attr('rx', 4)
-                        .style('filter', 'drop-shadow(0 0 8px rgba(0, 168, 255, 0.4))');
-
-                    // Layer label
-                    svg.append('text')
-                        .attr('x', width / 2)
-                        .attr('y', y + (layerHeight / 2))
-                        .attr('text-anchor', 'middle')
-                        .attr('dy', 5)
-                        .attr('font-size', '12px')
-                        .attr('font-weight', 'bold')
-                        .attr('fill', '#00A8FF')
-                        .text(layer.name);
-                });
-            }, [data]);
-
-            if (!data || data.length === 0) {
+            if (!hasData) {
                 return <p className="text-gray-600 text-sm text-center py-12">No architecture data yet</p>;
             }
 
-            return <div ref={vizRef} className="flex justify-center neural-glow"></div>;
+            return (
+                <div className="space-y-4 px-6">
+                    {layeringApproach && (
+                        <div className="p-4 rounded-lg bg-black/30 border-l-4 border-primary">
+                            <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-2">Layering Approach</p>
+                            <p className="text-white text-sm leading-relaxed">{layeringApproach}</p>
+                        </div>
+                    )}
+                    {tensionRelease && (
+                        <div className="p-4 rounded-lg bg-black/30 border-l-4 border-purple-500">
+                            <p className="text-xs text-purple-400 font-semibold uppercase tracking-wider mb-2">Tension & Release</p>
+                            <p className="text-white text-sm leading-relaxed">{tensionRelease}</p>
+                        </div>
+                    )}
+                </div>
+            );
         }
 
         ReactDOM.render(<Dashboard />, document.getElementById('root'));
