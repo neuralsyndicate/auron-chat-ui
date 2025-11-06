@@ -2154,7 +2154,7 @@
                     .attr('font-size', '10px')
                     .attr('font-weight', 'bold')
                     .attr('fill', '#FFF')
-                    .text(d => d.data.name.substring(0, 8));
+                    .text(d => (d.data.name || d.data.genre || '').substring(0, 8));
             }, [data]);
 
             if (!data || data.length === 0) {
@@ -2329,7 +2329,7 @@
                     .attr('font-size', '8px')
                     .attr('fill', '#000')
                     .attr('font-weight', 'bold')
-                    .text(d => d.name.substring(0, 4));
+                    .text(d => (d.name || d.sound || '').substring(0, 4));
             }, [data]);
 
             if (!data || data.length === 0) {
@@ -2555,7 +2555,7 @@
                     .attr('font-size', d => Math.min(14, d.r / 4))
                     .attr('font-weight', 'bold')
                     .attr('fill', '#FFF')
-                    .text(d => d.name);
+                    .text(d => (d.emotion || d.name || '').substring(0, 10));
 
                 simulation.on('tick', () => {
                     nodeGroups.attr('transform', d => `translate(${d.x}, ${d.y})`);
@@ -2579,7 +2579,7 @@
                 <div className="space-y-2">
                     {data.slice(0, 6).map((item, i) => (
                         <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-black/30 border-l-2 border-primary/50">
-                            <span className="text-white text-sm">{item.name}</span>
+                            <span className="text-white text-sm">{item.name || item.type || item.signature || 'Unknown'}</span>
                             <span className="text-xs text-gray-400 bg-primary/10 px-2 py-1 rounded">
                                 {Math.round((item.weight || 1) * 10) / 10}
                             </span>
@@ -2663,7 +2663,7 @@
                         .attr('text-anchor', 'middle')
                         .attr('font-size', '9px')
                         .attr('fill', '#00A8FF')
-                        .text(item.name.substring(0, 8));
+                        .text((item.type || item.name || '').substring(0, 8));
                 });
             }, [data]);
 
