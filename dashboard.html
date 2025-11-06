@@ -2216,14 +2216,36 @@
                     .y(d => yScale(d))
                     .curve(d3.curveBasis);
 
-                // Generate wave influenced by position (0.0 = analytical/sharp, 1.0 = sympathetic/smooth)
+                // Generate wave based on position (0.0 = parasympathetic/slow, 1.0 = sympathetic/fast)
+                // Sympathetic: faster, sharper waves (aroused, alert)
+                // Parasympathetic: slower, smoother waves (calm, relaxed)
+                // Hybrid: medium speed (balanced)
                 function generateWave(time) {
                     return d3.range(points).map(i => {
                         const x = i / points;
-                        const frequency = 6 + (1 - position) * 4; // Higher frequency for analytical
-                        const wave1 = Math.sin((x * frequency + time * 0.01) * Math.PI) * (0.3 + position * 0.2);
-                        const wave2 = Math.sin((x * 12 + time * 0.02) * Math.PI) * 0.15;
-                        return wave1 + wave2;
+
+                        // Frequency increases with position (sympathetic = faster)
+                        // Range: 3-12 Hz to show dramatic difference
+                        const baseFrequency = 3 + (position * 9); // 0.0 → 3Hz, 1.0 → 12Hz
+
+                        // Animation speed increases with position (sympathetic = more rapid)
+                        const animSpeed = 0.005 + (position * 0.015); // 0.005-0.020
+
+                        // Amplitude: parasympathetic = wider waves, sympathetic = tighter/sharper
+                        const amplitude1 = 0.5 - (position * 0.2); // 0.5 → 0.3
+                        const amplitude2 = 0.1 + (position * 0.2); // 0.1 → 0.3
+
+                        // Main wave (slower for parasympathetic, faster for sympathetic)
+                        const wave1 = Math.sin((x * baseFrequency + time * animSpeed) * Math.PI) * amplitude1;
+
+                        // Secondary wave (adds sharpness for sympathetic)
+                        const secondaryFreq = baseFrequency * (1 + position); // More harmonics in sympathetic
+                        const wave2 = Math.sin((x * secondaryFreq + time * animSpeed * 2) * Math.PI) * amplitude2;
+
+                        // Noise component (more chaotic in sympathetic state)
+                        const noise = (Math.random() - 0.5) * 0.05 * position;
+
+                        return wave1 + wave2 + noise;
                     });
                 }
 
@@ -2254,13 +2276,27 @@
                 animate();
             }, [data, position]);
 
+            // Determine state label based on position
+            const getStateLabel = () => {
+                if (position < 0.33) return 'Parasympathetic';
+                if (position > 0.66) return 'Sympathetic';
+                return 'Hybrid';
+            };
+
             return (
                 <div className="w-full">
                     <div ref={vizRef} className="w-full neural-glow mb-2"></div>
                     <div className="flex justify-between items-center text-xs text-gray-500 px-2">
-                        <span>Analytical</span>
-                        <span className="text-primary font-semibold text-sm capitalize">{direction} ({(position * 100).toFixed(0)}%)</span>
+                        <span>Parasympathetic</span>
+                        <span className="text-primary font-semibold text-sm">
+                            {getStateLabel()} ({(position * 100).toFixed(0)}%)
+                        </span>
                         <span>Sympathetic</span>
+                    </div>
+                    <div className="text-center text-xs text-gray-600 mt-1">
+                        {position < 0.33 && 'Calm, relaxed, slower waves'}
+                        {position >= 0.33 && position <= 0.66 && 'Balanced, medium energy'}
+                        {position > 0.66 && 'Aroused, alert, faster waves'}
                     </div>
                 </div>
             );
