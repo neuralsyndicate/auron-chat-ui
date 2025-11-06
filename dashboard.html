@@ -2107,7 +2107,7 @@
                 if (!vizRef.current) return;
                 d3.select(vizRef.current).selectAll('*').remove();
 
-                if (!data || data.length === 0) return;
+                if (!data || !Array.isArray(data) || data.length === 0) return;
 
                 const width = 320;
                 const height = 320;
@@ -2264,7 +2264,7 @@
                 if (!vizRef.current) return;
                 d3.select(vizRef.current).selectAll('*').remove();
 
-                if (!data || data.length === 0) return;
+                if (!data || !Array.isArray(data) || data.length === 0) return;
 
                 const width = 280;
                 const height = 240;
@@ -2337,7 +2337,7 @@
                 if (!vizRef.current) return;
                 d3.select(vizRef.current).selectAll('*').remove();
 
-                if (!data || data.length === 0) return;
+                if (!data || !Array.isArray(data) || data.length === 0) return;
 
                 const width = 280;
                 const height = 240;
@@ -2408,7 +2408,7 @@
                 if (!vizRef.current) return;
                 d3.select(vizRef.current).selectAll('*').remove();
 
-                if (!data || data.length === 0) return;
+                if (!data || !Array.isArray(data) || data.length === 0) return;
 
                 const width = 280;
                 const height = 180;
@@ -2474,7 +2474,7 @@
                 if (!vizRef.current) return;
                 d3.select(vizRef.current).selectAll('*').remove();
 
-                if (!data || data.length === 0) return;
+                if (!data || !Array.isArray(data) || data.length === 0) return;
 
                 const width = vizRef.current.clientWidth || 700;
                 const height = 280;
@@ -2527,7 +2527,7 @@
 
         // 7. Data List - Simple list view for text data
         function DataList({ data }) {
-            if (!data || data.length === 0) {
+            if (!data || !Array.isArray(data) || data.length === 0) {
                 return <p className="text-gray-600 text-sm">No data yet</p>;
             }
 
@@ -2553,7 +2553,7 @@
                 if (!vizRef.current) return;
                 d3.select(vizRef.current).selectAll('*').remove();
 
-                if (!data || data.length === 0) return;
+                if (!data || !Array.isArray(data) || data.length === 0) return;
 
                 const width = 280;
                 const height = 240;
@@ -2638,7 +2638,7 @@
                 if (!vizRef.current) return;
                 d3.select(vizRef.current).selectAll('*').remove();
 
-                if (!data || data.length === 0) return;
+                if (!data || !Array.isArray(data) || data.length === 0) return;
 
                 const width = 600;
                 const height = 300;
