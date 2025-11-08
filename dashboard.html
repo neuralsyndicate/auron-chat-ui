@@ -693,6 +693,141 @@
             );
         }
 
+        // Source Card Component - Display individual research source
+        function SourceCard({ source, index }) {
+            // Tier colors (matches evidence hierarchy)
+            const tierColors = {
+                1: '#9333EA',  // Purple - Meta-Analysis/Systematic Review
+                2: '#3B82F6',  // Blue - RCT
+                3: '#10B981',  // Green - Observational
+                4: '#F59E0B',  // Yellow - Case Study
+                5: '#6B7280'   // Gray - Opinion/Limited Evidence
+            };
+
+            const tierColor = tierColors[source.credibility?.tier_number] || '#6B7280';
+            const isScientific = source.source_type === 'scientific';
+
+            return (
+                <div className="source-card mb-4 p-5 rounded-xl glass-card border border-primary/20" style={{
+                    background: 'rgba(10, 10, 20, 0.6)',
+                    transition: 'all 0.3s ease'
+                }}>
+                    {/* Header */}
+                    <div className="flex items-start gap-3 mb-3">
+                        <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                            style={{ background: `${tierColor}20`, color: tierColor, border: `1px solid ${tierColor}` }}>
+                            {index}
+                        </span>
+                        <div className="flex-1">
+                            <h4 className="text-white font-semibold text-sm leading-tight mb-2">{source.title}</h4>
+                            <span className="inline-block px-2 py-1 rounded text-xs font-semibold"
+                                style={{ background: `${tierColor}20`, color: tierColor }}>
+                                {source.credibility?.tier || 'Unknown Tier'}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Metadata */}
+                    <div className="text-xs text-gray-400 mb-3 flex flex-wrap gap-2">
+                        {isScientific ? (
+                            <>
+                                {source.authors && <span>{source.authors}</span>}
+                                {source.journal && source.year && (
+                                    <span>• {source.journal}, {source.year}</span>
+                                )}
+                                {source.cited_by_count && (
+                                    <span>• {source.cited_by_count} citations</span>
+                                )}
+                                {source.is_open_access && (
+                                    <span className="text-green-400">• Open Access</span>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                {source.source && <span>{source.source}</span>}
+                                {source.published_date && <span>• {source.published_date}</span>}
+                            </>
+                        )}
+                    </div>
+
+                    {/* Key Finding */}
+                    {source.key_finding && (
+                        <p className="text-gray-300 text-sm leading-relaxed mb-4 italic border-l-2 border-primary/30 pl-3">
+                            {source.key_finding}
+                        </p>
+                    )}
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between">
+                        {/* Credibility Score */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Credibility:</span>
+                            <div className="w-24 h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full transition-all duration-500"
+                                    style={{
+                                        width: `${source.credibility?.score || 0}%`,
+                                        background: `linear-gradient(90deg, ${tierColor}, ${tierColor}cc)`
+                                    }}
+                                />
+                            </div>
+                            <span className="text-xs font-semibold" style={{ color: tierColor }}>
+                                {source.credibility?.score || 0}/100
+                            </span>
+                        </div>
+
+                        {/* Read Link */}
+                        <a href={source.url} target="_blank" rel="noopener noreferrer"
+                            className="text-xs font-semibold text-primary hover:text-primary-light transition-colors flex items-center gap-1">
+                            {isScientific ? (source.is_open_access ? 'Read (Open Access)' : 'Read Paper') : 'Read Article'}
+                            <span>→</span>
+                        </a>
+                    </div>
+                </div>
+            );
+        }
+
+        // Sources Section Component - Collapsible list of sources
+        function SourcesSection({ sources }) {
+            const [showSources, setShowSources] = useState(false);
+
+            if (!sources || sources.length === 0) return null;
+
+            return (
+                <div className="sources-section mt-6">
+                    {/* Toggle Button */}
+                    <button
+                        onClick={() => setShowSources(!showSources)}
+                        className="w-full py-3 px-5 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-all duration-300 flex items-center justify-between group"
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="text-xl">📚</span>
+                            <span className="text-white font-semibold">
+                                {showSources ? 'Hide' : 'View'} Research Sources
+                            </span>
+                            <span className="px-2 py-1 rounded-full bg-primary/30 text-primary text-xs font-bold">
+                                {sources.length}
+                            </span>
+                        </div>
+                        <span className="text-primary transform transition-transform duration-300"
+                            style={{ transform: showSources ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                            ▼
+                        </span>
+                    </button>
+
+                    {/* Sources List */}
+                    {showSources && (
+                        <div className="mt-4 space-y-3" style={{
+                            animation: 'slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1)'
+                        }}>
+                            {sources.map((source, i) => (
+                                <SourceCard key={source.id || i} source={source} index={i + 1} />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
         // Dialogue Modal Component
         function DialogueModal({ dialogue, onClose, onSendResponse }) {
             const [showQuestion, setShowQuestion] = useState(false);
@@ -881,6 +1016,9 @@
                                 </div>
                             </div>
                         )}
+
+                        {/* Research Sources Section */}
+                        <SourcesSection sources={dialogue.sources} />
                     </div>
                 </div>
             );
@@ -1781,15 +1919,21 @@
                         ? { guidance: data.message, reflective_question: "What insight from this resonates most with you?" }
                         : data.message;
 
+                    // Add sources if available from web search
+                    const dialogueWithSources = {
+                        ...parsedMessage,
+                        sources: data.sources || null  // null if no search conducted
+                    };
+
                     // Open dialogue modal
-                    setCurrentDialogue(parsedMessage);
+                    setCurrentDialogue(dialogueWithSources);
 
                     // Add simple chat bubble to history
                     setMessages(prev => [...prev, {
                         role: 'auron',
                         content: "View Insight →",
                         isDialogue: true,
-                        dialogue: parsedMessage
+                        dialogue: dialogueWithSources
                     }]);
 
                     // Update progress after message
