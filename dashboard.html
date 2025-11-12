@@ -1473,8 +1473,18 @@
                 );
             }
 
-            // Auron message (dialogue with inline research) - NEW BEAUTIFUL LAYOUT
+            // Auron message (dialogue with inline research) - FLOWING NATURAL LAYOUT
             if (message.isDialogue) {
+                // Parse guidance to extract reflection question if embedded
+                let guidance = message.dialogue.guidance || '';
+                let reflectiveQuestion = message.dialogue.reflective_question;
+
+                const reflectionMatch = guidance.match(/REFLECTION QUESTION:\s*(.+?)$/s);
+                if (reflectionMatch) {
+                    reflectiveQuestion = reflectionMatch[1].trim();
+                    guidance = guidance.replace(/REFLECTION QUESTION:\s*.+$/s, '').trim();
+                }
+
                 return (
                     <div className="message flex justify-start">
                         <div style={{
@@ -1504,47 +1514,109 @@
                                 </div>
                             </div>
 
-                            {/* Guidance Text */}
-                            <div className="text-white leading-relaxed mb-6" style={{
+                            {/* Guidance Text - Flowing naturally */}
+                            <div className="text-white leading-relaxed" style={{
                                 fontSize: '1.05rem',
                                 lineHeight: '1.8',
-                                color: 'rgba(255, 255, 255, 0.95)'
+                                color: 'rgba(255, 255, 255, 0.95)',
+                                marginBottom: message.dialogue.research_synthesis ? '1.5rem' : '2rem'
                             }}>
                                 <TextWithCitations
-                                    text={message.dialogue.guidance}
+                                    text={guidance}
                                     cited_references={message.dialogue.cited_references}
                                 />
                             </div>
 
-                            {/* Evidence in the Pattern - Professional Research Section */}
-                            <EvidenceInThePattern
-                                research_synthesis={message.dialogue.research_synthesis}
-                                cited_references={message.dialogue.cited_references}
-                            />
+                            {/* Evidence in the Pattern - Subtle, flowing integration */}
+                            {message.dialogue.research_synthesis && (
+                                <div style={{
+                                    marginBottom: '2rem',
+                                    paddingTop: '1.5rem',
+                                    borderTop: '1px solid rgba(0, 217, 255, 0.08)'
+                                }}>
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        marginBottom: '1rem'
+                                    }}>
+                                        <span style={{ fontSize: '1rem', opacity: 0.7 }}>🔬</span>
+                                        <h4 className="text-white" style={{
+                                            fontSize: '0.85rem',
+                                            letterSpacing: '0.05em',
+                                            textTransform: 'uppercase',
+                                            color: 'rgba(0, 217, 255, 0.7)',
+                                            fontWeight: '600'
+                                        }}>
+                                            Evidence in the Pattern
+                                        </h4>
+                                    </div>
+                                    <div className="text-white leading-relaxed" style={{
+                                        fontSize: '0.95rem',
+                                        lineHeight: '1.8',
+                                        color: 'rgba(255, 255, 255, 0.85)',
+                                        paddingLeft: '1.5rem'
+                                    }}>
+                                        <TextWithCitations
+                                            text={message.dialogue.research_synthesis}
+                                            cited_references={message.dialogue.cited_references}
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
-                            {/* Highlighted Reflective Question */}
-                            <HighlightedQuestion question={message.dialogue.reflective_question} />
+                            {/* Reflective Question - Natural continuation */}
+                            {reflectiveQuestion && (
+                                <div style={{
+                                    marginTop: '2rem',
+                                    paddingTop: '2rem',
+                                    borderTop: '1px solid rgba(0, 217, 255, 0.15)'
+                                }}>
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.75rem',
+                                        marginBottom: '1rem'
+                                    }}>
+                                        <span style={{
+                                            fontSize: '1.5rem',
+                                            filter: 'drop-shadow(0 0 8px rgba(0, 217, 255, 0.3))'
+                                        }}>💭</span>
+                                        <p className="text-white" style={{
+                                            fontSize: '1.1rem',
+                                            lineHeight: '1.6',
+                                            fontWeight: '500',
+                                            color: 'rgba(255, 255, 255, 0.95)',
+                                            fontStyle: 'italic'
+                                        }}>
+                                            {reflectiveQuestion}
+                                        </p>
+                                    </div>
 
-                            {/* User Response Area */}
-                            <UserResponseArea
-                                onSubmit={async (response) => {
-                                    await sendMessage(response);
-                                }}
-                                messageId={message.dialogue.session_id}
-                            />
+                                    {/* User Response Area */}
+                                    <UserResponseArea
+                                        onSubmit={async (response) => {
+                                            await sendMessage(response);
+                                        }}
+                                        messageId={message.dialogue.session_id}
+                                    />
+                                </div>
+                            )}
 
-                            {/* View Full References Button */}
+                            {/* View Full References - Subtle link */}
                             {message.dialogue.sources && message.dialogue.sources.length > 0 && (
                                 <button
                                     onClick={() => onOpenReferences(message.dialogue.sources)}
-                                    className="mt-4 px-5 py-2.5 rounded-xl font-medium text-white transition-all hover:scale-105 text-sm flex items-center gap-2 mx-auto"
+                                    className="mt-6 text-sm flex items-center gap-2 text-white/60 hover:text-white/90 transition-colors mx-auto"
                                     style={{
-                                        background: 'rgba(0, 13, 255, 0.15)',
-                                        border: '1px solid rgba(0, 217, 255, 0.3)',
-                                        boxShadow: '0 0 15px rgba(0, 191, 255, 0.15)'
+                                        background: 'none',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        textDecoration: 'underline',
+                                        textUnderlineOffset: '4px'
                                     }}
                                 >
-                                    <span>📚</span>
+                                    <span style={{ fontSize: '1rem' }}>📚</span>
                                     View Full References ({message.dialogue.sources.length})
                                 </button>
                             )}
