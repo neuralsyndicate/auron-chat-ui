@@ -926,7 +926,7 @@
 
         // Parse text and render inline citations
         function TextWithCitations({ text, cited_references }) {
-            if (!text || !cited_references || cited_references.length === 0) {
+            if (!text || !cited_references || Object.keys(cited_references).length === 0) {
                 return <>{text}</>;
             }
 
@@ -939,47 +939,13 @@
                         const match = part.match(/\[(\d+)\]/);
                         if (match) {
                             const num = parseInt(match[1]);
-                            const ref = cited_references.find(r => r.number === num);
+                            // cited_references is now an object keyed by number: {"1": {...}, "2": {...}}
+                            const ref = cited_references[String(num)] || cited_references[num];
                             return <CitationMarker key={index} number={num} reference={ref} />;
                         }
                         return <span key={index}>{part}</span>;
                     })}
                 </>
-            );
-        }
-
-        // Scientific Knowledge Section - Shows research synthesis with citations (ONLY if triggered)
-        function ScientificKnowledgeSection({ research_synthesis, cited_references }) {
-            if (!research_synthesis) return null;
-
-            return (
-                <div className="scientific-knowledge-section mt-6 mb-6">
-                    <div style={{
-                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
-                        border: '1px solid rgba(59, 130, 246, 0.3)',
-                        borderRadius: '16px',
-                        padding: '1.5rem'
-                    }}>
-                        {/* Header */}
-                        <div className="flex items-center gap-3 mb-4">
-                            <span className="text-2xl">🔬</span>
-                            <h3 className="text-white font-semibold text-lg">
-                                Scientific Knowledge
-                            </h3>
-                        </div>
-
-                        {/* Research Content with Citations */}
-                        <div className="text-white/90 leading-relaxed" style={{
-                            fontSize: '1rem',
-                            lineHeight: '1.8'
-                        }}>
-                            <TextWithCitations
-                                text={research_synthesis}
-                                cited_references={cited_references}
-                            />
-                        </div>
-                    </div>
-                </div>
             );
         }
 
@@ -1103,17 +1069,12 @@
                                     transition: 'all 0.5s ease',
                                     marginBottom: showQuestion ? '0' : '2rem'
                                 }}>
-                                {dialogue.guidance}
+                                <TextWithCitations
+                                    text={dialogue.guidance}
+                                    cited_references={dialogue.cited_references}
+                                />
                             </div>
                         </div>
-
-                        {/* Scientific Knowledge Section - Only shows if research was triggered */}
-                        {!showQuestion && (
-                            <ScientificKnowledgeSection
-                                research_synthesis={dialogue.research_synthesis}
-                                cited_references={dialogue.cited_references}
-                            />
-                        )}
 
                         {/* Continue Button */}
                         {dialogue.reflective_question && !showQuestion && (
@@ -2132,8 +2093,7 @@
                         ...parsedMessage,
                         sources: data.sources || null,  // null if no search conducted
                         research_quality: data.analysis?.web_search?.research_quality || null,  // Pro tier quality metrics
-                        cited_references: data.analysis?.web_search?.cited_references || null,  // For inline [N] citations
-                        research_synthesis: data.research_synthesis || null  // Scientific findings with [N] citations (only if research triggered)
+                        cited_references: data.analysis?.web_search?.cited_references || null  // Object keyed by citation number: {"1": {...}, "2": {...}}
                     };
 
                     // Open dialogue modal
