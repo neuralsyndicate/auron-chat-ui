@@ -2151,7 +2151,7 @@
                         ...parsedMessage,
                         sources: data.sources || null,  // null if no search conducted
                         research_quality: data.analysis?.web_search?.research_quality || null,  // Pro tier quality metrics
-                        cited_references: data.analysis?.web_search?.cited_references || null,  // Object keyed by citation number: {"1": {...}, "2": {...}}
+                        cited_references: data.analysis?.cited_references || null,  // Object keyed by citation number: {"1": {...}, "2": {...}}
                         research_synthesis: data.research_synthesis || null  // Research findings with citations (shows inline in chat)
                     };
 
