@@ -2442,7 +2442,7 @@
             };
 
             return (
-                <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="h-full flex flex-col overflow-hidden">
                     {/* Loading Screen */}
                     {loading && <LoadingScreen />}
 
@@ -2466,7 +2466,10 @@
                     />
 
                     {/* Messages - Generous whitespace, centered (Neural Music style) */}
-                    <div className="flex-1 overflow-y-auto py-16 px-8">
+                    <div className="flex-1 overflow-y-auto py-16 px-8" style={{
+                        scrollbarWidth: 'thin',
+                        scrollbarColor: '#00A8FF #1a1a1a'
+                    }}>
                         <div className="max-w-4xl mx-auto space-y-8">
                             {messages.map((msg, idx) => (
                                 <DialogueMessage
