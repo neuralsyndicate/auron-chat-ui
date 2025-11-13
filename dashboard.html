@@ -1004,7 +1004,7 @@
                     eventSource.addEventListener(eventType, (e) => {
                         try {
                             const data = JSON.parse(e.data);
-                            console.log(`📡 SSE Event: ${eventType}`, data);
+                            // console.log(`📡 SSE Event: ${eventType}`, data);
 
                             if (onProgress) {
                                 onProgress({
@@ -1022,7 +1022,7 @@
                 // Handle Auron token streaming events
                 eventSource.addEventListener('auron_generating', (e) => {
                     try {
-                        console.log('🎯 SSE Event: auron_generating - Auron is responding...');
+                        // console.log('🎯 SSE Event: auron_generating - Auron is responding...');
                         if (onAuronGenerating) {
                             onAuronGenerating();
                         }
@@ -1035,7 +1035,7 @@
                     try {
                         const data = JSON.parse(e.data);
                         const token = data.token;
-                        console.log(`📝 SSE Event: auron_token - "${token}"`);
+                        // console.log(`📝 SSE Event: auron_token - "${token}"`);
                         if (onAuronToken) {
                             onAuronToken(token);
                         }
@@ -1047,7 +1047,7 @@
                 eventSource.addEventListener('auron_complete', (e) => {
                     try {
                         const data = JSON.parse(e.data);
-                        console.log('✅ SSE Event: auron_complete - Final structured response:', data);
+                        // console.log('✅ SSE Event: auron_complete - Final structured response:', data);
                         if (onAuronComplete) {
                             onAuronComplete(data);
                         }
@@ -2986,12 +2986,12 @@
                             }
                         },
                         onAuronGenerating: () => {
-                            console.log('🎯 Auron is generating response - creating streaming message immediately');
+                            // console.log('🎯 Auron is generating response - creating streaming message immediately');
 
                             // Create placeholder message immediately (don't wait for fade)
                             setMessages(prev => {
                                 streamingMessageIndexRef.current = prev.length;
-                                console.log(`📝 Created streaming message at index ${streamingMessageIndexRef.current}`);
+                                // console.log(`📝 Created streaming message at index ${streamingMessageIndexRef.current}`);
 
                                 return [...prev, {
                                     role: 'auron',
@@ -3028,7 +3028,7 @@
                                 displayText = displayText.substring(0, reflectiveIndex).trim();
                             }
 
-                            console.log(`📝 Token: "${token}" | Index: ${currentIndex} | Raw: ${rawText.length} chars | Display: ${displayText.length} chars`);
+                            // console.log(`📝 Token: "${token}" | Index: ${currentIndex} | Raw: ${rawText.length} chars | Display: ${displayText.length} chars`);
 
                             // Update the streaming message with clean text
                             if (currentIndex !== null) {
@@ -3040,7 +3040,7 @@
                             }
                         },
                         onAuronComplete: (data) => {
-                            console.log('✅ Auron response complete - converting to structured dialogue:', data);
+                            // console.log('✅ Auron response complete - converting to structured dialogue:', data);
 
                             const { guidance, reflective_question } = data;
                             const currentIndex = streamingMessageIndexRef.current;
@@ -3058,12 +3058,12 @@
                             const finalGuidance = guidance || cleanStreamedText || '';
                             const finalQuestion = reflective_question || null;
 
-                            console.log(`📊 Final content (using COMPLETE guidance from backend):`);
-                            console.log(`   Streamed (raw): "${streamedText.substring(0, 60)}..." (${streamedText.length} chars)`);
-                            console.log(`   Streamed (clean): "${cleanStreamedText.substring(0, 60)}..." (${cleanStreamedText.length} chars)`);
-                            console.log(`   Complete (parsed): "${guidance?.substring(0, 60)}..." (${guidance?.length || 0} chars)`);
-                            console.log(`   Using: ${finalGuidance === guidance ? 'PARSED COMPLETE' : 'STREAMED'} text`);
-                            console.log(`   Question: ${finalQuestion || 'none'}`);
+                            // console.log(`📊 Final content (using COMPLETE guidance from backend):`);
+                            // console.log(`   Streamed (raw): "${streamedText.substring(0, 60)}..." (${streamedText.length} chars)`);
+                            // console.log(`   Streamed (clean): "${cleanStreamedText.substring(0, 60)}..." (${cleanStreamedText.length} chars)`);
+                            // console.log(`   Complete (parsed): "${guidance?.substring(0, 60)}..." (${guidance?.length || 0} chars)`);
+                            // console.log(`   Using: ${finalGuidance === guidance ? 'PARSED COMPLETE' : 'STREAMED'} text`);
+                            // console.log(`   Question: ${finalQuestion || 'none'}`);
 
                             // Transform streaming message to full structured dialogue
                             if (currentIndex !== null) {
