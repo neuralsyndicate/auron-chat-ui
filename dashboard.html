@@ -553,6 +553,45 @@
             }
         }
 
+        // SSE Streaming Constants - Event mapping for real-time progress
+        const SSE_STAGE_MESSAGES = {
+            'complexity_analyzing': 'Analyzing message complexity...',
+            'complexity_complete': 'Complexity analysis complete',
+            'emotion_analyzing': 'Detecting emotional patterns...',
+            'emotion_complete': 'Emotional patterns identified',
+            'domain_analyzing': 'Mapping knowledge domains...',
+            'domain_complete': 'Knowledge domains mapped',
+            'trigger_analyzing': 'Identifying psychological patterns...',
+            'trigger_complete': 'Psychological patterns recognized',
+            'web_search_analyzing': 'Searching research papers...',
+            'web_search_complete': 'Research complete',
+            'auron_thinking': 'Crafting response...',
+            'auron_complete': 'Response ready',
+            'complete': 'Complete'
+        };
+
+        const SSE_STAGE_PROGRESS = {
+            'complexity_analyzing': 5,
+            'complexity_complete': 12,
+            'emotion_analyzing': 20,
+            'emotion_complete': 30,
+            'domain_analyzing': 40,
+            'domain_complete': 50,
+            'trigger_analyzing': 60,
+            'trigger_complete': 70,
+            'web_search_analyzing': 75,
+            'web_search_complete': 85,
+            'auron_thinking': 90,
+            'auron_complete': 95,
+            'complete': 100
+        };
+
+        const SSE_STAGE_ICONS = {
+            'analyzing': '⚙️',
+            'complete': '✅',
+            'error': '❌'
+        };
+
         // Beautiful Loading Screen Component
         function LoadingScreen() {
             const [dots, setDots] = useState('');
@@ -702,6 +741,299 @@
                     `}</style>
                 </div>
             );
+        }
+
+        // ThinkingPanel - Real-time SSE progress display
+        function ThinkingPanel({ stage, progress, completedStages }) {
+            return (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.92)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 2000,
+                    animation: 'fadeIn 0.3s ease'
+                }}>
+                    <div style={{
+                        width: '500px',
+                        background: 'rgba(10, 10, 31, 0.95)',
+                        backdropFilter: 'blur(40px)',
+                        WebkitBackdropFilter: 'blur(40px)',
+                        border: '1px solid rgba(0, 217, 255, 0.2)',
+                        borderRadius: '20px',
+                        padding: '2.5rem',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
+                    }}>
+                        {/* Header */}
+                        <div style={{
+                            textAlign: 'center',
+                            marginBottom: '2rem'
+                        }}>
+                            <span style={{
+                                fontSize: '3rem',
+                                filter: 'drop-shadow(0 0 20px rgba(0, 217, 255, 0.6))',
+                                display: 'block',
+                                marginBottom: '1rem'
+                            }}>🧠</span>
+                            <h3 style={{
+                                fontSize: '1.5rem',
+                                color: '#00D9FF',
+                                textShadow: '0 0 20px rgba(0, 217, 255, 0.4)',
+                                fontWeight: '600',
+                                margin: 0,
+                                letterSpacing: '0.05em'
+                            }}>AURON</h3>
+                            <p style={{
+                                fontSize: '0.9rem',
+                                color: 'rgba(255, 255, 255, 0.6)',
+                                marginTop: '0.5rem'
+                            }}>Processing your insight...</p>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div style={{
+                            width: '100%',
+                            height: '8px',
+                            background: 'rgba(0, 217, 255, 0.1)',
+                            borderRadius: '4px',
+                            overflow: 'hidden',
+                            marginBottom: '2rem',
+                            position: 'relative'
+                        }}>
+                            <div style={{
+                                width: `${progress}%`,
+                                height: '100%',
+                                background: 'linear-gradient(90deg, #000DFF 0%, #00D9FF 100%)',
+                                borderRadius: '4px',
+                                transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                                boxShadow: '0 0 10px rgba(0, 217, 255, 0.5)'
+                            }} />
+                        </div>
+
+                        {/* Current Stage */}
+                        {stage && SSE_STAGE_MESSAGES[stage] && (
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.75rem',
+                                padding: '1rem',
+                                background: 'rgba(0, 217, 255, 0.08)',
+                                borderRadius: '12px',
+                                marginBottom: '1.5rem',
+                                animation: 'pulse 2s ease-in-out infinite'
+                            }}>
+                                <span style={{ fontSize: '1.5rem' }}>⚙️</span>
+                                <span style={{
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    fontSize: '1rem',
+                                    fontWeight: '500'
+                                }}>
+                                    {SSE_STAGE_MESSAGES[stage]}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Completed Stages */}
+                        {completedStages && completedStages.length > 0 && (
+                            <div style={{
+                                maxHeight: '200px',
+                                overflowY: 'auto',
+                                padding: '0.5rem'
+                            }}>
+                                {completedStages.map((completedStage, idx) => (
+                                    <div key={idx} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.75rem',
+                                        padding: '0.75rem',
+                                        marginBottom: '0.5rem',
+                                        borderRadius: '8px',
+                                        animation: 'slideIn 0.3s ease',
+                                        opacity: 0.7
+                                    }}>
+                                        <span style={{ fontSize: '1.25rem' }}>✅</span>
+                                        <span style={{
+                                            color: 'rgba(255, 255, 255, 0.7)',
+                                            fontSize: '0.9rem'
+                                        }}>
+                                            {SSE_STAGE_MESSAGES[completedStage] || completedStage}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Progress Percentage */}
+                        <div style={{
+                            textAlign: 'center',
+                            marginTop: '1.5rem',
+                            fontSize: '0.85rem',
+                            color: 'rgba(0, 217, 255, 0.8)',
+                            fontWeight: '600'
+                        }}>
+                            {progress}% Complete
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // SSE Chat Helper - Handles streaming chat connection
+        async function connectSSEChat({
+            message,
+            sessionId,
+            token,
+            onProgress,
+            onComplete,
+            onError
+        }) {
+            try {
+                // Step 1: POST to /chat/stream to initiate streaming
+                console.log('🔄 Initiating SSE stream for message:', message.substring(0, 50) + '...');
+
+                const initResponse = await fetch(`${DIALOGUE_API_BASE}/chat/stream`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        metadata: { session_id: sessionId || null }
+                    })
+                });
+
+                if (!initResponse.ok) {
+                    throw new Error(`Failed to initiate stream: ${initResponse.status}`);
+                }
+
+                const { session_id: sseSessionId, status } = await initResponse.json();
+                console.log(`✅ SSE session created: ${sseSessionId}, status: ${status}`);
+
+                // Step 2: Connect to SSE stream endpoint
+                const eventSourceUrl = `${DIALOGUE_API_BASE}/chat/stream/${sseSessionId}?token=${encodeURIComponent(token)}`;
+                console.log('🔌 Connecting to EventSource:', eventSourceUrl);
+
+                const eventSource = new EventSource(eventSourceUrl);
+
+                // Track connection state
+                let isComplete = false;
+
+                // Handle all progress events
+                const progressEvents = [
+                    'complexity_analyzing', 'complexity_complete',
+                    'emotion_analyzing', 'emotion_complete',
+                    'domain_analyzing', 'domain_complete',
+                    'trigger_analyzing', 'trigger_complete',
+                    'web_search_analyzing', 'web_search_complete',
+                    'auron_thinking', 'auron_complete'
+                ];
+
+                progressEvents.forEach(eventType => {
+                    eventSource.addEventListener(eventType, (e) => {
+                        try {
+                            const data = JSON.parse(e.data);
+                            console.log(`📡 SSE Event: ${eventType}`, data);
+
+                            if (onProgress) {
+                                onProgress({
+                                    type: eventType,
+                                    data: data,
+                                    progress: SSE_STAGE_PROGRESS[eventType] || 0
+                                });
+                            }
+                        } catch (err) {
+                            console.error(`Error parsing ${eventType} event:`, err);
+                        }
+                    });
+                });
+
+                // Handle complete event (final result)
+                eventSource.addEventListener('complete', (e) => {
+                    try {
+                        const data = JSON.parse(e.data);
+                        console.log('✅ SSE Complete:', data);
+
+                        isComplete = true;
+                        eventSource.close();
+
+                        if (onComplete) {
+                            onComplete(data.result);
+                        }
+                    } catch (err) {
+                        console.error('Error parsing complete event:', err);
+                        eventSource.close();
+                        if (onError) {
+                            onError(new Error('Failed to parse final result'));
+                        }
+                    }
+                });
+
+                // Handle error events from server
+                eventSource.addEventListener('error_event', (e) => {
+                    try {
+                        const data = JSON.parse(e.data);
+                        console.error('❌ SSE Error Event:', data);
+
+                        eventSource.close();
+                        if (onError) {
+                            onError(new Error(data.error || 'Unknown error'));
+                        }
+                    } catch (err) {
+                        console.error('Error parsing error event:', err);
+                    }
+                });
+
+                // Handle EventSource connection errors
+                eventSource.onerror = (error) => {
+                    if (!isComplete) {
+                        console.error('❌ EventSource connection error:', error);
+                        eventSource.close();
+
+                        if (onError) {
+                            onError(new Error('SSE connection failed'));
+                        }
+                    }
+                };
+
+                // Handle keepalive pings
+                eventSource.addEventListener('ping', (e) => {
+                    console.log('💓 SSE Keepalive ping received');
+                });
+
+                // Connection timeout (60 seconds)
+                const timeout = setTimeout(() => {
+                    if (!isComplete) {
+                        console.error('⏱️ SSE connection timeout');
+                        eventSource.close();
+                        if (onError) {
+                            onError(new Error('Connection timeout'));
+                        }
+                    }
+                }, 60000);
+
+                // Return cleanup function
+                return () => {
+                    clearTimeout(timeout);
+                    if (!isComplete) {
+                        eventSource.close();
+                    }
+                };
+
+            } catch (error) {
+                console.error('❌ Failed to connect SSE:', error);
+                if (onError) {
+                    onError(error);
+                }
+                return () => {}; // Return empty cleanup
+            }
         }
 
         // Source Card Component - Display individual research source
@@ -2346,6 +2678,13 @@
             const [sidebarSources, setSidebarSources] = useState([]);
             const messagesEndRef = useRef(null);
 
+            // SSE Streaming state
+            const [sseProgress, setSSEProgress] = useState(0);
+            const [sseCurrentStage, setSSECurrentStage] = useState('');
+            const [sseCompletedStages, setSSECompletedStages] = useState([]);
+            const [isStreaming, setIsStreaming] = useState(false);
+            const sseCleanupRef = useRef(null);
+
             // Session management (backend holds conversation in RAM)
             const [needsLoadSession, setNeedsLoadSession] = useState(false);
 
@@ -2420,9 +2759,25 @@
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             }, [messages]);
 
+            // Cleanup SSE connection on unmount
+            useEffect(() => {
+                return () => {
+                    if (sseCleanupRef.current) {
+                        console.log('Cleaning up SSE connection');
+                        sseCleanupRef.current();
+                    }
+                };
+            }, []);
+
             const handleSendMessage = async (messageText) => {
                 setMessages(prev => [...prev, { role: 'user', content: messageText }]);
                 setLoading(true);
+                setIsStreaming(true);
+
+                // Reset SSE state
+                setSSEProgress(0);
+                setSSECurrentStage('');
+                setSSECompletedStages([]);
 
                 try {
                     // Get access token for authentication
@@ -2452,56 +2807,119 @@
                         }
                     }
 
-                    const response = await fetch(`${DIALOGUE_API_BASE}/chat`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
+                    // Connect to SSE streaming
+                    const cleanup = await connectSSEChat({
+                        message: messageText,
+                        sessionId: sessionId,
+                        token: token,
+                        onProgress: (event) => {
+                            // Update progress UI
+                            setSSEProgress(event.progress);
+                            setSSECurrentStage(event.type);
+
+                            // Add completed stage (only on *_complete events)
+                            if (event.type.endsWith('_complete')) {
+                                setSSECompletedStages(prev => [...prev, event.type]);
+                            }
                         },
-                        body: JSON.stringify({
-                            message: messageText,
-                            metadata: { session_id: sessionId }  // Send existing session_id (or null for new)
-                        })
+                        onComplete: (result) => {
+                            console.log('SSE Complete - processing result:', result);
+
+                            // Save session_id from response
+                            if (result.metadata && result.metadata.session_id) {
+                                setSessionId(result.metadata.session_id);
+                                console.log(`Session ID: ${result.metadata.session_id}`);
+                            }
+
+                            // Parse structured dialogue response
+                            const parsedMessage = typeof result.message === 'string'
+                                ? { guidance: result.message, reflective_question: "What insight from this resonates most with you?" }
+                                : result.message;
+
+                            // Add sources, research quality, and cited references if available from web search
+                            const dialogueWithSources = {
+                                ...parsedMessage,
+                                sources: result.sources || null,
+                                research_quality: result.analysis?.web_search?.research_quality || null,
+                                cited_references: result.analysis?.cited_references || null,
+                                research_synthesis: result.research_synthesis || null
+                            };
+
+                            // Add dialogue message to history
+                            setMessages(prev => [...prev, {
+                                role: 'auron',
+                                content: "View Insight →",
+                                isDialogue: true,
+                                dialogue: dialogueWithSources
+                            }]);
+
+                            // Update progress
+                            setTimeout(onUpdateProgress, 1000);
+
+                            // Clear streaming state
+                            setIsStreaming(false);
+                            setLoading(false);
+                        },
+                        onError: (error) => {
+                            console.error('SSE Error - falling back to regular chat:', error);
+
+                            // Fallback to regular /chat endpoint
+                            fetch(`${DIALOGUE_API_BASE}/chat`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({
+                                    message: messageText,
+                                    metadata: { session_id: sessionId }
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                // Save session_id
+                                if (data.metadata && data.metadata.session_id) {
+                                    setSessionId(data.metadata.session_id);
+                                }
+
+                                // Parse and display response
+                                const parsedMessage = typeof data.message === 'string'
+                                    ? { guidance: data.message, reflective_question: "What insight from this resonates most with you?" }
+                                    : data.message;
+
+                                const dialogueWithSources = {
+                                    ...parsedMessage,
+                                    sources: data.sources || null,
+                                    research_quality: data.analysis?.web_search?.research_quality || null,
+                                    cited_references: data.analysis?.cited_references || null,
+                                    research_synthesis: data.research_synthesis || null
+                                };
+
+                                setMessages(prev => [...prev, {
+                                    role: 'auron',
+                                    content: "View Insight →",
+                                    isDialogue: true,
+                                    dialogue: dialogueWithSources
+                                }]);
+
+                                setTimeout(onUpdateProgress, 1000);
+                            })
+                            .catch(err => {
+                                setMessages(prev => [...prev, { role: 'auron', content: `Error: ${err.message}` }]);
+                            })
+                            .finally(() => {
+                                setIsStreaming(false);
+                                setLoading(false);
+                            });
+                        }
                     });
 
-                    if (!response.ok) throw new Error('Failed to send message');
-
-                    const data = await response.json();
-
-                    // Save session_id from response (backend manages it)
-                    if (data.metadata && data.metadata.session_id) {
-                        setSessionId(data.metadata.session_id);
-                        console.log(`Session ID: ${data.metadata.session_id}`);
-                    }
-
-                    // Parse structured dialogue response
-                    const parsedMessage = typeof data.message === 'string'
-                        ? { guidance: data.message, reflective_question: "What insight from this resonates most with you?" }
-                        : data.message;
-
-                    // Add sources, research quality, and cited references if available from web search
-                    const dialogueWithSources = {
-                        ...parsedMessage,
-                        sources: data.sources || null,  // null if no search conducted
-                        research_quality: data.analysis?.web_search?.research_quality || null,  // Pro tier quality metrics
-                        cited_references: data.analysis?.cited_references || null,  // Object keyed by citation number: {"1": {...}, "2": {...}}
-                        research_synthesis: data.research_synthesis || null  // Research findings with citations (shows inline in chat)
-                    };
-
-                    // Add dialogue message to history (inline display, no modal auto-open)
-                    setMessages(prev => [...prev, {
-                        role: 'auron',
-                        content: "View Insight →",
-                        isDialogue: true,
-                        dialogue: dialogueWithSources
-                    }]);
-
-                    // Update progress after message
-                    setTimeout(onUpdateProgress, 1000);
+                    // Store cleanup function
+                    sseCleanupRef.current = cleanup;
 
                 } catch (err) {
                     setMessages(prev => [...prev, { role: 'auron', content: `Error: ${err.message}` }]);
-                } finally {
+                    setIsStreaming(false);
                     setLoading(false);
                 }
             };
@@ -2515,8 +2933,14 @@
 
             return (
                 <div className="h-full flex flex-col overflow-hidden">
-                    {/* Loading Screen */}
-                    {loading && <LoadingScreen />}
+                    {/* ThinkingPanel - SSE Progress Display */}
+                    {isStreaming && (
+                        <ThinkingPanel
+                            stage={sseCurrentStage}
+                            progress={sseProgress}
+                            completedStages={sseCompletedStages}
+                        />
+                    )}
 
                     {/* Dialogue Modal */}
                     {currentDialogue && (
