@@ -3033,7 +3033,26 @@
 
                             const { guidance, reflective_question } = data;
                             const currentIndex = streamingMessageIndexRef.current;
-                            const currentGuidance = streamingGuidanceRef.current;
+                            let streamedText = streamingGuidanceRef.current;
+
+                            // Check if streamed text is JSON (backend might stream raw JSON)
+                            let parsedFromStream = null;
+                            if (streamedText.trim().startsWith('{')) {
+                                try {
+                                    parsedFromStream = JSON.parse(streamedText);
+                                    console.log('📋 Streamed text was JSON, parsed:', parsedFromStream);
+                                } catch (e) {
+                                    console.log('⚠️ Streamed text looks like JSON but failed to parse');
+                                }
+                            }
+
+                            // Determine final guidance text
+                            const finalGuidance = parsedFromStream?.guidance || guidance || streamedText;
+                            const finalQuestion = parsedFromStream?.reflective_question || reflective_question || null;
+
+                            console.log(`📊 Final content:`);
+                            console.log(`   Guidance: ${finalGuidance?.substring(0, 100)}...`);
+                            console.log(`   Question: ${finalQuestion || 'none'}`);
 
                             // Transform streaming message to full structured dialogue
                             if (currentIndex !== null) {
@@ -3045,8 +3064,8 @@
                                             isDialogue: true,
                                             isStreaming: false,
                                             dialogue: {
-                                                guidance: guidance || currentGuidance,
-                                                reflective_question: reflective_question || null,
+                                                guidance: finalGuidance,
+                                                reflective_question: finalQuestion,
                                                 sources: null,
                                                 research_quality: null,
                                                 cited_references: null,
