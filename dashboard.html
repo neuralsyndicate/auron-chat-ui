@@ -2986,44 +2986,55 @@
                             }
                         },
                         onAuronGenerating: () => {
-                            console.log('🎯 Auron is generating response - starting ThinkingPanel fade...');
+                            console.log('🎯 Auron is generating response - creating streaming message immediately');
 
-                            // Start fade-out animation
+                            // Create placeholder message immediately (don't wait for fade)
+                            setMessages(prev => {
+                                streamingMessageIndexRef.current = prev.length;
+                                console.log(`📝 Created streaming message at index ${streamingMessageIndexRef.current}`);
+
+                                return [...prev, {
+                                    role: 'auron',
+                                    content: '',
+                                    isStreaming: true,
+                                    guidance: ''
+                                }];
+                            });
+
+                            // DON'T reset buffer - keep accumulated tokens
+                            // streamingGuidanceRef.current is already empty or will be used
+
+                            // Start fade-out animation (visual only, doesn't affect token capture)
                             setIsPanelFading(true);
-
-                            // Wait for fade to complete (1.2s), then create placeholder message
                             setTimeout(() => {
                                 setIsStreaming(false); // Hide ThinkingPanel after fade
-
-                                // Create placeholder message for streaming
-                                setMessages(prev => {
-                                    streamingMessageIndexRef.current = prev.length; // Set index using ref
-                                    console.log(`📝 Created streaming message at index ${streamingMessageIndexRef.current}`);
-
-                                    return [...prev, {
-                                        role: 'auron',
-                                        content: '',
-                                        isStreaming: true,
-                                        guidance: ''
-                                    }];
-                                });
-
-                                streamingGuidanceRef.current = ''; // Reset buffer
-                            }, 1200); // Match fade animation duration
+                            }, 1200);
                         },
                         onAuronToken: (token) => {
                             // Append token to streaming guidance using ref
                             streamingGuidanceRef.current += token;
-                            const currentGuidance = streamingGuidanceRef.current;
+                            let rawText = streamingGuidanceRef.current;
                             const currentIndex = streamingMessageIndexRef.current;
 
-                            console.log(`📝 Token received: "${token}" | Index: ${currentIndex} | Total: ${currentGuidance.length} chars`);
+                            // Strip markers from display (backend sends plain text with markers)
+                            let displayText = rawText;
 
-                            // Update the streaming message
+                            // Remove "GUIDANCE:\n" or "GUIDANCE:" prefix
+                            displayText = displayText.replace(/^GUIDANCE:\s*/i, '');
+
+                            // Remove "REFLECTIVE QUESTION:" section (only show guidance during streaming)
+                            const reflectiveIndex = displayText.search(/\n\s*REFLECTIVE QUESTION:/i);
+                            if (reflectiveIndex !== -1) {
+                                displayText = displayText.substring(0, reflectiveIndex).trim();
+                            }
+
+                            console.log(`📝 Token: "${token}" | Index: ${currentIndex} | Raw: ${rawText.length} chars | Display: ${displayText.length} chars`);
+
+                            // Update the streaming message with clean text
                             if (currentIndex !== null) {
                                 setMessages(msgs => msgs.map((msg, idx) =>
                                     idx === currentIndex
-                                        ? { ...msg, guidance: currentGuidance, content: currentGuidance }
+                                        ? { ...msg, guidance: displayText, content: displayText }
                                         : msg
                                 ));
                             }
@@ -3035,15 +3046,23 @@
                             const currentIndex = streamingMessageIndexRef.current;
                             let streamedText = streamingGuidanceRef.current;
 
-                            // Determine final guidance text
-                            // Priority: Use streamed text if available (backend extracts JSON during streaming)
-                            // Fallback: Use structured data from auron_complete if streaming failed
-                            const finalGuidance = streamedText.trim() || guidance || '';
+                            // Strip markers from streamed text for comparison
+                            let cleanStreamedText = streamedText.replace(/^GUIDANCE:\s*/i, '');
+                            const reflectiveIndex = cleanStreamedText.search(/\n\s*REFLECTIVE QUESTION:/i);
+                            if (reflectiveIndex !== -1) {
+                                cleanStreamedText = cleanStreamedText.substring(0, reflectiveIndex).trim();
+                            }
+
+                            // Use guidance from auron_complete (it's parsed and guaranteed clean)
+                            // Backend parses "GUIDANCE:" and "REFLECTIVE QUESTION:" markers for us
+                            const finalGuidance = guidance || cleanStreamedText || '';
                             const finalQuestion = reflective_question || null;
 
-                            console.log(`📊 Final content (using ${finalGuidance === streamedText ? 'STREAMED' : 'COMPLETE'} text):`);
-                            console.log(`   Streamed: "${streamedText.substring(0, 80)}..." (${streamedText.length} chars)`);
-                            console.log(`   Complete: "${guidance?.substring(0, 80)}..." (${guidance?.length || 0} chars)`);
+                            console.log(`📊 Final content (using COMPLETE guidance from backend):`);
+                            console.log(`   Streamed (raw): "${streamedText.substring(0, 60)}..." (${streamedText.length} chars)`);
+                            console.log(`   Streamed (clean): "${cleanStreamedText.substring(0, 60)}..." (${cleanStreamedText.length} chars)`);
+                            console.log(`   Complete (parsed): "${guidance?.substring(0, 60)}..." (${guidance?.length || 0} chars)`);
+                            console.log(`   Using: ${finalGuidance === guidance ? 'PARSED COMPLETE' : 'STREAMED'} text`);
                             console.log(`   Question: ${finalQuestion || 'none'}`);
 
                             // Transform streaming message to full structured dialogue
