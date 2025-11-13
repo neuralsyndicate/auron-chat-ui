@@ -192,6 +192,26 @@
             }
         }
 
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+        }
+
+        @keyframes blink {
+            0%, 49% {
+                opacity: 1;
+            }
+            50%, 100% {
+                opacity: 0;
+            }
+        }
+
         /* Dialogue Modal - Liquid Glass Cyberpunk Professional */
         .dialogue-modal-overlay {
             position: fixed;
@@ -744,7 +764,7 @@
         }
 
         // ThinkingPanel - Real-time SSE progress display (Liquid Glass Professional)
-        function ThinkingPanel({ stage, progress, completedStages }) {
+        function ThinkingPanel({ stage, progress, completedStages, isFading }) {
             return (
                 <div style={{
                     position: 'fixed',
@@ -753,20 +773,22 @@
                     right: 0,
                     bottom: 0,
                     background: 'rgba(0, 0, 0, 0.75)',
-                    backdropFilter: 'blur(24px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                    backdropFilter: 'blur(16px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(16px) saturate(180%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     zIndex: 2000,
-                    animation: 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+                    animation: isFading
+                        ? 'fadeOut 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+                        : 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}>
                     <div style={{
                         width: '520px',
                         maxWidth: '90vw',
                         background: 'rgba(255, 255, 255, 0.03)',
-                        backdropFilter: 'blur(60px) saturate(200%)',
-                        WebkitBackdropFilter: 'blur(60px) saturate(200%)',
+                        backdropFilter: 'blur(32px) saturate(200%)',
+                        WebkitBackdropFilter: 'blur(32px) saturate(200%)',
                         border: '1px solid rgba(255, 255, 255, 0.08)',
                         borderRadius: '24px',
                         padding: '3rem 2.5rem',
@@ -931,6 +953,9 @@
             sessionId,
             token,
             onProgress,
+            onAuronGenerating,
+            onAuronToken,
+            onAuronComplete,
             onComplete,
             onError
         }) {
@@ -966,14 +991,13 @@
                 // Track connection state
                 let isComplete = false;
 
-                // Handle all progress events
+                // Handle all progress events (analysis stages only)
                 const progressEvents = [
                     'complexity_analyzing', 'complexity_complete',
                     'emotion_analyzing', 'emotion_complete',
                     'domain_analyzing', 'domain_complete',
                     'trigger_analyzing', 'trigger_complete',
-                    'web_search_analyzing', 'web_search_complete',
-                    'auron_thinking', 'auron_complete'
+                    'web_search_analyzing', 'web_search_complete'
                 ];
 
                 progressEvents.forEach(eventType => {
@@ -993,6 +1017,43 @@
                             console.error(`Error parsing ${eventType} event:`, err);
                         }
                     });
+                });
+
+                // Handle Auron token streaming events
+                eventSource.addEventListener('auron_generating', (e) => {
+                    try {
+                        console.log('🎯 SSE Event: auron_generating - Auron is responding...');
+                        if (onAuronGenerating) {
+                            onAuronGenerating();
+                        }
+                    } catch (err) {
+                        console.error('Error handling auron_generating event:', err);
+                    }
+                });
+
+                eventSource.addEventListener('auron_token', (e) => {
+                    try {
+                        const data = JSON.parse(e.data);
+                        const token = data.token;
+                        console.log(`📝 SSE Event: auron_token - "${token}"`);
+                        if (onAuronToken) {
+                            onAuronToken(token);
+                        }
+                    } catch (err) {
+                        console.error('Error parsing auron_token event:', err);
+                    }
+                });
+
+                eventSource.addEventListener('auron_complete', (e) => {
+                    try {
+                        const data = JSON.parse(e.data);
+                        console.log('✅ SSE Event: auron_complete - Final structured response:', data);
+                        if (onAuronComplete) {
+                            onAuronComplete(data);
+                        }
+                    } catch (err) {
+                        console.error('Error parsing auron_complete event:', err);
+                    }
                 });
 
                 // Handle complete event (final result)
@@ -1840,6 +1901,60 @@
                         <div className="max-w-[70%] rounded-2xl px-6 py-4 bg-gradient-to-r from-primary/30 to-primary-dark/30 border border-primary/50">
                             <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">You</p>
                             <p className="text-white leading-relaxed">{message.content}</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Auron message (streaming) - Simple text display while typing
+            if (message.isStreaming) {
+                return (
+                    <div className="message flex justify-start">
+                        <div style={{
+                            maxWidth: '85%',
+                            background: 'rgba(255, 255, 255, 0.02)',
+                            backdropFilter: 'blur(20px)',
+                            WebkitBackdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.06)',
+                            borderRadius: '20px',
+                            padding: '1.75rem 2rem',
+                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
+                        }}>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.625rem',
+                                marginBottom: '1rem'
+                            }}>
+                                <span style={{
+                                    fontSize: '1.25rem'
+                                }}>🧠</span>
+                                <p style={{
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    color: '#00D9FF',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    margin: 0
+                                }}>AURON</p>
+                            </div>
+                            <div style={{
+                                color: 'rgba(255, 255, 255, 0.85)',
+                                lineHeight: '1.75',
+                                fontSize: '1.05rem',
+                                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                            }}>
+                                {message.guidance}
+                                <span style={{
+                                    display: 'inline-block',
+                                    width: '2px',
+                                    height: '1.2em',
+                                    background: '#00D9FF',
+                                    marginLeft: '2px',
+                                    animation: 'blink 1s step-end infinite',
+                                    verticalAlign: 'text-bottom'
+                                }} />
+                            </div>
                         </div>
                     </div>
                 );
@@ -2722,6 +2837,11 @@
             const [sseProgress, setSSEProgress] = useState(0);
             const [sseCurrentStage, setSSECurrentStage] = useState('');
             const [sseCompletedStages, setSSECompletedStages] = useState([]);
+            const [isPanelFading, setIsPanelFading] = useState(false);
+
+            // Token streaming state
+            const [streamingMessageIndex, setStreamingMessageIndex] = useState(null);
+            const [streamingGuidance, setStreamingGuidance] = useState('');
             const [isStreaming, setIsStreaming] = useState(false);
             const sseCleanupRef = useRef(null);
 
@@ -2818,6 +2938,9 @@
                 setSSEProgress(0);
                 setSSECurrentStage('');
                 setSSECompletedStages([]);
+                setIsPanelFading(false);
+                setStreamingMessageIndex(null);
+                setStreamingGuidance('');
 
                 try {
                     // Get access token for authentication
@@ -2862,8 +2985,78 @@
                                 setSSECompletedStages(prev => [...prev, event.type]);
                             }
                         },
+                        onAuronGenerating: () => {
+                            console.log('🎯 Auron is generating response - starting ThinkingPanel fade...');
+
+                            // Start fade-out animation
+                            setIsPanelFading(true);
+
+                            // Wait for fade to complete (1.2s), then create placeholder message
+                            setTimeout(() => {
+                                setIsStreaming(false); // Hide ThinkingPanel after fade
+
+                                // Create placeholder message for streaming
+                                setMessages(prev => {
+                                    const newMessages = [...prev, {
+                                        role: 'auron',
+                                        content: '',
+                                        isStreaming: true,
+                                        guidance: ''
+                                    }];
+                                    // Store the index of this message
+                                    setStreamingMessageIndex(newMessages.length - 1);
+                                    return newMessages;
+                                });
+
+                                setStreamingGuidance(''); // Reset buffer
+                            }, 1200); // Match fade animation duration
+                        },
+                        onAuronToken: (token) => {
+                            // Append token to streaming guidance
+                            setStreamingGuidance(prev => {
+                                const newGuidance = prev + token;
+
+                                // Update the streaming message
+                                setMessages(msgs => msgs.map((msg, idx) =>
+                                    idx === streamingMessageIndex
+                                        ? { ...msg, guidance: newGuidance, content: newGuidance }
+                                        : msg
+                                ));
+
+                                return newGuidance;
+                            });
+                        },
+                        onAuronComplete: (data) => {
+                            console.log('✅ Auron response complete - converting to structured dialogue:', data);
+
+                            const { guidance, reflective_question } = data;
+
+                            // Transform streaming message to full structured dialogue
+                            setMessages(msgs => msgs.map((msg, idx) =>
+                                idx === streamingMessageIndex
+                                    ? {
+                                        role: 'auron',
+                                        content: "View Insight →",
+                                        isDialogue: true,
+                                        isStreaming: false,
+                                        dialogue: {
+                                            guidance: guidance || streamingGuidance,
+                                            reflective_question: reflective_question || null,
+                                            sources: null,
+                                            research_quality: null,
+                                            cited_references: null,
+                                            research_synthesis: null
+                                        }
+                                    }
+                                    : msg
+                            ));
+
+                            // Clear streaming state
+                            setStreamingMessageIndex(null);
+                            setStreamingGuidance('');
+                        },
                         onComplete: (result) => {
-                            console.log('SSE Complete - processing result:', result);
+                            console.log('SSE Complete - final metadata:', result);
 
                             // Save session_id from response
                             if (result.metadata && result.metadata.session_id) {
@@ -2871,28 +3064,23 @@
                                 console.log(`Session ID: ${result.metadata.session_id}`);
                             }
 
-                            // Parse structured dialogue response
-                            const messageData = result.auron_response || result.message;
-                            const parsedMessage = typeof messageData === 'string'
-                                ? { guidance: messageData, reflective_question: "What insight from this resonates most with you?" }
-                                : messageData;
-
-                            // Add sources, research quality, and cited references if available from web search
-                            const dialogueWithSources = {
-                                ...parsedMessage,
-                                sources: result.sources || null,
-                                research_quality: result.analysis?.web_search?.research_quality || null,
-                                cited_references: result.analysis?.cited_references || null,
-                                research_synthesis: result.research_synthesis || null
-                            };
-
-                            // Add dialogue message to history
-                            setMessages(prev => [...prev, {
-                                role: 'auron',
-                                content: "View Insight →",
-                                isDialogue: true,
-                                dialogue: dialogueWithSources
-                            }]);
+                            // Update the message with sources and research data if available
+                            if (streamingMessageIndex !== null && result.sources) {
+                                setMessages(msgs => msgs.map((msg, idx) =>
+                                    idx === streamingMessageIndex && msg.dialogue
+                                        ? {
+                                            ...msg,
+                                            dialogue: {
+                                                ...msg.dialogue,
+                                                sources: result.sources || msg.dialogue.sources,
+                                                research_quality: result.analysis?.web_search?.research_quality || msg.dialogue.research_quality,
+                                                cited_references: result.analysis?.cited_references || msg.dialogue.cited_references,
+                                                research_synthesis: result.research_synthesis || msg.dialogue.research_synthesis
+                                            }
+                                        }
+                                        : msg
+                                ));
+                            }
 
                             // Update progress
                             setTimeout(onUpdateProgress, 1000);
@@ -2900,6 +3088,7 @@
                             // Clear streaming state
                             setIsStreaming(false);
                             setLoading(false);
+                            setIsPanelFading(false);
                         },
                         onError: (error) => {
                             console.error('SSE Error - falling back to regular chat:', error);
@@ -2976,11 +3165,12 @@
             return (
                 <div className="h-full flex flex-col overflow-hidden">
                     {/* ThinkingPanel - SSE Progress Display */}
-                    {isStreaming && (
+                    {(isStreaming || isPanelFading) && (
                         <ThinkingPanel
                             stage={sseCurrentStage}
                             progress={sseProgress}
                             completedStages={sseCompletedStages}
+                            isFading={isPanelFading}
                         />
                     )}
 
