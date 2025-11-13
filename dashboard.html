@@ -192,17 +192,6 @@
             }
         }
 
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
         /* Dialogue Modal - Liquid Glass Cyberpunk Professional */
         .dialogue-modal-overlay {
             position: fixed;
@@ -759,56 +748,63 @@
             return (
                 <div style={{
                     position: 'fixed',
-                    bottom: '120px',
-                    right: '2rem',
-                    width: '420px',
-                    background: 'rgba(10, 10, 31, 0.98)',
-                    backdropFilter: 'blur(40px)',
-                    WebkitBackdropFilter: 'blur(40px)',
-                    border: '1px solid rgba(0, 217, 255, 0.3)',
-                    borderRadius: '20px',
-                    padding: '1.5rem',
-                    boxShadow: '0 12px 48px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 217, 255, 0.15)',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.92)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     zIndex: 2000,
-                    animation: 'slideInRight 0.3s ease'
+                    animation: 'fadeIn 0.3s ease'
                 }}>
-                    {/* Header */}
                     <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.75rem',
-                            marginBottom: '1.25rem'
+                        width: '500px',
+                        background: 'rgba(10, 10, 31, 0.95)',
+                        backdropFilter: 'blur(40px)',
+                        WebkitBackdropFilter: 'blur(40px)',
+                        border: '1px solid rgba(0, 217, 255, 0.2)',
+                        borderRadius: '20px',
+                        padding: '2.5rem',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
+                    }}>
+                        {/* Header */}
+                        <div style={{
+                            textAlign: 'center',
+                            marginBottom: '2rem'
                         }}>
                             <span style={{
-                                fontSize: '2rem',
-                                filter: 'drop-shadow(0 0 20px rgba(0, 217, 255, 0.6))'
+                                fontSize: '3rem',
+                                filter: 'drop-shadow(0 0 20px rgba(0, 217, 255, 0.6))',
+                                display: 'block',
+                                marginBottom: '1rem'
                             }}>🧠</span>
-                            <div>
-                                <h3 style={{
-                                    fontSize: '1.1rem',
-                                    color: '#00D9FF',
-                                    textShadow: '0 0 20px rgba(0, 217, 255, 0.4)',
-                                    fontWeight: '600',
-                                    margin: 0,
-                                    letterSpacing: '0.05em'
-                                }}>AURON</h3>
-                                <p style={{
-                                    fontSize: '0.8rem',
-                                    color: 'rgba(255, 255, 255, 0.5)',
-                                    margin: 0,
-                                    marginTop: '0.25rem'
-                                }}>Processing...</p>
-                            </div>
+                            <h3 style={{
+                                fontSize: '1.5rem',
+                                color: '#00D9FF',
+                                textShadow: '0 0 20px rgba(0, 217, 255, 0.4)',
+                                fontWeight: '600',
+                                margin: 0,
+                                letterSpacing: '0.05em'
+                            }}>AURON</h3>
+                            <p style={{
+                                fontSize: '0.9rem',
+                                color: 'rgba(255, 255, 255, 0.6)',
+                                marginTop: '0.5rem'
+                            }}>Processing your insight...</p>
                         </div>
 
                         {/* Progress Bar */}
                         <div style={{
                             width: '100%',
-                            height: '6px',
+                            height: '8px',
                             background: 'rgba(0, 217, 255, 0.1)',
-                            borderRadius: '3px',
+                            borderRadius: '4px',
                             overflow: 'hidden',
-                            marginBottom: '1rem',
+                            marginBottom: '2rem',
                             position: 'relative'
                         }}>
                             <div style={{
@@ -826,17 +822,17 @@
                             <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '0.6rem',
-                                padding: '0.75rem',
+                                gap: '0.75rem',
+                                padding: '1rem',
                                 background: 'rgba(0, 217, 255, 0.08)',
-                                borderRadius: '10px',
-                                marginBottom: '1rem',
+                                borderRadius: '12px',
+                                marginBottom: '1.5rem',
                                 animation: 'pulse 2s ease-in-out infinite'
                             }}>
-                                <span style={{ fontSize: '1.2rem' }}>⚙️</span>
+                                <span style={{ fontSize: '1.5rem' }}>⚙️</span>
                                 <span style={{
                                     color: 'rgba(255, 255, 255, 0.9)',
-                                    fontSize: '0.85rem',
+                                    fontSize: '1rem',
                                     fontWeight: '500'
                                 }}>
                                     {SSE_STAGE_MESSAGES[stage]}
@@ -847,25 +843,25 @@
                         {/* Completed Stages */}
                         {completedStages && completedStages.length > 0 && (
                             <div style={{
-                                maxHeight: '150px',
+                                maxHeight: '200px',
                                 overflowY: 'auto',
-                                padding: '0.25rem'
+                                padding: '0.5rem'
                             }}>
                                 {completedStages.map((completedStage, idx) => (
                                     <div key={idx} style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '0.5rem',
-                                        padding: '0.5rem',
-                                        marginBottom: '0.35rem',
-                                        borderRadius: '6px',
+                                        gap: '0.75rem',
+                                        padding: '0.75rem',
+                                        marginBottom: '0.5rem',
+                                        borderRadius: '8px',
                                         animation: 'slideIn 0.3s ease',
-                                        opacity: 0.6
+                                        opacity: 0.7
                                     }}>
-                                        <span style={{ fontSize: '1rem' }}>✅</span>
+                                        <span style={{ fontSize: '1.25rem' }}>✅</span>
                                         <span style={{
-                                            color: 'rgba(255, 255, 255, 0.6)',
-                                            fontSize: '0.75rem'
+                                            color: 'rgba(255, 255, 255, 0.7)',
+                                            fontSize: '0.9rem'
                                         }}>
                                             {SSE_STAGE_MESSAGES[completedStage] || completedStage}
                                         </span>
@@ -876,14 +872,15 @@
 
                         {/* Progress Percentage */}
                         <div style={{
-                            textAlign: 'right',
-                            marginTop: '0.75rem',
-                            fontSize: '0.75rem',
-                            color: 'rgba(0, 217, 255, 0.7)',
+                            textAlign: 'center',
+                            marginTop: '1.5rem',
+                            fontSize: '0.85rem',
+                            color: 'rgba(0, 217, 255, 0.8)',
                             fontWeight: '600'
                         }}>
-                            {progress}%
+                            {progress}% Complete
                         </div>
+                    </div>
                 </div>
             );
         }
