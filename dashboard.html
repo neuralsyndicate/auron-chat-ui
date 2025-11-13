@@ -3035,23 +3035,15 @@
                             const currentIndex = streamingMessageIndexRef.current;
                             let streamedText = streamingGuidanceRef.current;
 
-                            // Check if streamed text is JSON (backend might stream raw JSON)
-                            let parsedFromStream = null;
-                            if (streamedText.trim().startsWith('{')) {
-                                try {
-                                    parsedFromStream = JSON.parse(streamedText);
-                                    console.log('📋 Streamed text was JSON, parsed:', parsedFromStream);
-                                } catch (e) {
-                                    console.log('⚠️ Streamed text looks like JSON but failed to parse');
-                                }
-                            }
-
                             // Determine final guidance text
-                            const finalGuidance = parsedFromStream?.guidance || guidance || streamedText;
-                            const finalQuestion = parsedFromStream?.reflective_question || reflective_question || null;
+                            // Priority: Use streamed text if available (backend extracts JSON during streaming)
+                            // Fallback: Use structured data from auron_complete if streaming failed
+                            const finalGuidance = streamedText.trim() || guidance || '';
+                            const finalQuestion = reflective_question || null;
 
-                            console.log(`📊 Final content:`);
-                            console.log(`   Guidance: ${finalGuidance?.substring(0, 100)}...`);
+                            console.log(`📊 Final content (using ${finalGuidance === streamedText ? 'STREAMED' : 'COMPLETE'} text):`);
+                            console.log(`   Streamed: "${streamedText.substring(0, 80)}..." (${streamedText.length} chars)`);
+                            console.log(`   Complete: "${guidance?.substring(0, 80)}..." (${guidance?.length || 0} chars)`);
                             console.log(`   Question: ${finalQuestion || 'none'}`);
 
                             // Transform streaming message to full structured dialogue
