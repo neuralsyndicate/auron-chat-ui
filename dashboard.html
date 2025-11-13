@@ -2839,9 +2839,9 @@
             const [sseCompletedStages, setSSECompletedStages] = useState([]);
             const [isPanelFading, setIsPanelFading] = useState(false);
 
-            // Token streaming state
-            const [streamingMessageIndex, setStreamingMessageIndex] = useState(null);
-            const [streamingGuidance, setStreamingGuidance] = useState('');
+            // Token streaming state (use ref to avoid closure issues)
+            const streamingMessageIndexRef = useRef(null);
+            const streamingGuidanceRef = useRef('');
             const [isStreaming, setIsStreaming] = useState(false);
             const sseCleanupRef = useRef(null);
 
@@ -2939,8 +2939,8 @@
                 setSSECurrentStage('');
                 setSSECompletedStages([]);
                 setIsPanelFading(false);
-                setStreamingMessageIndex(null);
-                setStreamingGuidance('');
+                streamingMessageIndexRef.current = null;
+                streamingGuidanceRef.current = '';
 
                 try {
                     // Get access token for authentication
@@ -2997,63 +2997,69 @@
 
                                 // Create placeholder message for streaming
                                 setMessages(prev => {
-                                    const newMessages = [...prev, {
+                                    streamingMessageIndexRef.current = prev.length; // Set index using ref
+                                    console.log(`📝 Created streaming message at index ${streamingMessageIndexRef.current}`);
+
+                                    return [...prev, {
                                         role: 'auron',
                                         content: '',
                                         isStreaming: true,
                                         guidance: ''
                                     }];
-                                    // Store the index of this message
-                                    setStreamingMessageIndex(newMessages.length - 1);
-                                    return newMessages;
                                 });
 
-                                setStreamingGuidance(''); // Reset buffer
+                                streamingGuidanceRef.current = ''; // Reset buffer
                             }, 1200); // Match fade animation duration
                         },
                         onAuronToken: (token) => {
-                            // Append token to streaming guidance
-                            setStreamingGuidance(prev => {
-                                const newGuidance = prev + token;
+                            // Append token to streaming guidance using ref
+                            streamingGuidanceRef.current += token;
+                            const currentGuidance = streamingGuidanceRef.current;
+                            const currentIndex = streamingMessageIndexRef.current;
 
-                                // Update the streaming message
+                            console.log(`📝 Token received: "${token}" | Index: ${currentIndex} | Total: ${currentGuidance.length} chars`);
+
+                            // Update the streaming message
+                            if (currentIndex !== null) {
                                 setMessages(msgs => msgs.map((msg, idx) =>
-                                    idx === streamingMessageIndex
-                                        ? { ...msg, guidance: newGuidance, content: newGuidance }
+                                    idx === currentIndex
+                                        ? { ...msg, guidance: currentGuidance, content: currentGuidance }
                                         : msg
                                 ));
-
-                                return newGuidance;
-                            });
+                            }
                         },
                         onAuronComplete: (data) => {
                             console.log('✅ Auron response complete - converting to structured dialogue:', data);
 
                             const { guidance, reflective_question } = data;
+                            const currentIndex = streamingMessageIndexRef.current;
+                            const currentGuidance = streamingGuidanceRef.current;
 
                             // Transform streaming message to full structured dialogue
-                            setMessages(msgs => msgs.map((msg, idx) =>
-                                idx === streamingMessageIndex
-                                    ? {
-                                        role: 'auron',
-                                        content: "View Insight →",
-                                        isDialogue: true,
-                                        isStreaming: false,
-                                        dialogue: {
-                                            guidance: guidance || streamingGuidance,
-                                            reflective_question: reflective_question || null,
-                                            sources: null,
-                                            research_quality: null,
-                                            cited_references: null,
-                                            research_synthesis: null
+                            if (currentIndex !== null) {
+                                setMessages(msgs => msgs.map((msg, idx) =>
+                                    idx === currentIndex
+                                        ? {
+                                            role: 'auron',
+                                            content: "View Insight →",
+                                            isDialogue: true,
+                                            isStreaming: false,
+                                            dialogue: {
+                                                guidance: guidance || currentGuidance,
+                                                reflective_question: reflective_question || null,
+                                                sources: null,
+                                                research_quality: null,
+                                                cited_references: null,
+                                                research_synthesis: null
+                                            }
                                         }
-                                    }
-                                    : msg
-                            ));
+                                        : msg
+                                ));
+                            }
 
                             // Clear streaming state
-                            setStreamingMessageIndex(null);
-                            setStreamingGuidance('');
+                            streamingMessageIndexRef.current = null;
+                            streamingGuidanceRef.current = '';
                         },
                         onComplete: (result) => {
                             console.log('SSE Complete - final metadata:', result);
@@ -3065,9 +3071,10 @@
                             }
 
                             // Update the message with sources and research data if available
-                            if (streamingMessageIndex !== null && result.sources) {
+                            const currentIndex = streamingMessageIndexRef.current;
+                            if (currentIndex !== null && result.sources) {
                                 setMessages(msgs => msgs.map((msg, idx) =>
-                                    idx === streamingMessageIndex && msg.dialogue
+                                    idx === currentIndex && msg.dialogue
                                         ? {
                                             ...msg,
                                             dialogue: {
