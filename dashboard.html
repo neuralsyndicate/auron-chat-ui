@@ -763,187 +763,530 @@
             );
         }
 
-        // ThinkingPanel - Real-time SSE progress display (Liquid Glass Professional)
-        function ThinkingPanel({ stage, progress, completedStages, isFading }) {
-            return (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0, 0, 0, 0.75)',
-                    backdropFilter: 'blur(16px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 2000,
-                    animation: isFading
-                        ? 'fadeOut 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards'
-                        : 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
-                }}>
-                    <div style={{
-                        width: '520px',
-                        maxWidth: '90vw',
-                        background: 'rgba(255, 255, 255, 0.03)',
-                        backdropFilter: 'blur(32px) saturate(200%)',
-                        WebkitBackdropFilter: 'blur(32px) saturate(200%)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        borderRadius: '24px',
-                        padding: '3rem 2.5rem',
-                        boxShadow: `
-                            0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-                            0 20px 60px rgba(0, 0, 0, 0.6),
-                            0 0 80px rgba(0, 217, 255, 0.08)
-                        `,
-                        animation: 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
-                    }}>
-                        {/* Header */}
-                        <div style={{
-                            textAlign: 'center',
-                            marginBottom: '2.5rem'
-                        }}>
-                            <div style={{
-                                width: '48px',
-                                height: '48px',
-                                margin: '0 auto 1.25rem',
-                                background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.15), rgba(0, 217, 255, 0.15))',
-                                border: '1px solid rgba(0, 217, 255, 0.2)',
-                                borderRadius: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '1.5rem',
-                                boxShadow: '0 4px 16px rgba(0, 217, 255, 0.1)'
-                            }}>🧠</div>
-                            <h3 style={{
-                                fontSize: '1.25rem',
-                                color: 'rgba(255, 255, 255, 0.95)',
-                                fontWeight: '600',
-                                margin: 0,
-                                letterSpacing: '-0.02em',
-                                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-                            }}>AURON</h3>
-                            <p style={{
-                                fontSize: '0.875rem',
-                                color: 'rgba(255, 255, 255, 0.5)',
-                                marginTop: '0.5rem',
-                                fontWeight: '400',
-                                letterSpacing: '-0.01em'
-                            }}>Analyzing your insight</p>
-                        </div>
+        // Stage configurations with unique particle behaviors
+        const STAGE_CONFIG = {
+            'complexity': {
+                label: 'Complexity',
+                color: 'rgba(0, 217, 255, 0.6)',
+                particleCount: 15,
+                connectionDistance: 60,
+                speed: 0.4
+            },
+            'emotion': {
+                label: 'Emotion',
+                color: 'rgba(138, 43, 226, 0.6)',
+                particleCount: 8,
+                connectionDistance: 80,
+                speed: 0.2,
+                flow: true
+            },
+            'domain': {
+                label: 'Domain',
+                color: 'rgba(0, 217, 255, 0.6)',
+                particleCount: 10,
+                connectionDistance: 50,
+                speed: 0.3,
+                converge: true
+            },
+            'trigger': {
+                label: 'Patterns',
+                color: 'rgba(0, 150, 255, 0.6)',
+                particleCount: 12,
+                connectionDistance: 70,
+                speed: 0.25,
+                geometric: true
+            },
+            'web_search': {
+                label: 'Research',
+                color: 'rgba(0, 217, 255, 0.6)',
+                particleCount: 10,
+                connectionDistance: 90,
+                speed: 0.5,
+                stream: true
+            },
+            'auron': {
+                label: 'Auron',
+                color: 'rgba(0, 217, 255, 0.8)',
+                particleCount: 12,
+                connectionDistance: 65,
+                speed: 0.3,
+                neural: true
+            }
+        };
 
-                        {/* Progress Bar */}
-                        <div style={{
+        // Particle system for subtle background animation
+        class ParticleSystem {
+            constructor(canvasId, stageType) {
+                this.canvas = document.getElementById(canvasId);
+                if (!this.canvas) return;
+
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.stageType = stageType;
+                this.animationId = null;
+
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                this.init();
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            init() {
+                // Keep it minimal - only 20 particles (subtle, not cringe!)
+                const count = 20;
+                for (let i = 0; i < count; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 0.3, // Slow, gentle movement
+                        vy: (Math.random() - 0.5) * 0.3,
+                        size: Math.random() * 2 + 1,
+                        opacity: Math.random() * 0.3 + 0.1, // Very subtle
+                        life: Math.random() * 100
+                    });
+                }
+            }
+
+            updateStage(newStage) {
+                this.stageType = newStage;
+            }
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw subtle particles
+                this.particles.forEach((p, index) => {
+                    // Update position (slow movement)
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life += 0.5;
+
+                    // Wrap around edges
+                    if (p.x < 0) p.x = this.canvas.width;
+                    if (p.x > this.canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = this.canvas.height;
+                    if (p.y > this.canvas.height) p.y = 0;
+
+                    // Subtle opacity pulse
+                    p.opacity = 0.1 + Math.sin(p.life * 0.02) * 0.15;
+
+                    // Draw particle (very subtle)
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    this.ctx.fillStyle = `rgba(0, 217, 255, ${p.opacity})`;
+                    this.ctx.fill();
+
+                    // Draw subtle connections (only to nearby particles)
+                    this.particles.slice(index + 1).forEach(p2 => {
+                        const dx = p2.x - p.x;
+                        const dy = p2.y - p.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 150) { // Only connect nearby
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(p.x, p.y);
+                            this.ctx.lineTo(p2.x, p2.y);
+                            this.ctx.strokeStyle = `rgba(0, 217, 255, ${0.05 * (1 - dist / 150)})`;
+                            this.ctx.lineWidth = 0.5;
+                            this.ctx.stroke();
+                        }
+                    });
+                });
+
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+
+            start() {
+                if (!this.animationId) {
+                    this.animate();
+                }
+            }
+
+            stop() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+            }
+
+            destroy() {
+                this.stop();
+                this.particles = [];
+            }
+        }
+
+        // MicroCanvas - Tiny particle canvas for each stage
+        function MicroCanvas({ stageType, isActive, isCompleted, size = 32 }) {
+            const canvasRef = React.useRef(null);
+            const particlesRef = React.useRef([]);
+            const animationIdRef = React.useRef(null);
+
+            const config = STAGE_CONFIG[stageType] || {};
+
+            React.useEffect(() => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                canvas.width = size;
+                canvas.height = size;
+
+                // Initialize particles based on stage config
+                particlesRef.current = [];
+                const count = config.particleCount || 8;
+
+                for (let i = 0; i < count; i++) {
+                    particlesRef.current.push({
+                        x: Math.random() * size,
+                        y: Math.random() * size,
+                        vx: (Math.random() - 0.5) * (config.speed || 0.3),
+                        vy: (Math.random() - 0.5) * (config.speed || 0.3),
+                        size: Math.random() * 1.5 + 0.5,
+                        opacity: Math.random() * 0.4 + 0.2,
+                        life: Math.random() * 100,
+                        angle: Math.random() * Math.PI * 2
+                    });
+                }
+
+                // Animation loop
+                const animate = () => {
+                    ctx.clearRect(0, 0, size, size);
+
+                    const rgb = config.color ?
+                        config.color.match(/\d+/g).slice(0, 3).join(', ') :
+                        '0, 217, 255';
+
+                    particlesRef.current.forEach((p, index) => {
+                        // Update based on stage behavior
+                        if (config.flow) {
+                            // Emotion: flowing wave motion
+                            p.y += Math.sin(p.life * 0.05) * 0.3;
+                            p.x += p.vx;
+                        } else if (config.converge) {
+                            // Domain: converge to center
+                            const dx = size / 2 - p.x;
+                            const dy = size / 2 - p.y;
+                            p.x += dx * 0.02;
+                            p.y += dy * 0.02;
+                        } else if (config.geometric) {
+                            // Trigger: circular pattern
+                            p.angle += 0.02;
+                            p.x = size / 2 + Math.cos(p.angle) * 10;
+                            p.y = size / 2 + Math.sin(p.angle) * 10;
+                        } else if (config.stream) {
+                            // Web_search: horizontal stream
+                            p.x += p.vx * 2;
+                            p.y += Math.sin(p.x * 0.1) * 0.5;
+                        } else {
+                            // Default: random movement
+                            p.x += p.vx;
+                            p.y += p.vy;
+                        }
+
+                        p.life += 0.5;
+
+                        // Wrap edges
+                        if (p.x < 0) p.x = size;
+                        if (p.x > size) p.x = 0;
+                        if (p.y < 0) p.y = size;
+                        if (p.y > size) p.y = 0;
+
+                        // Pulse opacity
+                        p.opacity = 0.2 + Math.sin(p.life * 0.03) * 0.2;
+
+                        // Draw particle
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(${rgb}, ${p.opacity * (isActive ? 1 : 0.3)})`;
+                        ctx.fill();
+
+                        // Draw connections
+                        if (config.neural || config.particleCount > 10) {
+                            particlesRef.current.slice(index + 1).forEach(p2 => {
+                                const dx = p2.x - p.x;
+                                const dy = p2.y - p.y;
+                                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                                if (dist < (config.connectionDistance || 60) * (size / 48)) {
+                                    ctx.beginPath();
+                                    ctx.moveTo(p.x, p.y);
+                                    ctx.lineTo(p2.x, p2.y);
+                                    const lineOpacity = (0.15 * (1 - dist / (config.connectionDistance || 60))) * (isActive ? 1 : 0.3);
+                                    ctx.strokeStyle = `rgba(${rgb}, ${lineOpacity})`;
+                                    ctx.lineWidth = 0.5;
+                                    ctx.stroke();
+                                }
+                            });
+                        }
+                    });
+
+                    animationIdRef.current = requestAnimationFrame(animate);
+                };
+
+                if (isActive || !isCompleted) {
+                    animate();
+                }
+
+                return () => {
+                    if (animationIdRef.current) {
+                        cancelAnimationFrame(animationIdRef.current);
+                    }
+                };
+            }, [stageType, isActive, isCompleted, size]);
+
+            return (
+                <canvas
+                    ref={canvasRef}
+                    style={{
+                        width: `${size}px`,
+                        height: `${size}px`,
+                        opacity: isCompleted ? 0.3 : (isActive ? 1 : 0.5),
+                        transition: 'opacity 0.3s ease'
+                    }}
+                />
+            );
+        }
+
+        // ThinkingPanel - Minimalist bottom bar with micro canvas stage previews
+        function ThinkingPanel({ stage, progress, completedStages, isFading }) {
+            const canvasRef = React.useRef(null);
+            const particleSystemRef = React.useRef(null);
+
+            // Extract stage category
+            const getStageCategory = (stageName) => {
+                if (!stageName) return null;
+                if (stageName.startsWith('complexity')) return 'complexity';
+                if (stageName.startsWith('emotion')) return 'emotion';
+                if (stageName.startsWith('domain')) return 'domain';
+                if (stageName.startsWith('trigger')) return 'trigger';
+                if (stageName.startsWith('web_search')) return 'web_search';
+                if (stageName.startsWith('auron')) return 'auron';
+                return null;
+            };
+
+            const currentCategory = getStageCategory(stage);
+            const completedCategories = completedStages
+                ? [...new Set(completedStages.map(s => getStageCategory(s)).filter(Boolean))]
+                : [];
+
+            const allStages = ['complexity', 'emotion', 'domain', 'trigger', 'web_search', 'auron'];
+
+            // Initialize particle system for background
+            React.useEffect(() => {
+                if (canvasRef.current && !particleSystemRef.current) {
+                    particleSystemRef.current = new ParticleSystem('thinking-canvas-bg', currentCategory);
+                    particleSystemRef.current.start();
+                }
+
+                return () => {
+                    if (particleSystemRef.current) {
+                        particleSystemRef.current.destroy();
+                        particleSystemRef.current = null;
+                    }
+                };
+            }, []);
+
+            // Update stage
+            React.useEffect(() => {
+                if (particleSystemRef.current && currentCategory) {
+                    particleSystemRef.current.updateStage(currentCategory);
+                }
+            }, [currentCategory]);
+
+            return (
+                <>
+                    {/* Subtle particle canvas background */}
+                    <canvas
+                        id="thinking-canvas-bg"
+                        ref={canvasRef}
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
                             width: '100%',
-                            height: '4px',
-                            background: 'rgba(255, 255, 255, 0.06)',
-                            borderRadius: '2px',
+                            height: '100%',
+                            pointerEvents: 'none',
+                            zIndex: 1999,
+                            opacity: isFading ? 0 : 0.3,
+                            transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                        }}
+                    />
+
+                    {/* Subtle dark overlay */}
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0, 0, 0, 0.6)',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
+                        zIndex: 2000,
+                        opacity: isFading ? 0 : 1,
+                        transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                    }} />
+
+                    {/* Bottom progress bar */}
+                    <div style={{
+                        position: 'fixed',
+                        bottom: '4rem',
+                        left: '50%',
+                        transform: isFading ? 'translate(-50%, 20px)' : 'translateX(-50%)',
+                        width: '500px',
+                        maxWidth: '90vw',
+                        zIndex: 2001,
+                        opacity: isFading ? 0 : 1,
+                        transition: 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                    }}>
+                        {/* Current stage text */}
+                        {stage && SSE_STAGE_MESSAGES[stage] && (
+                            <div style={{
+                                textAlign: 'center',
+                                marginBottom: '1rem',
+                                fontSize: '0.875rem',
+                                fontWeight: '500',
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                letterSpacing: '-0.01em'
+                            }}>
+                                {SSE_STAGE_MESSAGES[stage]}
+                            </div>
+                        )}
+
+                        {/* Progress bar */}
+                        <div style={{
+                            position: 'relative',
+                            width: '100%',
+                            height: '3px',
+                            background: 'rgba(255, 255, 255, 0.08)',
+                            borderRadius: '1.5px',
                             overflow: 'hidden',
-                            marginBottom: '2rem',
-                            position: 'relative'
+                            marginBottom: '1.25rem'
                         }}>
                             <div style={{
-                                width: `${progress}%`,
+                                position: 'absolute',
+                                left: 0,
+                                top: 0,
                                 height: '100%',
+                                width: `${progress}%`,
                                 background: 'linear-gradient(90deg, #000DFF 0%, #00D9FF 100%)',
-                                borderRadius: '2px',
+                                borderRadius: '1.5px',
                                 transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-                                boxShadow: '0 0 16px rgba(0, 217, 255, 0.4)'
+                                boxShadow: '0 0 8px rgba(0, 217, 255, 0.4)'
                             }} />
                         </div>
 
-                        {/* Current Stage */}
-                        {stage && SSE_STAGE_MESSAGES[stage] && (
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.875rem',
-                                padding: '1rem 1.25rem',
-                                background: 'rgba(0, 217, 255, 0.06)',
-                                border: '1px solid rgba(0, 217, 255, 0.12)',
-                                borderRadius: '14px',
-                                marginBottom: '1.25rem',
-                                animation: 'pulse 2s ease-in-out infinite',
-                                boxShadow: '0 2px 8px rgba(0, 217, 255, 0.04)'
-                            }}>
-                                <div style={{
-                                    width: '6px',
-                                    height: '6px',
-                                    background: '#00D9FF',
-                                    borderRadius: '50%',
-                                    boxShadow: '0 0 8px rgba(0, 217, 255, 0.6)',
-                                    animation: 'pulse 1.5s ease-in-out infinite'
-                                }} />
-                                <span style={{
-                                    color: 'rgba(255, 255, 255, 0.85)',
-                                    fontSize: '0.9375rem',
-                                    fontWeight: '500',
-                                    letterSpacing: '-0.01em'
-                                }}>
-                                    {SSE_STAGE_MESSAGES[stage]}
-                                </span>
-                            </div>
-                        )}
+                        {/* Stage micro canvases row */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '0.5rem'
+                        }}>
+                            {allStages.map((stageCategory) => {
+                                const config = STAGE_CONFIG[stageCategory];
+                                const isCompleted = completedCategories.includes(stageCategory);
+                                const isCurrent = currentCategory === stageCategory;
+                                const isUpcoming = !isCompleted && !isCurrent;
 
-                        {/* Completed Stages */}
-                        {completedStages && completedStages.length > 0 && (
-                            <div style={{
-                                maxHeight: '180px',
-                                overflowY: 'auto',
-                                padding: '0.25rem',
-                                marginBottom: '0.5rem'
-                            }}>
-                                {completedStages.map((completedStage, idx) => (
-                                    <div key={idx} style={{
+                                return (
+                                    <div key={stageCategory} style={{
+                                        flex: 1,
                                         display: 'flex',
+                                        flexDirection: 'column',
                                         alignItems: 'center',
-                                        gap: '0.75rem',
-                                        padding: '0.625rem 0.875rem',
-                                        marginBottom: '0.375rem',
-                                        borderRadius: '10px',
-                                        animation: 'slideIn 0.3s ease',
-                                        background: 'rgba(255, 255, 255, 0.02)',
-                                        border: '1px solid rgba(255, 255, 255, 0.04)'
+                                        gap: '0.5rem',
+                                        opacity: isUpcoming ? 0.3 : 1,
+                                        transition: 'opacity 0.3s ease'
                                     }}>
+                                        {/* Micro canvas */}
                                         <div style={{
-                                            width: '16px',
-                                            height: '16px',
-                                            background: 'rgba(0, 217, 255, 0.15)',
-                                            border: '1.5px solid rgba(0, 217, 255, 0.4)',
-                                            borderRadius: '50%',
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '8px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            fontSize: '0.625rem'
-                                        }}>✓</div>
-                                        <span style={{
-                                            color: 'rgba(255, 255, 255, 0.55)',
-                                            fontSize: '0.8125rem',
-                                            fontWeight: '400',
-                                            letterSpacing: '-0.01em'
+                                            background: isCurrent
+                                                ? 'rgba(0, 217, 255, 0.08)'
+                                                : isCompleted
+                                                ? 'rgba(0, 217, 255, 0.04)'
+                                                : 'rgba(255, 255, 255, 0.02)',
+                                            border: `1px solid ${
+                                                isCurrent ? 'rgba(0, 217, 255, 0.25)'
+                                                : isCompleted ? 'rgba(0, 217, 255, 0.12)'
+                                                : 'rgba(255, 255, 255, 0.04)'
+                                            }`,
+                                            boxShadow: isCurrent
+                                                ? '0 0 12px rgba(0, 217, 255, 0.2)'
+                                                : 'none',
+                                            position: 'relative',
+                                            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                                            overflow: 'hidden'
                                         }}>
-                                            {SSE_STAGE_MESSAGES[completedStage] || completedStage}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                                            {isCompleted ? (
+                                                <div style={{
+                                                    fontSize: '1rem',
+                                                    color: 'rgba(0, 217, 255, 0.7)'
+                                                }}>✓</div>
+                                            ) : (
+                                                <MicroCanvas
+                                                    stageType={stageCategory}
+                                                    isActive={isCurrent}
+                                                    isCompleted={isCompleted}
+                                                    size={32}
+                                                />
+                                            )}
+                                            {isCurrent && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    top: '-1px',
+                                                    right: '-1px',
+                                                    width: '6px',
+                                                    height: '6px',
+                                                    background: '#00D9FF',
+                                                    borderRadius: '50%',
+                                                    boxShadow: '0 0 6px rgba(0, 217, 255, 0.8)'
+                                                }} />
+                                            )}
+                                        </div>
 
-                        {/* Progress Percentage */}
+                                        {/* Label */}
+                                        <div style={{
+                                            fontSize: '0.6875rem',
+                                            fontWeight: '500',
+                                            color: isCurrent
+                                                ? 'rgba(0, 217, 255, 0.85)'
+                                                : isCompleted
+                                                ? 'rgba(255, 255, 255, 0.5)'
+                                                : 'rgba(255, 255, 255, 0.3)',
+                                            textAlign: 'center',
+                                            letterSpacing: '-0.005em'
+                                        }}>
+                                            {config.label}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Progress percentage */}
                         <div style={{
                             textAlign: 'center',
-                            marginTop: '1.75rem',
-                            fontSize: '0.8125rem',
-                            color: 'rgba(255, 255, 255, 0.4)',
-                            fontWeight: '500',
-                            letterSpacing: '-0.01em'
+                            marginTop: '0.75rem',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            color: 'rgba(0, 217, 255, 0.7)',
+                            fontVariantNumeric: 'tabular-nums'
                         }}>
-                            {progress}%
+                            {Math.round(progress)}%
                         </div>
                     </div>
-                </div>
+                </>
             );
         }
 
