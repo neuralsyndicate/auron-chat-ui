@@ -1788,45 +1788,33 @@
             }
         }
 
-        // Blueprint Floating Panel - Appears on right side when clicked
+        // Blueprint Floating Panel - Appears on right side on hover
         function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
             const panelRef = React.useRef(null);
-
-            // Close on click outside
-            React.useEffect(() => {
-                const handleClickOutside = (event) => {
-                    if (panelRef.current && !panelRef.current.contains(event.target) && isOpen) {
-                        onClose();
-                    }
-                };
-                if (isOpen) {
-                    document.addEventListener('mousedown', handleClickOutside);
-                }
-                return () => document.removeEventListener('mousedown', handleClickOutside);
-            }, [isOpen, onClose]);
 
             if (!sources || sources.length === 0 || !isOpen) return null;
 
             return (
                 <>
-                    {/* Backdrop */}
+                    {/* Backdrop - subtle, doesn't close on click for hover UX */}
                     <div style={{
                         position: 'fixed',
                         top: 0,
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'rgba(0, 0, 0, 0.3)',
+                        background: 'rgba(0, 0, 0, 0.2)',
                         backdropFilter: 'blur(2px)',
                         opacity: isOpen ? 1 : 0,
                         transition: 'opacity 0.3s ease',
                         zIndex: 949,
                         pointerEvents: isOpen ? 'auto' : 'none'
-                    }} onClick={onClose}></div>
+                    }}></div>
 
                     {/* Floating Panel */}
                     <div
                         ref={panelRef}
+                        onMouseLeave={onClose}
                         style={{
                             position: 'fixed',
                             right: isOpen ? '24px' : '-420px',
@@ -2027,11 +2015,21 @@
             );
         }
 
-        // Blueprint Trigger Bar - Compact bar with hover preview, click to open panel
-        function BlueprintSourceHoverSection({ sources, onOpenPanel }) {
+        // Blueprint Trigger Bar - Compact bar that opens panel on hover
+        function BlueprintSourceHoverSection({ sources, onOpenPanel, onClosePanel }) {
             const [isHovering, setIsHovering] = React.useState(false);
 
             if (!sources || sources.length === 0) return null;
+
+            const handleMouseEnter = () => {
+                setIsHovering(true);
+                if (onOpenPanel) onOpenPanel();
+            };
+
+            const handleMouseLeave = () => {
+                setIsHovering(false);
+                // Don't close immediately - let the panel handle its own hover state
+            };
 
             return (
                 <div
@@ -2040,12 +2038,11 @@
                         paddingTop: '1rem',
                         position: 'relative'
                     }}
-                    onMouseEnter={() => setIsHovering(true)}
-                    onMouseLeave={() => setIsHovering(false)}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                 >
                     {/* Compact Trigger Bar */}
                     <div
-                        onClick={onOpenPanel}
                         style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -2104,7 +2101,7 @@
                                 fontWeight: '500',
                                 fontStyle: 'italic'
                             }}>
-                                Click to explore • Uncover your unique sonic identity
+                                Hover to explore • Uncover your unique sonic identity
                             </p>
                             {/* Arrow */}
                             <div style={{
@@ -2930,7 +2927,7 @@
         }
 
         // Dialogue Message Component (for chat history display)
-        function DialogueMessage({ message, onOpenDialogue, onOpenReferences, sendMessage }) {
+        function DialogueMessage({ message, onOpenDialogue, onOpenReferences, onOpenBlueprintPanel, onCloseBlueprintPanel, sendMessage }) {
             if (message.role === 'user') {
                 // User message (simple)
                 return (
@@ -3054,10 +3051,8 @@
                             {/* Blueprint Sources - Hover to expand section below text */}
                             <BlueprintSourceHoverSection
                                 sources={message.dialogue.blueprint_sources}
-                                onOpenPanel={() => {
-                                    setBlueprintPanelSources(message.dialogue.blueprint_sources || []);
-                                    setBlueprintPanelOpen(true);
-                                }}
+                                onOpenPanel={() => onOpenBlueprintPanel(message.dialogue.blueprint_sources || [])}
+                                onClosePanel={onCloseBlueprintPanel}
                             />
 
                             {/* Evidence in the Pattern - Subtle, flowing integration */}
@@ -4316,6 +4311,11 @@
                                         setSidebarSources(sources);
                                         setSidebarOpen(true);
                                     }}
+                                    onOpenBlueprintPanel={(sources) => {
+                                        setBlueprintPanelSources(sources);
+                                        setBlueprintPanelOpen(true);
+                                    }}
+                                    onCloseBlueprintPanel={() => setBlueprintPanelOpen(false)}
                                     sendMessage={handleSendMessage}
                                 />
                             ))}
