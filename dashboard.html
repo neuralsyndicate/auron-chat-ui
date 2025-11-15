@@ -1788,68 +1788,112 @@
             }
         }
 
-        // Blueprint Source Hover Section - Marketing-focused with Neural Music info
-        function BlueprintSourceHoverSection({ sources }) {
-            const [isHovering, setIsHovering] = React.useState(false);
+        // Blueprint Floating Panel - Appears on right side when clicked
+        function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
+            const panelRef = React.useRef(null);
 
-            if (!sources || sources.length === 0) return null;
+            // Close on click outside
+            React.useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (panelRef.current && !panelRef.current.contains(event.target) && isOpen) {
+                        onClose();
+                    }
+                };
+                if (isOpen) {
+                    document.addEventListener('mousedown', handleClickOutside);
+                }
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, [isOpen, onClose]);
+
+            if (!sources || sources.length === 0 || !isOpen) return null;
 
             return (
-                <div
-                    style={{
-                        marginBottom: '2rem',
-                        paddingTop: '1rem'
-                    }}
-                    onMouseEnter={() => setIsHovering(true)}
-                    onMouseLeave={() => setIsHovering(false)}
-                >
-                    {/* Compact Header Bar */}
+                <>
+                    {/* Backdrop */}
                     <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.75rem',
-                        padding: '0.75rem 1rem',
-                        background: isHovering ? 'rgba(0, 217, 255, 0.1)' : 'rgba(0, 217, 255, 0.05)',
-                        border: `1px solid ${isHovering ? 'rgba(0, 217, 255, 0.3)' : 'rgba(0, 217, 255, 0.15)'}`,
-                        borderRadius: '12px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        boxShadow: isHovering ? '0 0 16px rgba(0, 217, 255, 0.2)' : 'none'
-                    }}>
-                        <span style={{ fontSize: '1rem', opacity: 0.8 }}>📘</span>
-                        <div style={{ flex: 1 }}>
-                            <p style={{
-                                fontSize: '0.875rem',
-                                fontWeight: '500',
-                                color: 'rgba(255, 255, 255, 0.9)',
-                                margin: 0,
-                                letterSpacing: '0.01em'
-                            }}>
-                                This message contains information about the Neural Music Blueprint
-                            </p>
-                        </div>
-                        <span style={{
-                            fontSize: '0.875rem',
-                            color: 'rgba(0, 217, 255, 0.7)',
-                            transform: isHovering ? 'rotate(180deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.3s ease'
-                        }}>
-                            ▼
-                        </span>
-                    </div>
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0, 0, 0, 0.3)',
+                        backdropFilter: 'blur(2px)',
+                        opacity: isOpen ? 1 : 0,
+                        transition: 'opacity 0.3s ease',
+                        zIndex: 949,
+                        pointerEvents: isOpen ? 'auto' : 'none'
+                    }} onClick={onClose}></div>
 
-                    {/* Expanded Content */}
-                    {isHovering && (
+                    {/* Floating Panel */}
+                    <div
+                        ref={panelRef}
+                        style={{
+                            position: 'fixed',
+                            right: isOpen ? '24px' : '-420px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: '420px',
+                            maxHeight: '85vh',
+                            background: 'rgba(10, 10, 31, 0.95)',
+                            backdropFilter: 'blur(40px)',
+                            border: '1px solid rgba(0, 217, 255, 0.3)',
+                            borderRadius: '16px',
+                            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 217, 255, 0.1)',
+                            opacity: isOpen ? 1 : 0,
+                            transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
+                            zIndex: 950,
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column'
+                        }}
+                    >
+                        {/* Header */}
                         <div style={{
-                            marginTop: '0.75rem',
-                            padding: '1.25rem',
-                            background: 'rgba(0, 217, 255, 0.03)',
-                            border: '1px solid rgba(0, 217, 255, 0.12)',
-                            borderRadius: '12px',
-                            animation: 'slideDown 0.3s ease'
+                            padding: '1.5rem',
+                            borderBottom: '1px solid rgba(0, 217, 255, 0.15)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
                         }}>
-                            {/* About Neural Music Section */}
-                            <div style={{ marginBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <span style={{ fontSize: '1.5rem' }}>📘</span>
+                                <h3 style={{
+                                    margin: 0,
+                                    fontSize: '1.125rem',
+                                    fontWeight: '600',
+                                    color: 'rgba(0, 217, 255, 0.9)',
+                                    letterSpacing: '0.02em'
+                                }}>
+                                    Neural Music Blueprint
+                                </h3>
+                            </div>
+                            <button
+                                onClick={onClose}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: 'rgba(255, 255, 255, 0.6)',
+                                    fontSize: '1.5rem',
+                                    cursor: 'pointer',
+                                    padding: '0.25rem',
+                                    lineHeight: 1,
+                                    transition: 'color 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.color = 'rgba(0, 217, 255, 0.9)'}
+                                onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.6)'}
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {/* Scrollable Content */}
+                        <div style={{
+                            flex: 1,
+                            overflowY: 'auto',
+                            padding: '1.5rem'
+                        }}>
+                            {/* About the Blueprint */}
+                            <div style={{ marginBottom: '2rem' }}>
                                 <h4 style={{
                                     fontSize: '1rem',
                                     fontWeight: '600',
@@ -1857,7 +1901,7 @@
                                     margin: '0 0 0.75rem 0',
                                     letterSpacing: '0.02em'
                                 }}>
-                                    About Neural Music
+                                    Discover Your Sonic Identity
                                 </h4>
                                 <p style={{
                                     fontSize: '0.875rem',
@@ -1868,12 +1912,12 @@
                                     A creative system designed to help artists uncover and express their <strong style={{ color: 'rgba(0, 217, 255, 0.9)' }}>unique sonic identity</strong> using neuroscience, psychology, music, sound and creativity.
                                 </p>
                                 <button style={{
-                                    padding: '0.5rem 1rem',
+                                    padding: '0.625rem 1.25rem',
                                     background: 'rgba(0, 217, 255, 0.1)',
                                     border: '1px solid rgba(0, 217, 255, 0.3)',
                                     borderRadius: '8px',
                                     color: 'rgba(0, 217, 255, 0.9)',
-                                    fontSize: '0.8125rem',
+                                    fontSize: '0.875rem',
                                     fontWeight: '600',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s ease'
@@ -1881,19 +1925,21 @@
                                 onMouseEnter={(e) => {
                                     e.target.style.background = 'rgba(0, 217, 255, 0.15)';
                                     e.target.style.borderColor = 'rgba(0, 217, 255, 0.5)';
+                                    e.target.style.boxShadow = '0 0 12px rgba(0, 217, 255, 0.3)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.target.style.background = 'rgba(0, 217, 255, 0.1)';
                                     e.target.style.borderColor = 'rgba(0, 217, 255, 0.3)';
+                                    e.target.style.boxShadow = 'none';
                                 }}>
-                                    Access Neural Music
+                                    Explore the Framework
                                 </button>
                             </div>
 
                             {/* Divider */}
                             <div style={{
                                 height: '1px',
-                                background: 'linear-gradient(to right, transparent, rgba(0, 217, 255, 0.2), transparent)',
+                                background: 'linear-gradient(to right, transparent, rgba(0, 217, 255, 0.3), transparent)',
                                 margin: '1.5rem 0'
                             }}></div>
 
@@ -1903,7 +1949,7 @@
                                     fontSize: '0.875rem',
                                     fontWeight: '600',
                                     color: 'rgba(0, 217, 255, 0.8)',
-                                    margin: '0 0 0.75rem 0',
+                                    margin: '0 0 1rem 0',
                                     letterSpacing: '0.02em'
                                 }}>
                                     Framework Insights
@@ -1915,10 +1961,19 @@
                                             <div
                                                 key={idx}
                                                 style={{
-                                                    padding: '0.875rem',
+                                                    padding: '1rem',
                                                     background: 'rgba(0, 217, 255, 0.06)',
                                                     border: '1px solid rgba(0, 217, 255, 0.15)',
-                                                    borderRadius: '10px'
+                                                    borderRadius: '10px',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.background = 'rgba(0, 217, 255, 0.1)';
+                                                    e.currentTarget.style.borderColor = 'rgba(0, 217, 255, 0.3)';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.background = 'rgba(0, 217, 255, 0.06)';
+                                                    e.currentTarget.style.borderColor = 'rgba(0, 217, 255, 0.15)';
                                                 }}
                                             >
                                                 <div style={{
@@ -1926,7 +1981,7 @@
                                                     alignItems: 'flex-start',
                                                     justifyContent: 'space-between',
                                                     gap: '0.75rem',
-                                                    marginBottom: '0.375rem'
+                                                    marginBottom: '0.5rem'
                                                 }}>
                                                     <h5 style={{
                                                         fontSize: '0.875rem',
@@ -1966,6 +2021,103 @@
                                     })}
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        // Blueprint Trigger Bar - Compact bar with hover preview, click to open panel
+        function BlueprintSourceHoverSection({ sources, onOpenPanel }) {
+            const [isHovering, setIsHovering] = React.useState(false);
+
+            if (!sources || sources.length === 0) return null;
+
+            return (
+                <div
+                    style={{
+                        marginBottom: '2rem',
+                        paddingTop: '1rem',
+                        position: 'relative'
+                    }}
+                    onMouseEnter={() => setIsHovering(true)}
+                    onMouseLeave={() => setIsHovering(false)}
+                >
+                    {/* Compact Trigger Bar */}
+                    <div
+                        onClick={onOpenPanel}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            padding: '0.75rem 1rem',
+                            background: isHovering ? 'rgba(0, 217, 255, 0.1)' : 'rgba(0, 217, 255, 0.05)',
+                            border: `1px solid ${isHovering ? 'rgba(0, 217, 255, 0.3)' : 'rgba(0, 217, 255, 0.15)'}`,
+                            borderRadius: '12px',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            boxShadow: isHovering ? '0 0 16px rgba(0, 217, 255, 0.2)' : 'none'
+                        }}
+                    >
+                        <span style={{ fontSize: '1rem', opacity: 0.8 }}>📘</span>
+                        <div style={{ flex: 1 }}>
+                            <p style={{
+                                fontSize: '0.875rem',
+                                fontWeight: '500',
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                margin: 0,
+                                letterSpacing: '0.01em'
+                            }}>
+                                This message contains information about the Neural Music Blueprint
+                            </p>
+                        </div>
+                        <span style={{
+                            fontSize: '0.875rem',
+                            color: 'rgba(0, 217, 255, 0.7)',
+                            transition: 'transform 0.3s ease'
+                        }}>
+                            →
+                        </span>
+                    </div>
+
+                    {/* Hover Preview Tooltip */}
+                    {isHovering && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '-3rem',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            padding: '0.625rem 1rem',
+                            background: 'rgba(10, 10, 31, 0.98)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(0, 217, 255, 0.4)',
+                            borderRadius: '8px',
+                            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(0, 217, 255, 0.2)',
+                            zIndex: 100,
+                            whiteSpace: 'nowrap',
+                            animation: 'fadeIn 0.2s ease'
+                        }}>
+                            <p style={{
+                                margin: 0,
+                                fontSize: '0.8125rem',
+                                color: 'rgba(0, 217, 255, 0.9)',
+                                fontWeight: '500',
+                                fontStyle: 'italic'
+                            }}>
+                                Click to explore • Uncover your unique sonic identity
+                            </p>
+                            {/* Arrow */}
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '-6px',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                width: 0,
+                                height: 0,
+                                borderLeft: '6px solid transparent',
+                                borderRight: '6px solid transparent',
+                                borderTop: '6px solid rgba(0, 217, 255, 0.4)'
+                            }}></div>
                         </div>
                     )}
                 </div>
@@ -2900,7 +3052,13 @@
                             </div>
 
                             {/* Blueprint Sources - Hover to expand section below text */}
-                            <BlueprintSourceHoverSection sources={message.dialogue.blueprint_sources} />
+                            <BlueprintSourceHoverSection
+                                sources={message.dialogue.blueprint_sources}
+                                onOpenPanel={() => {
+                                    setBlueprintPanelSources(message.dialogue.blueprint_sources || []);
+                                    setBlueprintPanelOpen(true);
+                                }}
+                            />
 
                             {/* Evidence in the Pattern - Subtle, flowing integration */}
                             {message.dialogue.research_synthesis && (
@@ -3721,6 +3879,8 @@
             const [currentDialogue, setCurrentDialogue] = useState(null);
             const [sidebarOpen, setSidebarOpen] = useState(false);
             const [sidebarSources, setSidebarSources] = useState([]);
+            const [blueprintPanelOpen, setBlueprintPanelOpen] = useState(false);
+            const [blueprintPanelSources, setBlueprintPanelSources] = useState([]);
             const messagesEndRef = useRef(null);
 
             // SSE Streaming state
@@ -4132,6 +4292,13 @@
                         isOpen={sidebarOpen}
                         onClose={() => setSidebarOpen(false)}
                         sources={sidebarSources}
+                    />
+
+                    {/* Blueprint Floating Panel - Appears on right when clicked */}
+                    <BlueprintFloatingPanel
+                        isOpen={blueprintPanelOpen}
+                        onClose={() => setBlueprintPanelOpen(false)}
+                        sources={blueprintPanelSources}
                     />
 
                     {/* Messages - Generous whitespace, centered (Neural Music style) */}
