@@ -2015,6 +2015,123 @@
             );
         }
 
+        // Blueprint Corner Ribbon - Subtle folded ribbon in top-right corner
+        function BlueprintCornerRibbon({ sources, onOpenPanel, onClosePanel }) {
+            const [isHovering, setIsHovering] = React.useState(false);
+
+            if (!sources || sources.length === 0) return null;
+
+            return (
+                <div
+                    onMouseEnter={() => {
+                        setIsHovering(true);
+                        if (onOpenPanel) onOpenPanel();
+                    }}
+                    onMouseLeave={() => {
+                        setIsHovering(false);
+                    }}
+                    style={{
+                        position: 'absolute',
+                        top: '0',
+                        right: '0',
+                        cursor: 'pointer',
+                        zIndex: 10
+                    }}
+                >
+                    {/* Ribbon */}
+                    <div style={{
+                        position: 'relative',
+                        padding: '0.5rem 1.25rem',
+                        paddingRight: '1.5rem',
+                        background: isHovering
+                            ? 'linear-gradient(135deg, rgba(0, 217, 255, 0.25) 0%, rgba(0, 150, 255, 0.2) 100%)'
+                            : 'linear-gradient(135deg, rgba(0, 217, 255, 0.15) 0%, rgba(0, 150, 255, 0.1) 100%)',
+                        borderBottomLeftRadius: '12px',
+                        borderTopRightRadius: '20px',
+                        boxShadow: isHovering
+                            ? '0 4px 12px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 217, 255, 0.2)'
+                            : '0 2px 8px rgba(0, 0, 0, 0.2)',
+                        transition: 'all 0.3s ease',
+                        overflow: 'hidden'
+                    }}>
+                        {/* Fold effect */}
+                        <div style={{
+                            position: 'absolute',
+                            bottom: '-8px',
+                            right: '0',
+                            width: '0',
+                            height: '0',
+                            borderLeft: '8px solid transparent',
+                            borderTop: '8px solid rgba(0, 100, 150, 0.4)',
+                            transition: 'all 0.3s ease'
+                        }}></div>
+
+                        {/* Content */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}>
+                            <span style={{
+                                fontSize: '0.875rem',
+                                opacity: isHovering ? 1 : 0.9
+                            }}>📘</span>
+                            <span style={{
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                                color: 'rgba(0, 217, 255, 0.95)',
+                                letterSpacing: '0.05em',
+                                textTransform: 'uppercase',
+                                textShadow: isHovering ? '0 0 8px rgba(0, 217, 255, 0.4)' : 'none',
+                                transition: 'all 0.3s ease'
+                            }}>
+                                Blueprint
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Hover Tooltip */}
+                    {isHovering && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '100%',
+                            right: '0',
+                            marginTop: '0.5rem',
+                            padding: '0.75rem 1rem',
+                            background: 'rgba(10, 10, 31, 0.98)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(0, 217, 255, 0.4)',
+                            borderRadius: '8px',
+                            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(0, 217, 255, 0.2)',
+                            zIndex: 100,
+                            whiteSpace: 'nowrap',
+                            animation: 'fadeIn 0.2s ease'
+                        }}>
+                            <p style={{
+                                margin: 0,
+                                fontSize: '0.8125rem',
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                fontWeight: '500'
+                            }}>
+                                This message contains information about the Neural Music Blueprint
+                            </p>
+                            {/* Arrow pointing up */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '-6px',
+                                right: '20px',
+                                width: 0,
+                                height: 0,
+                                borderLeft: '6px solid transparent',
+                                borderRight: '6px solid transparent',
+                                borderBottom: '6px solid rgba(0, 217, 255, 0.4)'
+                            }}></div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
         // Blueprint Trigger Bar - Compact bar that opens panel on hover
         function BlueprintSourceHoverSection({ sources, onOpenPanel, onClosePanel }) {
             const [isHovering, setIsHovering] = React.useState(false);
@@ -3017,8 +3134,16 @@
                             backdropFilter: 'blur(20px)',
                             WebkitBackdropFilter: 'blur(20px)',
                             border: '1px solid rgba(0, 217, 255, 0.1)',
-                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                            position: 'relative'
                         }}>
+                            {/* Blueprint Corner Ribbon */}
+                            <BlueprintCornerRibbon
+                                sources={message.dialogue.blueprint_sources}
+                                onOpenPanel={() => onOpenBlueprintPanel(message.dialogue.blueprint_sources || [])}
+                                onClosePanel={onCloseBlueprintPanel}
+                            />
+
                             {/* Header */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                                 <span style={{
@@ -3048,12 +3173,7 @@
                                 />
                             </div>
 
-                            {/* Blueprint Sources - Hover to expand section below text */}
-                            <BlueprintSourceHoverSection
-                                sources={message.dialogue.blueprint_sources}
-                                onOpenPanel={() => onOpenBlueprintPanel(message.dialogue.blueprint_sources || [])}
-                                onClosePanel={onCloseBlueprintPanel}
-                            />
+                            {/* Blueprint Sources - Now shown via corner ribbon instead */}
 
                             {/* Evidence in the Pattern - Subtle, flowing integration */}
                             {message.dialogue.research_synthesis && (
