@@ -1788,225 +1788,263 @@
             }
         }
 
-        // Blueprint Floating Panel - Appears on right side on hover
+        // Blueprint Modal - Centered modal with hero image (Notion-style)
         function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
-            const panelRef = React.useRef(null);
-
             if (!sources || sources.length === 0 || !isOpen) return null;
 
             return (
                 <>
-                    {/* Backdrop - subtle, doesn't close on click for hover UX */}
-                    <div style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'rgba(0, 0, 0, 0.2)',
-                        backdropFilter: 'blur(2px)',
-                        opacity: isOpen ? 1 : 0,
-                        transition: 'opacity 0.3s ease',
-                        zIndex: 949,
-                        pointerEvents: isOpen ? 'auto' : 'none'
-                    }}></div>
-
-                    {/* Floating Panel */}
+                    {/* Modal Overlay */}
                     <div
-                        ref={panelRef}
-                        onMouseLeave={onClose}
+                        onClick={onClose}
                         style={{
                             position: 'fixed',
-                            right: isOpen ? '24px' : '-420px',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            width: '420px',
-                            maxHeight: '85vh',
-                            background: 'rgba(10, 10, 31, 0.95)',
-                            backdropFilter: 'blur(40px)',
-                            border: '1px solid rgba(0, 217, 255, 0.3)',
-                            borderRadius: '16px',
-                            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 217, 255, 0.1)',
-                            opacity: isOpen ? 1 : 0,
-                            transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-                            zIndex: 950,
-                            overflow: 'hidden',
-                            display: 'flex',
-                            flexDirection: 'column'
-                        }}
-                    >
-                        {/* Header */}
-                        <div style={{
-                            padding: '1.5rem',
-                            borderBottom: '1px solid rgba(0, 217, 255, 0.15)',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'rgba(0, 0, 0, 0.92)',
+                            backdropFilter: 'blur(12px)',
+                            zIndex: 1000,
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'space-between'
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <span style={{ fontSize: '1.5rem' }}>📘</span>
-                                <h3 style={{
-                                    margin: 0,
-                                    fontSize: '1.125rem',
-                                    fontWeight: '600',
-                                    color: 'rgba(0, 217, 255, 0.9)',
-                                    letterSpacing: '0.02em'
-                                }}>
-                                    Neural Music Blueprint
-                                </h3>
+                            justifyContent: 'center',
+                            animation: 'fadeIn 0.4s ease'
+                        }}
+                    >
+                        {/* Modal Card */}
+                        <div
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                width: '600px',
+                                maxWidth: '90vw',
+                                maxHeight: '85vh',
+                                background: 'rgba(10, 10, 31, 0.65)',
+                                backdropFilter: 'blur(40px)',
+                                WebkitBackdropFilter: 'blur(40px)',
+                                border: '2px solid rgba(0, 217, 255, 0.4)',
+                                borderRadius: '0',
+                                boxShadow: `
+                                    0 0 0 1px rgba(0, 217, 255, 0.1) inset,
+                                    0 24px 60px 0 rgba(0, 0, 0, 0.8),
+                                    0 0 40px rgba(0, 217, 255, 0.6),
+                                    0 0 80px rgba(0, 217, 255, 0.4),
+                                    0 0 120px rgba(0, 191, 255, 0.3)
+                                `,
+                                overflow: 'hidden',
+                                animation: 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                                display: 'flex',
+                                flexDirection: 'column'
+                            }}
+                        >
+                            {/* Hero Image */}
+                            <div style={{
+                                position: 'relative',
+                                width: '100%',
+                                height: '350px',
+                                overflow: 'hidden',
+                                background: 'linear-gradient(180deg, rgba(0, 50, 100, 0.3) 0%, rgba(10, 10, 31, 0.8) 100%)'
+                            }}>
+                                <img
+                                    src="brain.webp"
+                                    alt="Neural Music Blueprint"
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        objectPosition: 'center center',
+                                        opacity: 0.9
+                                    }}
+                                />
+                                {/* Gradient overlay for text readability */}
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    height: '100px',
+                                    background: 'linear-gradient(to top, rgba(10, 10, 31, 0.9), transparent)'
+                                }}></div>
                             </div>
+
+                            {/* Close Button */}
                             <button
                                 onClick={onClose}
                                 style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    color: 'rgba(255, 255, 255, 0.6)',
+                                    position: 'absolute',
+                                    top: '1rem',
+                                    right: '1rem',
+                                    background: 'rgba(0, 0, 0, 0.5)',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '50%',
+                                    width: '36px',
+                                    height: '36px',
+                                    color: 'rgba(255, 255, 255, 0.8)',
                                     fontSize: '1.5rem',
                                     cursor: 'pointer',
-                                    padding: '0.25rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
                                     lineHeight: 1,
-                                    transition: 'color 0.2s ease'
+                                    transition: 'all 0.2s ease',
+                                    zIndex: 10
                                 }}
-                                onMouseEnter={(e) => e.target.style.color = 'rgba(0, 217, 255, 0.9)'}
-                                onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.6)'}
+                                onMouseEnter={(e) => {
+                                    e.target.style.background = 'rgba(0, 217, 255, 0.2)';
+                                    e.target.style.borderColor = 'rgba(0, 217, 255, 0.6)';
+                                    e.target.style.color = 'rgba(0, 217, 255, 0.9)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.background = 'rgba(0, 0, 0, 0.5)';
+                                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                                    e.target.style.color = 'rgba(255, 255, 255, 0.8)';
+                                }}
                             >
                                 ×
                             </button>
-                        </div>
 
-                        {/* Scrollable Content */}
-                        <div style={{
-                            flex: 1,
-                            overflowY: 'auto',
-                            padding: '1.5rem'
-                        }}>
-                            {/* About the Blueprint */}
-                            <div style={{ marginBottom: '2rem' }}>
-                                <h4 style={{
-                                    fontSize: '1rem',
-                                    fontWeight: '600',
-                                    color: 'rgba(0, 217, 255, 0.9)',
-                                    margin: '0 0 0.75rem 0',
-                                    letterSpacing: '0.02em'
-                                }}>
-                                    Discover Your Sonic Identity
-                                </h4>
-                                <p style={{
-                                    fontSize: '0.875rem',
-                                    color: 'rgba(255, 255, 255, 0.8)',
-                                    margin: '0 0 1rem 0',
-                                    lineHeight: '1.6'
-                                }}>
-                                    A creative system designed to help artists uncover and express their <strong style={{ color: 'rgba(0, 217, 255, 0.9)' }}>unique sonic identity</strong> using neuroscience, psychology, music, sound and creativity.
-                                </p>
-                                <button style={{
-                                    padding: '0.625rem 1.25rem',
-                                    background: 'rgba(0, 217, 255, 0.1)',
-                                    border: '1px solid rgba(0, 217, 255, 0.3)',
-                                    borderRadius: '8px',
-                                    color: 'rgba(0, 217, 255, 0.9)',
-                                    fontSize: '0.875rem',
-                                    fontWeight: '600',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.target.style.background = 'rgba(0, 217, 255, 0.15)';
-                                    e.target.style.borderColor = 'rgba(0, 217, 255, 0.5)';
-                                    e.target.style.boxShadow = '0 0 12px rgba(0, 217, 255, 0.3)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.target.style.background = 'rgba(0, 217, 255, 0.1)';
-                                    e.target.style.borderColor = 'rgba(0, 217, 255, 0.3)';
-                                    e.target.style.boxShadow = 'none';
-                                }}>
-                                    Explore the Framework
-                                </button>
-                            </div>
-
-                            {/* Divider */}
+                            {/* Scrollable Content */}
                             <div style={{
-                                height: '1px',
-                                background: 'linear-gradient(to right, transparent, rgba(0, 217, 255, 0.3), transparent)',
-                                margin: '1.5rem 0'
-                            }}></div>
+                                flex: 1,
+                                overflowY: 'auto',
+                                padding: '2rem',
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: 'rgba(0, 217, 255, 0.3) rgba(0, 0, 0, 0.2)'
+                            }}>
+                                {/* About Section */}
+                                <div style={{ marginBottom: '2rem' }}>
+                                    <h2 style={{
+                                        fontSize: '1.5rem',
+                                        fontWeight: '600',
+                                        color: 'rgba(0, 217, 255, 0.95)',
+                                        margin: '0 0 1rem 0',
+                                        letterSpacing: '0.02em'
+                                    }}>
+                                        Discover Your Sonic Identity
+                                    </h2>
+                                    <p style={{
+                                        fontSize: '0.9375rem',
+                                        color: 'rgba(255, 255, 255, 0.85)',
+                                        margin: '0 0 1.5rem 0',
+                                        lineHeight: '1.7'
+                                    }}>
+                                        A creative system designed to help artists uncover and express their <strong style={{ color: 'rgba(0, 217, 255, 0.95)' }}>unique sonic identity</strong> using neuroscience, psychology, music, sound and creativity.
+                                    </p>
+                                    <button style={{
+                                        padding: '0.75rem 1.5rem',
+                                        background: 'rgba(0, 217, 255, 0.1)',
+                                        border: '1px solid rgba(0, 217, 255, 0.4)',
+                                        borderRadius: '0',
+                                        color: 'rgba(0, 217, 255, 0.95)',
+                                        fontSize: '0.875rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        letterSpacing: '0.05em',
+                                        textTransform: 'uppercase'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.background = 'rgba(0, 217, 255, 0.2)';
+                                        e.target.style.borderColor = 'rgba(0, 217, 255, 0.6)';
+                                        e.target.style.boxShadow = '0 0 20px rgba(0, 217, 255, 0.4)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.background = 'rgba(0, 217, 255, 0.1)';
+                                        e.target.style.borderColor = 'rgba(0, 217, 255, 0.4)';
+                                        e.target.style.boxShadow = 'none';
+                                    }}>
+                                        Explore the Framework
+                                    </button>
+                                </div>
 
-                            {/* Framework Insights Section */}
-                            <div>
-                                <h4 style={{
-                                    fontSize: '0.875rem',
-                                    fontWeight: '600',
-                                    color: 'rgba(0, 217, 255, 0.8)',
-                                    margin: '0 0 1rem 0',
-                                    letterSpacing: '0.02em'
-                                }}>
-                                    Framework Insights
-                                </h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                    {sources.map((source, idx) => {
-                                        const similarityPercent = Math.round((source.similarity || 0) * 100);
-                                        return (
-                                            <div
-                                                key={idx}
-                                                style={{
-                                                    padding: '1rem',
-                                                    background: 'rgba(0, 217, 255, 0.06)',
-                                                    border: '1px solid rgba(0, 217, 255, 0.15)',
-                                                    borderRadius: '10px',
-                                                    transition: 'all 0.2s ease'
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    e.currentTarget.style.background = 'rgba(0, 217, 255, 0.1)';
-                                                    e.currentTarget.style.borderColor = 'rgba(0, 217, 255, 0.3)';
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.style.background = 'rgba(0, 217, 255, 0.06)';
-                                                    e.currentTarget.style.borderColor = 'rgba(0, 217, 255, 0.15)';
-                                                }}
-                                            >
-                                                <div style={{
-                                                    display: 'flex',
-                                                    alignItems: 'flex-start',
-                                                    justifyContent: 'space-between',
-                                                    gap: '0.75rem',
-                                                    marginBottom: '0.5rem'
-                                                }}>
-                                                    <h5 style={{
-                                                        fontSize: '0.875rem',
-                                                        fontWeight: '600',
-                                                        color: 'rgba(255, 255, 255, 0.9)',
-                                                        margin: 0,
-                                                        flex: 1
-                                                    }}>
-                                                        {source.page_title}
-                                                    </h5>
+                                {/* Divider */}
+                                <div style={{
+                                    height: '2px',
+                                    background: 'linear-gradient(to right, transparent, rgba(0, 217, 255, 0.4), transparent)',
+                                    margin: '2rem 0'
+                                }}></div>
+
+                                {/* Framework Insights */}
+                                <div>
+                                    <h3 style={{
+                                        fontSize: '1.125rem',
+                                        fontWeight: '600',
+                                        color: 'rgba(0, 217, 255, 0.9)',
+                                        margin: '0 0 1.25rem 0',
+                                        letterSpacing: '0.02em'
+                                    }}>
+                                        Framework Insights
+                                    </h3>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                        {sources.map((source, idx) => {
+                                            const similarityPercent = Math.round((source.similarity || 0) * 100);
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    style={{
+                                                        padding: '1.25rem',
+                                                        background: 'rgba(0, 217, 255, 0.05)',
+                                                        border: '1px solid rgba(0, 217, 255, 0.2)',
+                                                        borderRadius: '0',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.currentTarget.style.background = 'rgba(0, 217, 255, 0.1)';
+                                                        e.currentTarget.style.borderColor = 'rgba(0, 217, 255, 0.4)';
+                                                        e.currentTarget.style.boxShadow = '0 0 16px rgba(0, 217, 255, 0.2)';
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.currentTarget.style.background = 'rgba(0, 217, 255, 0.05)';
+                                                        e.currentTarget.style.borderColor = 'rgba(0, 217, 255, 0.2)';
+                                                        e.currentTarget.style.boxShadow = 'none';
+                                                    }}
+                                                >
                                                     <div style={{
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: '600',
-                                                        color: similarityPercent >= 90 ? 'rgba(0, 217, 255, 0.9)'
-                                                            : similarityPercent >= 80 ? 'rgba(0, 217, 255, 0.7)'
-                                                            : 'rgba(255, 255, 255, 0.6)',
-                                                        padding: '0.25rem 0.5rem',
-                                                        background: 'rgba(0, 217, 255, 0.15)',
-                                                        borderRadius: '6px',
-                                                        whiteSpace: 'nowrap'
+                                                        display: 'flex',
+                                                        alignItems: 'flex-start',
+                                                        justifyContent: 'space-between',
+                                                        gap: '1rem',
+                                                        marginBottom: '0.5rem'
                                                     }}>
-                                                        {similarityPercent}%
+                                                        <h4 style={{
+                                                            fontSize: '0.9375rem',
+                                                            fontWeight: '600',
+                                                            color: 'rgba(255, 255, 255, 0.95)',
+                                                            margin: 0,
+                                                            flex: 1
+                                                        }}>
+                                                            {source.page_title}
+                                                        </h4>
+                                                        <div style={{
+                                                            fontSize: '0.8125rem',
+                                                            fontWeight: '700',
+                                                            color: similarityPercent >= 90 ? 'rgba(0, 217, 255, 1)'
+                                                                : similarityPercent >= 80 ? 'rgba(0, 217, 255, 0.8)'
+                                                                : 'rgba(255, 255, 255, 0.6)',
+                                                            padding: '0.375rem 0.625rem',
+                                                            background: 'rgba(0, 217, 255, 0.15)',
+                                                            borderRadius: '0',
+                                                            whiteSpace: 'nowrap',
+                                                            border: '1px solid rgba(0, 217, 255, 0.3)'
+                                                        }}>
+                                                            {similarityPercent}%
+                                                        </div>
                                                     </div>
+                                                    {source.heading_path && (
+                                                        <p style={{
+                                                            fontSize: '0.8125rem',
+                                                            color: 'rgba(255, 255, 255, 0.6)',
+                                                            margin: 0,
+                                                            lineHeight: '1.5',
+                                                            fontStyle: 'italic'
+                                                        }}>
+                                                            {source.heading_path}
+                                                        </p>
+                                                    )}
                                                 </div>
-                                                {source.heading_path && (
-                                                    <p style={{
-                                                        fontSize: '0.75rem',
-                                                        color: 'rgba(255, 255, 255, 0.5)',
-                                                        margin: 0,
-                                                        lineHeight: '1.4'
-                                                    }}>
-                                                        {source.heading_path}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2015,21 +2053,19 @@
             );
         }
 
-        // Blueprint Corner Ribbon - Subtle folded ribbon in top-right corner
-        function BlueprintCornerRibbon({ sources, onOpenPanel, onClosePanel }) {
+        // Blueprint Corner Ribbon - Clickable ribbon to open modal
+        function BlueprintCornerRibbon({ sources, onOpenPanel }) {
             const [isHovering, setIsHovering] = React.useState(false);
 
             if (!sources || sources.length === 0) return null;
 
             return (
                 <div
-                    onMouseEnter={() => {
-                        setIsHovering(true);
+                    onClick={() => {
                         if (onOpenPanel) onOpenPanel();
                     }}
-                    onMouseLeave={() => {
-                        setIsHovering(false);
-                    }}
+                    onMouseEnter={() => setIsHovering(true)}
+                    onMouseLeave={() => setIsHovering(false)}
                     style={{
                         position: 'absolute',
                         top: '0',
@@ -2077,7 +2113,7 @@
                                 opacity: isHovering ? 1 : 0.9
                             }}>📘</span>
                             <span style={{
-                                fontSize: '0.75rem',
+                                fontSize: '0.7rem',
                                 fontWeight: '600',
                                 color: 'rgba(0, 217, 255, 0.95)',
                                 letterSpacing: '0.05em',
@@ -2085,49 +2121,10 @@
                                 textShadow: isHovering ? '0 0 8px rgba(0, 217, 255, 0.4)' : 'none',
                                 transition: 'all 0.3s ease'
                             }}>
-                                Blueprint
+                                Neural Music: Blueprint
                             </span>
                         </div>
                     </div>
-
-                    {/* Hover Tooltip */}
-                    {isHovering && (
-                        <div style={{
-                            position: 'absolute',
-                            top: '100%',
-                            right: '0',
-                            marginTop: '0.5rem',
-                            padding: '0.75rem 1rem',
-                            background: 'rgba(10, 10, 31, 0.98)',
-                            backdropFilter: 'blur(20px)',
-                            border: '1px solid rgba(0, 217, 255, 0.4)',
-                            borderRadius: '8px',
-                            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(0, 217, 255, 0.2)',
-                            zIndex: 100,
-                            whiteSpace: 'nowrap',
-                            animation: 'fadeIn 0.2s ease'
-                        }}>
-                            <p style={{
-                                margin: 0,
-                                fontSize: '0.8125rem',
-                                color: 'rgba(255, 255, 255, 0.9)',
-                                fontWeight: '500'
-                            }}>
-                                This message contains information about the Neural Music Blueprint
-                            </p>
-                            {/* Arrow pointing up */}
-                            <div style={{
-                                position: 'absolute',
-                                top: '-6px',
-                                right: '20px',
-                                width: 0,
-                                height: 0,
-                                borderLeft: '6px solid transparent',
-                                borderRight: '6px solid transparent',
-                                borderBottom: '6px solid rgba(0, 217, 255, 0.4)'
-                            }}></div>
-                        </div>
-                    )}
                 </div>
             );
         }
@@ -3141,7 +3138,6 @@
                             <BlueprintCornerRibbon
                                 sources={message.dialogue.blueprint_sources}
                                 onOpenPanel={() => onOpenBlueprintPanel(message.dialogue.blueprint_sources || [])}
-                                onClosePanel={onCloseBlueprintPanel}
                             />
 
                             {/* Header */}
