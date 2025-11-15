@@ -1928,7 +1928,7 @@
                                         lineHeight: '1.6',
                                         fontStyle: 'italic'
                                     }}>
-                                        Auron explored the Neural Music Blueprint to create this personalized guidance for you.
+                                        Auron explored the Neural Music Blueprint to craft this guidance specifically for your creative journey.
                                     </p>
                                     <p style={{
                                         fontSize: '1rem',
@@ -1983,48 +1983,60 @@
                                     }}>
                                         Blueprint Sources
                                     </h3>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                         {sources.map((source, idx) => {
                                             return (
                                                 <div
                                                     key={idx}
                                                     style={{
-                                                        padding: '1.25rem',
-                                                        background: 'rgba(0, 217, 255, 0.05)',
-                                                        border: '1px solid rgba(0, 217, 255, 0.2)',
-                                                        borderRadius: '0',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '1rem',
+                                                        padding: '1rem 1.25rem',
+                                                        background: 'rgba(0, 217, 255, 0.04)',
+                                                        borderLeft: '3px solid rgba(0, 217, 255, 0.3)',
+                                                        borderTop: '1px solid rgba(0, 217, 255, 0.15)',
+                                                        borderRight: '1px solid rgba(0, 217, 255, 0.15)',
+                                                        borderBottom: '1px solid rgba(0, 217, 255, 0.15)',
                                                         transition: 'all 0.2s ease'
                                                     }}
                                                     onMouseEnter={(e) => {
-                                                        e.currentTarget.style.background = 'rgba(0, 217, 255, 0.1)';
-                                                        e.currentTarget.style.borderColor = 'rgba(0, 217, 255, 0.4)';
-                                                        e.currentTarget.style.boxShadow = '0 0 16px rgba(0, 217, 255, 0.2)';
+                                                        e.currentTarget.style.background = 'rgba(0, 217, 255, 0.08)';
+                                                        e.currentTarget.style.borderLeftColor = 'rgba(0, 217, 255, 0.6)';
+                                                        e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 217, 255, 0.15)';
                                                     }}
                                                     onMouseLeave={(e) => {
-                                                        e.currentTarget.style.background = 'rgba(0, 217, 255, 0.05)';
-                                                        e.currentTarget.style.borderColor = 'rgba(0, 217, 255, 0.2)';
+                                                        e.currentTarget.style.background = 'rgba(0, 217, 255, 0.04)';
+                                                        e.currentTarget.style.borderLeftColor = 'rgba(0, 217, 255, 0.3)';
                                                         e.currentTarget.style.boxShadow = 'none';
                                                     }}
                                                 >
-                                                    <h4 style={{
+                                                    {/* Number indicator */}
+                                                    <div style={{
+                                                        minWidth: '24px',
+                                                        height: '24px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '700',
+                                                        color: 'rgba(0, 217, 255, 0.7)',
+                                                        background: 'rgba(0, 217, 255, 0.1)',
+                                                        borderRadius: '50%'
+                                                    }}>
+                                                        {idx + 1}
+                                                    </div>
+
+                                                    {/* Title */}
+                                                    <p style={{
                                                         fontSize: '0.9375rem',
-                                                        fontWeight: '600',
+                                                        fontWeight: '500',
                                                         color: 'rgba(255, 255, 255, 0.95)',
-                                                        margin: source.heading_path ? '0 0 0.5rem 0' : 0
+                                                        margin: 0,
+                                                        flex: 1
                                                     }}>
                                                         {source.page_title}
-                                                    </h4>
-                                                    {source.heading_path && (
-                                                        <p style={{
-                                                            fontSize: '0.8125rem',
-                                                            color: 'rgba(255, 255, 255, 0.6)',
-                                                            margin: 0,
-                                                            lineHeight: '1.5',
-                                                            fontStyle: 'italic'
-                                                        }}>
-                                                            {source.heading_path}
-                                                        </p>
-                                                    )}
+                                                    </p>
                                                 </div>
                                             );
                                         })}
