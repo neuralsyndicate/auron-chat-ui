@@ -1303,6 +1303,8 @@
             sessionId,
             token,
             onProgress,
+            onBlueprintRetrieved,
+            onBlueprintSkipped,
             onAuronGenerating,
             onAuronToken,
             onAuronComplete,
@@ -1367,6 +1369,31 @@
                             console.error(`Error parsing ${eventType} event:`, err);
                         }
                     });
+                });
+
+                // Handle Blueprint agent events
+                eventSource.addEventListener('blueprint_retrieved', (e) => {
+                    try {
+                        const data = JSON.parse(e.data);
+                        console.log('📘 SSE Event: blueprint_retrieved', data);
+                        if (onBlueprintRetrieved) {
+                            onBlueprintRetrieved(data);
+                        }
+                    } catch (err) {
+                        console.error('Error parsing blueprint_retrieved event:', err);
+                    }
+                });
+
+                eventSource.addEventListener('blueprint_skipped', (e) => {
+                    try {
+                        const data = JSON.parse(e.data);
+                        console.log('📘 SSE Event: blueprint_skipped', data);
+                        if (onBlueprintSkipped) {
+                            onBlueprintSkipped(data);
+                        }
+                    } catch (err) {
+                        console.error('Error parsing blueprint_skipped event:', err);
+                    }
                 });
 
                 // Handle Auron token streaming events
@@ -1485,6 +1512,101 @@
                 }
                 return () => {}; // Return empty cleanup
             }
+        }
+
+        // Blueprint Source Component - Display Neural Music Blueprint sources
+        function BlueprintSourceCard({ source, index }) {
+            const [isExpanded, setIsExpanded] = useState(false);
+
+            // Convert similarity to percentage
+            const similarityPercent = Math.round((source.similarity || 0) * 100);
+
+            return (
+                <div style={{
+                    background: 'rgba(0, 217, 255, 0.04)',
+                    border: '1px solid rgba(0, 217, 255, 0.12)',
+                    borderRadius: '12px',
+                    padding: '1rem',
+                    marginBottom: '0.75rem',
+                    transition: 'all 0.2s ease'
+                }}>
+                    <div
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            cursor: 'pointer',
+                            gap: '1rem'
+                        }}
+                    >
+                        <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                                <span style={{ fontSize: '0.875rem', opacity: 0.6 }}>📘</span>
+                                <h5 style={{
+                                    fontSize: '0.875rem',
+                                    fontWeight: '600',
+                                    color: 'rgba(0, 217, 255, 0.9)',
+                                    margin: 0
+                                }}>
+                                    {source.page_title}
+                                </h5>
+                            </div>
+                            {source.heading_path && (
+                                <p style={{
+                                    fontSize: '0.75rem',
+                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    margin: '0.25rem 0 0 0',
+                                    paddingLeft: '1.25rem'
+                                }}>
+                                    {source.heading_path}
+                                </p>
+                            )}
+                        </div>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.75rem'
+                        }}>
+                            <div style={{
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                                color: similarityPercent >= 90 ? 'rgba(0, 217, 255, 0.9)'
+                                    : similarityPercent >= 80 ? 'rgba(0, 150, 255, 0.8)'
+                                    : 'rgba(255, 255, 255, 0.6)',
+                                padding: '0.25rem 0.5rem',
+                                background: similarityPercent >= 90 ? 'rgba(0, 217, 255, 0.1)'
+                                    : 'rgba(255, 255, 255, 0.05)',
+                                borderRadius: '6px'
+                            }}>
+                                {similarityPercent}%
+                            </div>
+                            <span style={{
+                                fontSize: '0.75rem',
+                                color: 'rgba(255, 255, 255, 0.4)',
+                                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                transition: 'transform 0.2s ease'
+                            }}>
+                                ▼
+                            </span>
+                        </div>
+                    </div>
+
+                    {isExpanded && source.chunk_preview && (
+                        <div style={{
+                            marginTop: '0.75rem',
+                            paddingTop: '0.75rem',
+                            borderTop: '1px solid rgba(0, 217, 255, 0.08)',
+                            fontSize: '0.8125rem',
+                            lineHeight: '1.6',
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            fontStyle: 'italic'
+                        }}>
+                            "{source.chunk_preview}"
+                        </div>
+                    )}
+                </div>
+            );
         }
 
         // Source Card Component - Display individual research source
@@ -2356,13 +2478,45 @@
                                 fontSize: '1.05rem',
                                 lineHeight: '1.8',
                                 color: 'rgba(255, 255, 255, 0.95)',
-                                marginBottom: message.dialogue.research_synthesis ? '1.5rem' : '2rem'
+                                marginBottom: message.dialogue.blueprint_sources?.length > 0 || message.dialogue.research_synthesis ? '1.5rem' : '2rem'
                             }}>
                                 <TextWithCitations
                                     text={guidance}
                                     cited_references={message.dialogue.cited_references}
                                 />
                             </div>
+
+                            {/* Neural Music Blueprint - Framework sources */}
+                            {message.dialogue.blueprint_sources && message.dialogue.blueprint_sources.length > 0 && (
+                                <div style={{
+                                    marginBottom: '2rem',
+                                    paddingTop: '1.5rem',
+                                    borderTop: '1px solid rgba(0, 217, 255, 0.08)'
+                                }}>
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        marginBottom: '1rem'
+                                    }}>
+                                        <span style={{ fontSize: '1rem', opacity: 0.7 }}>📘</span>
+                                        <h4 className="text-white" style={{
+                                            fontSize: '0.85rem',
+                                            letterSpacing: '0.05em',
+                                            textTransform: 'uppercase',
+                                            color: 'rgba(0, 217, 255, 0.7)',
+                                            fontWeight: '600'
+                                        }}>
+                                            Neural Music Blueprint ({message.dialogue.blueprint_sources.length} {message.dialogue.blueprint_sources.length === 1 ? 'source' : 'sources'})
+                                        </h4>
+                                    </div>
+                                    <div style={{ paddingLeft: '0rem' }}>
+                                        {message.dialogue.blueprint_sources.map((source, idx) => (
+                                            <BlueprintSourceCard key={idx} source={source} index={idx} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Evidence in the Pattern - Subtle, flowing integration */}
                             {message.dialogue.research_synthesis && (
@@ -3192,6 +3346,7 @@
             // Token streaming state (use ref to avoid closure issues)
             const streamingMessageIndexRef = useRef(null);
             const streamingGuidanceRef = useRef('');
+            const blueprintSourcesRef = useRef(null);
             const [isStreaming, setIsStreaming] = useState(false);
             const sseCleanupRef = useRef(null);
 
@@ -3335,6 +3490,15 @@
                                 setSSECompletedStages(prev => [...prev, event.type]);
                             }
                         },
+                        onBlueprintRetrieved: (data) => {
+                            console.log('📘 Blueprint sources retrieved:', data);
+                            // Store blueprint sources for later use in dialogue
+                            blueprintSourcesRef.current = data.sources || [];
+                        },
+                        onBlueprintSkipped: (data) => {
+                            console.log('📘 Blueprint skipped:', data.reason);
+                            blueprintSourcesRef.current = null;
+                        },
                         onAuronGenerating: () => {
                             // console.log('🎯 Auron is generating response - creating streaming message immediately');
 
@@ -3430,7 +3594,8 @@
                                                 sources: null,
                                                 research_quality: null,
                                                 cited_references: null,
-                                                research_synthesis: null
+                                                research_synthesis: null,
+                                                blueprint_sources: blueprintSourcesRef.current
                                             }
                                         }
                                         : msg
@@ -3440,6 +3605,7 @@
                             // Clear streaming state
                             streamingMessageIndexRef.current = null;
                             streamingGuidanceRef.current = '';
+                            blueprintSourcesRef.current = null;
                         },
                         onComplete: (result) => {
                             console.log('SSE Complete - final metadata:', result);
