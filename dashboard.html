@@ -583,6 +583,8 @@
             'domain_complete': 'Knowledge domains mapped',
             'trigger_analyzing': 'Identifying psychological patterns...',
             'trigger_complete': 'Psychological patterns recognized',
+            'blueprint_retrieved': 'Neural Music framework retrieved...',
+            'blueprint_skipped': 'Framework check complete',
             'web_search_analyzing': 'Searching research papers...',
             'web_search_complete': 'Research complete',
             'auron_thinking': 'Crafting response...',
@@ -599,6 +601,8 @@
             'domain_complete': 50,
             'trigger_analyzing': 60,
             'trigger_complete': 70,
+            'blueprint_retrieved': 72,
+            'blueprint_skipped': 72,
             'web_search_analyzing': 75,
             'web_search_complete': 85,
             'auron_thinking': 90,
@@ -796,6 +800,14 @@
                 speed: 0.45,
                 geometric: true
             },
+            'blueprint': {
+                label: 'Framework Retrieval',
+                color: 'rgba(147, 51, 234, 0.6)',
+                particleCount: 22,
+                connectionDistance: 95,
+                speed: 0.55,
+                pulse: true
+            },
             'web_search': {
                 label: 'Knowledge Archive',
                 color: 'rgba(0, 217, 255, 0.6)',
@@ -981,6 +993,14 @@
                             // Web_search: horizontal stream
                             p.x += p.vx * 2;
                             p.y += Math.sin(p.x * 0.1) * 0.5;
+                        } else if (config.pulse) {
+                            // Blueprint: pulsing expansion/contraction from center
+                            const distance = Math.sqrt((p.x - size/2)**2 + (p.y - size/2)**2);
+                            const pulsePhase = Math.sin(p.life * 0.04) * 0.5;
+                            const dx = (p.x - size/2) / (distance || 1);
+                            const dy = (p.y - size/2) / (distance || 1);
+                            p.x += dx * pulsePhase + p.vx;
+                            p.y += dy * pulsePhase + p.vy;
                         } else {
                             // Default: random movement
                             p.x += p.vx;
@@ -1070,6 +1090,7 @@
                 if (stageName.startsWith('emotion')) return 'emotion';
                 if (stageName.startsWith('domain')) return 'domain';
                 if (stageName.startsWith('trigger')) return 'trigger';
+                if (stageName.startsWith('blueprint')) return 'blueprint';
                 if (stageName.startsWith('web_search')) return 'web_search';
                 if (stageName.startsWith('auron')) return 'auron';
                 return null;
@@ -1080,7 +1101,7 @@
                 ? [...new Set(completedStages.map(s => getStageCategory(s)).filter(Boolean))]
                 : [];
 
-            const allStages = ['complexity', 'emotion', 'domain', 'trigger', 'web_search', 'auron'];
+            const allStages = ['complexity', 'emotion', 'domain', 'trigger', 'blueprint', 'web_search', 'auron'];
 
             // Initialize particle system for background
             React.useEffect(() => {
@@ -1376,6 +1397,16 @@
                     try {
                         const data = JSON.parse(e.data);
                         console.log('📘 SSE Event: blueprint_retrieved', data);
+
+                        // Trigger progress update for ThinkingPanel
+                        if (onProgress) {
+                            onProgress({
+                                type: 'blueprint_retrieved',
+                                data: data,
+                                progress: SSE_STAGE_PROGRESS['blueprint_retrieved'] || 0
+                            });
+                        }
+
                         if (onBlueprintRetrieved) {
                             onBlueprintRetrieved(data);
                         }
@@ -1388,6 +1419,16 @@
                     try {
                         const data = JSON.parse(e.data);
                         console.log('📘 SSE Event: blueprint_skipped', data);
+
+                        // Trigger progress update for ThinkingPanel (treat as complete)
+                        if (onProgress) {
+                            onProgress({
+                                type: 'blueprint_skipped',
+                                data: data,
+                                progress: SSE_STAGE_PROGRESS['blueprint_skipped'] || 0
+                            });
+                        }
+
                         if (onBlueprintSkipped) {
                             onBlueprintSkipped(data);
                         }
@@ -3485,8 +3526,10 @@
                             setSSEProgress(event.progress);
                             setSSECurrentStage(event.type);
 
-                            // Add completed stage (only on *_complete events)
-                            if (event.type.endsWith('_complete')) {
+                            // Add completed stage (on *_complete events OR blueprint events)
+                            if (event.type.endsWith('_complete') ||
+                                event.type === 'blueprint_retrieved' ||
+                                event.type === 'blueprint_skipped') {
                                 setSSECompletedStages(prev => [...prev, event.type]);
                             }
                         },
