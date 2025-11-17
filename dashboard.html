@@ -1197,15 +1197,17 @@
                         transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 1.2s ease'
                     }} />
 
-                    {/* Animated shimmer gradient background */}
+                    {/* Animated shimmer gradient background - blurred for subtle effect */}
                     <div style={{
                         position: 'fixed',
                         top: '50%',
                         left: '50%',
-                        width: '150%',
-                        height: '150%',
+                        width: '180%',
+                        height: '180%',
                         transform: 'translate(-50%, -50%)',
-                        background: 'radial-gradient(circle at center, rgba(0, 13, 255, 0.15) 0%, rgba(0, 217, 255, 0.08) 25%, transparent 50%)',
+                        background: 'radial-gradient(circle at center, rgba(0, 13, 255, 0.12) 0%, rgba(0, 217, 255, 0.08) 20%, rgba(0, 13, 255, 0.04) 40%, transparent 60%)',
+                        filter: 'blur(60px)',
+                        WebkitFilter: 'blur(60px)',
                         zIndex: 2000,
                         opacity: isFading ? 0 : 1,
                         animation: isFading ? 'none' : 'shimmer 15s linear infinite',
@@ -1213,15 +1215,17 @@
                         transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s'
                     }} />
 
-                    {/* Secondary gradient layer for depth */}
+                    {/* Secondary gradient layer for depth - blurred */}
                     <div style={{
                         position: 'fixed',
                         top: 0,
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.05) 0%, transparent 40%, rgba(0, 217, 255, 0.05) 100%)',
+                        background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.06) 0%, rgba(0, 217, 255, 0.03) 30%, transparent 50%, rgba(0, 217, 255, 0.06) 100%)',
                         backgroundSize: '200% 200%',
+                        filter: 'blur(40px)',
+                        WebkitFilter: 'blur(40px)',
                         zIndex: 2000,
                         opacity: isFading ? 0 : 1,
                         animation: isFading ? 'none' : 'shimmerGradient 12s ease-in-out infinite',
