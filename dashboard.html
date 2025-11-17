@@ -1145,41 +1145,55 @@
             @keyframes floatingLight1 {
                 0%, 100% {
                     transform: translate(0%, 0%) scale(1);
-                    opacity: 0.2;
+                    opacity: 0.18;
                 }
-                33% {
-                    transform: translate(30%, -20%) scale(1.2);
-                    opacity: 0.35;
-                }
-                66% {
-                    transform: translate(-20%, 30%) scale(0.8);
-                    opacity: 0.25;
+                50% {
+                    transform: translate(12%, -8%) scale(1.08);
+                    opacity: 0.26;
                 }
             }
 
             @keyframes floatingLight2 {
                 0%, 100% {
                     transform: translate(0%, 0%) scale(1);
-                    opacity: 0.25;
+                    opacity: 0.22;
                 }
-                40% {
-                    transform: translate(-40%, 25%) scale(1.3);
-                    opacity: 0.4;
-                }
-                70% {
-                    transform: translate(25%, -30%) scale(0.9);
-                    opacity: 0.3;
+                50% {
+                    transform: translate(-10%, 15%) scale(1.1);
+                    opacity: 0.28;
                 }
             }
 
             @keyframes floatingLight3 {
                 0%, 100% {
                     transform: translate(0%, 0%) scale(1);
-                    opacity: 0.3;
+                    opacity: 0.20;
                 }
                 50% {
-                    transform: translate(20%, 40%) scale(1.4);
-                    opacity: 0.45;
+                    transform: translate(8%, 10%) scale(1.06);
+                    opacity: 0.26;
+                }
+            }
+
+            @keyframes floatingLight4 {
+                0%, 100% {
+                    transform: translate(0%, 0%) scale(1);
+                    opacity: 0.20;
+                }
+                50% {
+                    transform: translate(10%, -12%) scale(1.07);
+                    opacity: 0.28;
+                }
+            }
+
+            @keyframes floatingLight5 {
+                0%, 100% {
+                    transform: translate(0%, 0%) scale(1);
+                    opacity: 0.19;
+                }
+                50% {
+                    transform: translate(-8%, 10%) scale(1.09);
+                    opacity: 0.27;
                 }
             }
 
@@ -1245,15 +1259,15 @@
                         left: '50%',
                         width: '180%',
                         height: '180%',
-                        transform: 'translate(-50%, -50%)',
+                        transform: isFading ? 'translate(-50%, -50%) scale(1.02)' : 'translate(-50%, -50%) scale(1)',
                         background: 'radial-gradient(circle at center, rgba(0, 13, 255, 0.22) 0%, rgba(0, 15, 255, 0.16) 20%, rgba(0, 13, 255, 0.1) 40%, transparent 60%)',
-                        filter: 'blur(60px)',
-                        WebkitFilter: 'blur(60px)',
+                        filter: isFading ? 'blur(80px)' : 'blur(60px)',
+                        WebkitFilter: isFading ? 'blur(80px)' : 'blur(60px)',
                         zIndex: 2000,
                         opacity: isFading ? 0 : 1,
                         animation: isFading ? 'none' : 'shimmer 15s linear infinite',
                         pointerEvents: 'none',
-                        transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s'
+                        transition: 'opacity 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s, filter 2.5s ease 0.3s, transform 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s'
                     }} />
 
                     {/* Secondary gradient layer - flowing #000DFF tints */}
@@ -1265,16 +1279,17 @@
                         bottom: 0,
                         background: 'linear-gradient(135deg, rgba(0, 18, 255, 0.12) 0%, rgba(0, 8, 255, 0.08) 30%, transparent 50%, rgba(0, 18, 255, 0.12) 100%)',
                         backgroundSize: '200% 200%',
-                        filter: 'blur(40px)',
-                        WebkitFilter: 'blur(40px)',
+                        filter: isFading ? 'blur(55px)' : 'blur(40px)',
+                        WebkitFilter: isFading ? 'blur(55px)' : 'blur(40px)',
+                        transform: isFading ? 'scale(1.02)' : 'scale(1)',
                         zIndex: 2000,
                         opacity: isFading ? 0 : 1,
                         animation: isFading ? 'none' : 'shimmerGradient 12s ease-in-out infinite',
                         pointerEvents: 'none',
-                        transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.5s'
+                        transition: 'opacity 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.5s, filter 2.5s ease 0.5s, transform 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.5s'
                     }} />
 
-                    {/* Floating blue tint 1 - lighter variation */}
+                    {/* Floating blue tint 1 - upper left (lighter) */}
                     <div style={{
                         position: 'fixed',
                         top: '20%',
@@ -1282,16 +1297,17 @@
                         width: '400px',
                         height: '400px',
                         background: 'radial-gradient(circle, rgba(0, 18, 255, 0.22) 0%, transparent 70%)',
-                        filter: 'blur(80px)',
-                        WebkitFilter: 'blur(80px)',
+                        filter: isFading ? 'blur(100px)' : 'blur(80px)',
+                        WebkitFilter: isFading ? 'blur(100px)' : 'blur(80px)',
+                        transform: isFading ? 'scale(1.02)' : 'scale(1)',
                         zIndex: 2000,
                         opacity: isFading ? 0 : 1,
                         animation: isFading ? 'none' : 'floatingLight1 18s ease-in-out infinite',
                         pointerEvents: 'none',
-                        transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.7s'
+                        transition: 'opacity 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.7s, filter 2.5s ease 0.7s, transform 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.7s'
                     }} />
 
-                    {/* Floating blue tint 2 - base #000DFF */}
+                    {/* Floating blue tint 2 - bottom right (base) */}
                     <div style={{
                         position: 'fixed',
                         bottom: '15%',
@@ -1299,16 +1315,17 @@
                         width: '500px',
                         height: '500px',
                         background: 'radial-gradient(circle, rgba(0, 13, 255, 0.28) 0%, transparent 70%)',
-                        filter: 'blur(90px)',
-                        WebkitFilter: 'blur(90px)',
+                        filter: isFading ? 'blur(110px)' : 'blur(90px)',
+                        WebkitFilter: isFading ? 'blur(110px)' : 'blur(90px)',
+                        transform: isFading ? 'scale(1.02)' : 'scale(1)',
                         zIndex: 2000,
                         opacity: isFading ? 0 : 1,
                         animation: isFading ? 'none' : 'floatingLight2 14s ease-in-out infinite',
                         pointerEvents: 'none',
-                        transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.9s'
+                        transition: 'opacity 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.8s, filter 2.5s ease 0.8s, transform 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.8s'
                     }} />
 
-                    {/* Floating blue tint 3 - darker variation */}
+                    {/* Floating blue tint 3 - center right (darker) */}
                     <div style={{
                         position: 'fixed',
                         top: '40%',
@@ -1316,13 +1333,50 @@
                         width: '350px',
                         height: '350px',
                         background: 'radial-gradient(circle, rgba(0, 8, 255, 0.25) 0%, transparent 70%)',
-                        filter: 'blur(70px)',
-                        WebkitFilter: 'blur(70px)',
+                        filter: isFading ? 'blur(90px)' : 'blur(70px)',
+                        WebkitFilter: isFading ? 'blur(90px)' : 'blur(70px)',
+                        transform: isFading ? 'scale(1.02)' : 'scale(1)',
                         zIndex: 2000,
                         opacity: isFading ? 0 : 1,
                         animation: isFading ? 'none' : 'floatingLight3 22s ease-in-out infinite',
                         pointerEvents: 'none',
-                        transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) 1.1s'
+                        transition: 'opacity 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.9s, filter 2.5s ease 0.9s, transform 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.9s'
+                    }} />
+
+                    {/* Floating blue tint 4 - bottom left (mid) */}
+                    <div style={{
+                        position: 'fixed',
+                        bottom: '25%',
+                        left: '20%',
+                        width: '420px',
+                        height: '420px',
+                        background: 'radial-gradient(circle, rgba(0, 15, 255, 0.24) 0%, transparent 70%)',
+                        filter: isFading ? 'blur(105px)' : 'blur(85px)',
+                        WebkitFilter: isFading ? 'blur(105px)' : 'blur(85px)',
+                        transform: isFading ? 'scale(1.02)' : 'scale(1)',
+                        zIndex: 2000,
+                        opacity: isFading ? 0 : 1,
+                        animation: isFading ? 'none' : 'floatingLight4 20s ease-in-out infinite',
+                        pointerEvents: 'none',
+                        transition: 'opacity 2.5s cubic-bezier(0.16, 1, 0.3, 1) 1.0s, filter 2.5s ease 1.0s, transform 2.5s cubic-bezier(0.16, 1, 0.3, 1) 1.0s'
+                    }} />
+
+                    {/* Floating blue tint 5 - center left (lighter) */}
+                    <div style={{
+                        position: 'fixed',
+                        top: '50%',
+                        left: '40%',
+                        width: '380px',
+                        height: '380px',
+                        background: 'radial-gradient(circle, rgba(0, 18, 255, 0.23) 0%, transparent 70%)',
+                        filter: isFading ? 'blur(95px)' : 'blur(75px)',
+                        WebkitFilter: isFading ? 'blur(95px)' : 'blur(75px)',
+                        transform: isFading ? 'scale(1.02)' : 'scale(1)',
+                        zIndex: 2000,
+                        opacity: isFading ? 0 : 1,
+                        animation: isFading ? 'none' : 'floatingLight5 16s ease-in-out infinite',
+                        pointerEvents: 'none',
+                        transition: 'opacity 2.5s cubic-bezier(0.16, 1, 0.3, 1) 1.1s, filter 2.5s ease 1.1s, transform 2.5s cubic-bezier(0.16, 1, 0.3, 1) 1.1s'
                     }} />
 
                     {/* Full screen immersive layout */}
