@@ -1093,7 +1093,63 @@
             }
         }
 
-        // ThinkingPanel - Philosophical Quotes Screen
+        // Add animation keyframes for ThinkingPanel
+        const thinkingPanelStyles = document.createElement('style');
+        thinkingPanelStyles.textContent = `
+            @keyframes quoteFloat {
+                0% {
+                    opacity: 0;
+                    transform: translateY(20px) scale(0.96);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+
+            @keyframes breathe {
+                0%, 100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.005);
+                }
+            }
+
+            @keyframes glowPulse {
+                0%, 100% {
+                    box-shadow: 0 0 12px rgba(0, 217, 255, 0.8), inset 0 0 4px rgba(255, 255, 255, 0.3);
+                }
+                50% {
+                    box-shadow: 0 0 20px rgba(0, 217, 255, 1), inset 0 0 6px rgba(255, 255, 255, 0.4);
+                }
+            }
+
+            @keyframes markerPop {
+                0% {
+                    transform: translate(-50%, -50%) scale(0);
+                    opacity: 0;
+                }
+                50% {
+                    transform: translate(-50%, -50%) scale(1.2);
+                }
+                100% {
+                    transform: translate(-50%, -50%) scale(1);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes fadeInDelayed {
+                0% { opacity: 0; }
+                100% { opacity: 1; }
+            }
+        `;
+        if (!document.getElementById('thinking-panel-animations')) {
+            thinkingPanelStyles.id = 'thinking-panel-animations';
+            document.head.appendChild(thinkingPanelStyles);
+        }
+
+        // ThinkingPanel - Philosophical Quotes Screen (Beautiful & Minimal)
         function ThinkingPanel({ stage, progress, completedStages, isFading }) {
             const [quote, setQuote] = React.useState(null);
 
@@ -1109,22 +1165,22 @@
 
             return (
                 <>
-                    {/* Gradient backdrop with dark overlay */}
+                    {/* Enhanced gradient backdrop */}
                     <div style={{
                         position: 'fixed',
                         top: 0,
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.15) 0%, rgba(0, 217, 255, 0.15) 100%), rgba(0, 0, 0, 0.75)',
-                        backdropFilter: 'blur(12px)',
-                        WebkitBackdropFilter: 'blur(12px)',
+                        background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.25) 0%, rgba(0, 217, 255, 0.25) 100%), rgba(0, 0, 0, 0.85)',
+                        backdropFilter: isFading ? 'blur(0px)' : 'blur(16px)',
+                        WebkitBackdropFilter: isFading ? 'blur(0px)' : 'blur(16px)',
                         zIndex: 2000,
                         opacity: isFading ? 0 : 1,
-                        transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                        transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.8s ease'
                     }} />
 
-                    {/* Center quote container */}
+                    {/* Center quote container with animations */}
                     <div style={{
                         position: 'fixed',
                         top: '50%',
@@ -1140,75 +1196,83 @@
                         alignItems: 'center',
                         gap: '3rem'
                     }}>
-                        {/* Quote container - Glass effect */}
+                        {/* Enhanced glass quote container */}
                         {quote && (
                             <div style={{
                                 width: '100%',
-                                padding: '3rem 2rem',
+                                padding: '3rem 2.5rem',
                                 textAlign: 'center',
-                                background: 'rgba(10, 10, 31, 0.4)',
-                                backdropFilter: 'blur(24px)',
-                                WebkitBackdropFilter: 'blur(24px)',
-                                border: '1px solid rgba(0, 217, 255, 0.12)',
-                                borderRadius: '12px',
-                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(255, 255, 255, 0.05) inset'
+                                background: 'rgba(10, 10, 31, 0.65)',
+                                backdropFilter: 'blur(40px)',
+                                WebkitBackdropFilter: 'blur(40px)',
+                                border: '1px solid rgba(0, 217, 255, 0.3)',
+                                borderRadius: '16px',
+                                boxShadow: '0 16px 48px 0 rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 217, 255, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.05), inset 0 0 20px 0 rgba(0, 13, 255, 0.03)',
+                                animation: isFading ? 'none' : 'quoteFloat 0.8s cubic-bezier(0.16, 1, 0.3, 1), breathe 4s ease-in-out infinite'
                             }}>
-                                {/* Quote text */}
+                                {/* Quote text with delayed fade */}
                                 <div style={{
-                                    fontSize: '1.25rem',
+                                    fontSize: '1.35rem',
                                     fontWeight: '400',
-                                    lineHeight: '1.7',
-                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    lineHeight: '1.75',
+                                    color: 'rgba(255, 255, 255, 0.95)',
                                     letterSpacing: '-0.01em',
-                                    marginBottom: '1.5rem',
-                                    fontStyle: 'italic'
+                                    marginBottom: '1.75rem',
+                                    fontStyle: 'italic',
+                                    textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+                                    animation: isFading ? 'none' : 'fadeInDelayed 0.6s ease 0.3s both'
                                 }}>
                                     "{quote.quote}"
                                 </div>
 
-                                {/* Author attribution */}
+                                {/* Author attribution with glow */}
                                 <div style={{
-                                    fontSize: '0.875rem',
+                                    fontSize: '0.9rem',
                                     fontWeight: '500',
-                                    color: 'rgba(0, 217, 255, 0.7)',
-                                    letterSpacing: '0.02em'
+                                    color: 'rgba(0, 217, 255, 0.85)',
+                                    letterSpacing: '0.03em',
+                                    textShadow: '0 0 12px rgba(0, 217, 255, 0.3)',
+                                    animation: isFading ? 'none' : 'fadeInDelayed 0.6s ease 0.5s both'
                                 }}>
                                     — {quote.author}{quote.discipline && `, ${quote.discipline}`}
                                 </div>
                             </div>
                         )}
 
-                        {/* Progress section */}
+                        {/* Progress section with animation */}
                         <div style={{
                             width: '100%',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            gap: '1rem'
+                            gap: '1rem',
+                            animation: isFading ? 'none' : 'fadeInDelayed 0.6s ease 0.7s both'
                         }}>
-                            {/* Current stage text */}
+                            {/* Current stage text with glow */}
                             {stage && SSE_STAGE_MESSAGES[stage] && (
                                 <div style={{
                                     textAlign: 'center',
-                                    fontSize: '0.9375rem',
+                                    fontSize: '0.95rem',
                                     fontWeight: '500',
-                                    color: 'rgba(255, 255, 255, 0.7)',
-                                    letterSpacing: '-0.01em'
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    letterSpacing: '-0.01em',
+                                    textShadow: '0 0 8px rgba(0, 217, 255, 0.2)'
                                 }}>
                                     {SSE_STAGE_MESSAGES[stage]}
                                 </div>
                             )}
 
-                            {/* Progress bar with stage markers */}
+                            {/* Enhanced progress bar */}
                             <div style={{
                                 position: 'relative',
                                 width: '100%',
-                                height: '4px',
-                                background: 'rgba(255, 255, 255, 0.1)',
-                                borderRadius: '2px',
-                                overflow: 'visible'
+                                height: '5px',
+                                background: 'rgba(255, 255, 255, 0.12)',
+                                borderRadius: '3px',
+                                overflow: 'visible',
+                                boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.3)'
                             }}>
-                                {/* Progress fill */}
+                                {/* Progress fill with enhanced glow */}
                                 <div style={{
                                     position: 'absolute',
                                     left: 0,
@@ -1216,42 +1280,51 @@
                                     height: '100%',
                                     width: `${progress}%`,
                                     background: 'linear-gradient(90deg, #000DFF 0%, #00D9FF 100%)',
-                                    borderRadius: '2px',
-                                    transition: 'width 0.6s ease',
-                                    boxShadow: '0 0 10px rgba(0, 217, 255, 0.4)'
+                                    borderRadius: '3px',
+                                    transition: 'width 0.6s ease, box-shadow 0.3s ease',
+                                    boxShadow: '0 0 16px rgba(0, 217, 255, 0.6), 0 0 8px rgba(0, 217, 255, 0.3)'
                                 }} />
 
-                                {/* Stage markers */}
-                                {stageMarkers.map((markerPos, idx) => (
-                                    <div
-                                        key={idx}
-                                        style={{
-                                            position: 'absolute',
-                                            left: `${markerPos}%`,
-                                            top: '50%',
-                                            transform: 'translate(-50%, -50%)',
-                                            width: '6px',
-                                            height: '6px',
-                                            borderRadius: '50%',
-                                            background: progress >= markerPos
-                                                ? 'rgba(0, 217, 255, 0.9)'
-                                                : 'rgba(255, 255, 255, 0.3)',
-                                            transition: 'background 0.3s ease',
-                                            boxShadow: progress >= markerPos
-                                                ? '0 0 8px rgba(0, 217, 255, 0.6)'
-                                                : 'none'
-                                        }}
-                                    />
-                                ))}
+                                {/* Enhanced stage markers with animation */}
+                                {stageMarkers.map((markerPos, idx) => {
+                                    const isActive = progress >= markerPos;
+                                    return (
+                                        <div
+                                            key={idx}
+                                            style={{
+                                                position: 'absolute',
+                                                left: `${markerPos}%`,
+                                                top: '50%',
+                                                transform: 'translate(-50%, -50%)',
+                                                width: '8px',
+                                                height: '8px',
+                                                borderRadius: '50%',
+                                                background: isActive
+                                                    ? 'rgba(0, 217, 255, 1)'
+                                                    : 'rgba(255, 255, 255, 0.25)',
+                                                transition: 'all 0.3s ease',
+                                                boxShadow: isActive
+                                                    ? '0 0 12px rgba(0, 217, 255, 0.8), inset 0 0 4px rgba(255, 255, 255, 0.3)'
+                                                    : 'none',
+                                                border: isActive
+                                                    ? '1px solid rgba(255, 255, 255, 0.2)'
+                                                    : '1px solid rgba(255, 255, 255, 0.1)',
+                                                animation: isActive ? 'glowPulse 2s ease-in-out infinite' : 'none'
+                                            }}
+                                        />
+                                    );
+                                })}
                             </div>
 
-                            {/* Progress percentage */}
+                            {/* Progress percentage with glow */}
                             <div style={{
                                 textAlign: 'center',
                                 fontSize: '0.875rem',
                                 fontWeight: '600',
-                                color: 'rgba(0, 217, 255, 0.7)',
-                                fontVariantNumeric: 'tabular-nums'
+                                color: 'rgba(0, 217, 255, 0.85)',
+                                fontVariantNumeric: 'tabular-nums',
+                                letterSpacing: '0.05em',
+                                textShadow: '0 0 8px rgba(0, 217, 255, 0.3)'
                             }}>
                                 {Math.round(progress)}%
                             </div>
