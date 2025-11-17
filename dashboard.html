@@ -1142,6 +1142,61 @@
                 }
             }
 
+            @keyframes shimmerWave {
+                0% {
+                    transform: translateX(-100%) rotate(45deg);
+                    opacity: 0;
+                }
+                50% {
+                    opacity: 0.3;
+                }
+                100% {
+                    transform: translateX(200%) rotate(45deg);
+                    opacity: 0;
+                }
+            }
+
+            @keyframes floatingLight1 {
+                0%, 100% {
+                    transform: translate(0%, 0%) scale(1);
+                    opacity: 0.2;
+                }
+                33% {
+                    transform: translate(30%, -20%) scale(1.2);
+                    opacity: 0.35;
+                }
+                66% {
+                    transform: translate(-20%, 30%) scale(0.8);
+                    opacity: 0.25;
+                }
+            }
+
+            @keyframes floatingLight2 {
+                0%, 100% {
+                    transform: translate(0%, 0%) scale(1);
+                    opacity: 0.25;
+                }
+                40% {
+                    transform: translate(-40%, 25%) scale(1.3);
+                    opacity: 0.4;
+                }
+                70% {
+                    transform: translate(25%, -30%) scale(0.9);
+                    opacity: 0.3;
+                }
+            }
+
+            @keyframes floatingLight3 {
+                0%, 100% {
+                    transform: translate(0%, 0%) scale(1);
+                    opacity: 0.3;
+                }
+                50% {
+                    transform: translate(20%, 40%) scale(1.4);
+                    opacity: 0.45;
+                }
+            }
+
             @keyframes fadeInDelayed {
                 0% {
                     opacity: 0;
@@ -1197,7 +1252,7 @@
                         transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 1.2s ease'
                     }} />
 
-                    {/* Animated shimmer gradient background - blurred for subtle effect */}
+                    {/* Animated shimmer gradient background - rotating blue shimmer */}
                     <div style={{
                         position: 'fixed',
                         top: '50%',
@@ -1205,7 +1260,7 @@
                         width: '180%',
                         height: '180%',
                         transform: 'translate(-50%, -50%)',
-                        background: 'radial-gradient(circle at center, rgba(0, 13, 255, 0.12) 0%, rgba(0, 217, 255, 0.08) 20%, rgba(0, 13, 255, 0.04) 40%, transparent 60%)',
+                        background: 'radial-gradient(circle at center, rgba(0, 13, 255, 0.25) 0%, rgba(0, 217, 255, 0.18) 20%, rgba(0, 13, 255, 0.12) 40%, transparent 60%)',
                         filter: 'blur(60px)',
                         WebkitFilter: 'blur(60px)',
                         zIndex: 2000,
@@ -1215,14 +1270,14 @@
                         transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s'
                     }} />
 
-                    {/* Secondary gradient layer for depth - blurred */}
+                    {/* Secondary gradient layer - flowing shimmer */}
                     <div style={{
                         position: 'fixed',
                         top: 0,
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.06) 0%, rgba(0, 217, 255, 0.03) 30%, transparent 50%, rgba(0, 217, 255, 0.06) 100%)',
+                        background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.15) 0%, rgba(0, 217, 255, 0.1) 30%, transparent 50%, rgba(0, 217, 255, 0.15) 100%)',
                         backgroundSize: '200% 200%',
                         filter: 'blur(40px)',
                         WebkitFilter: 'blur(40px)',
@@ -1231,6 +1286,72 @@
                         animation: isFading ? 'none' : 'shimmerGradient 12s ease-in-out infinite',
                         pointerEvents: 'none',
                         transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.5s'
+                    }} />
+
+                    {/* Floating light spot 1 - top left quadrant */}
+                    <div style={{
+                        position: 'fixed',
+                        top: '20%',
+                        left: '15%',
+                        width: '400px',
+                        height: '400px',
+                        background: 'radial-gradient(circle, rgba(0, 217, 255, 0.3) 0%, transparent 70%)',
+                        filter: 'blur(80px)',
+                        WebkitFilter: 'blur(80px)',
+                        zIndex: 2000,
+                        opacity: isFading ? 0 : 1,
+                        animation: isFading ? 'none' : 'floatingLight1 18s ease-in-out infinite',
+                        pointerEvents: 'none',
+                        transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.7s'
+                    }} />
+
+                    {/* Floating light spot 2 - bottom right quadrant */}
+                    <div style={{
+                        position: 'fixed',
+                        bottom: '15%',
+                        right: '20%',
+                        width: '500px',
+                        height: '500px',
+                        background: 'radial-gradient(circle, rgba(0, 13, 255, 0.35) 0%, transparent 70%)',
+                        filter: 'blur(90px)',
+                        WebkitFilter: 'blur(90px)',
+                        zIndex: 2000,
+                        opacity: isFading ? 0 : 1,
+                        animation: isFading ? 'none' : 'floatingLight2 14s ease-in-out infinite',
+                        pointerEvents: 'none',
+                        transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.9s'
+                    }} />
+
+                    {/* Floating light spot 3 - center right */}
+                    <div style={{
+                        position: 'fixed',
+                        top: '40%',
+                        right: '10%',
+                        width: '350px',
+                        height: '350px',
+                        background: 'radial-gradient(circle, rgba(0, 217, 255, 0.28) 0%, transparent 70%)',
+                        filter: 'blur(70px)',
+                        WebkitFilter: 'blur(70px)',
+                        zIndex: 2000,
+                        opacity: isFading ? 0 : 1,
+                        animation: isFading ? 'none' : 'floatingLight3 22s ease-in-out infinite',
+                        pointerEvents: 'none',
+                        transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) 1.1s'
+                    }} />
+
+                    {/* Shimmer wave sweep */}
+                    <div style={{
+                        position: 'fixed',
+                        top: '-50%',
+                        left: '-50%',
+                        width: '200%',
+                        height: '200%',
+                        background: 'linear-gradient(45deg, transparent 30%, rgba(0, 217, 255, 0.15) 50%, transparent 70%)',
+                        zIndex: 2000,
+                        opacity: isFading ? 0 : 1,
+                        animation: isFading ? 'none' : 'shimmerWave 10s ease-in-out infinite',
+                        pointerEvents: 'none',
+                        transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) 1.3s'
                     }} />
 
                     {/* Full screen immersive layout */}
