@@ -1165,16 +1165,16 @@
 
             return (
                 <>
-                    {/* Enhanced gradient backdrop */}
+                    {/* Light gradient backdrop - matches chat aesthetic */}
                     <div style={{
                         position: 'fixed',
                         top: 0,
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.25) 0%, rgba(0, 217, 255, 0.25) 100%), rgba(0, 0, 0, 0.85)',
-                        backdropFilter: isFading ? 'blur(0px)' : 'blur(16px)',
-                        WebkitBackdropFilter: isFading ? 'blur(0px)' : 'blur(16px)',
+                        background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.25) 0%, rgba(0, 217, 255, 0.25) 100%), rgba(0, 0, 0, 0.8)',
+                        backdropFilter: isFading ? 'blur(0px)' : 'blur(12px)',
+                        WebkitBackdropFilter: isFading ? 'blur(0px)' : 'blur(12px)',
                         zIndex: 2000,
                         opacity: isFading ? 0 : 1,
                         transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.8s ease'
@@ -1196,22 +1196,23 @@
                         alignItems: 'center',
                         gap: '3rem'
                     }}>
-                        {/* Enhanced glass quote container */}
+                        {/* Light glass quote container - matches chat design */}
                         {quote && (
                             <div style={{
                                 width: '100%',
                                 padding: '3rem 2.5rem',
                                 textAlign: 'center',
-                                background: 'rgba(10, 10, 31, 0.65)',
-                                backdropFilter: 'blur(40px)',
-                                WebkitBackdropFilter: 'blur(40px)',
-                                border: '1px solid rgba(0, 217, 255, 0.3)',
-                                borderRadius: '16px',
-                                boxShadow: '0 16px 48px 0 rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 217, 255, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.05), inset 0 0 20px 0 rgba(0, 13, 255, 0.03)',
+                                background: 'rgba(10, 10, 31, 0.3)',
+                                backdropFilter: 'blur(20px)',
+                                WebkitBackdropFilter: 'blur(20px)',
+                                border: '1px solid rgba(0, 217, 255, 0.1)',
+                                borderRadius: '20px',
+                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                                 animation: isFading ? 'none' : 'quoteFloat 0.8s cubic-bezier(0.16, 1, 0.3, 1), breathe 4s ease-in-out infinite'
                             }}>
                                 {/* Quote text with delayed fade */}
                                 <div style={{
+                                    fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif",
                                     fontSize: '1.35rem',
                                     fontWeight: '400',
                                     lineHeight: '1.75',
@@ -1227,6 +1228,7 @@
 
                                 {/* Author attribution with glow */}
                                 <div style={{
+                                    fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif",
                                     fontSize: '0.9rem',
                                     fontWeight: '500',
                                     color: 'rgba(0, 217, 255, 0.85)',
@@ -1251,6 +1253,7 @@
                             {/* Current stage text with glow */}
                             {stage && SSE_STAGE_MESSAGES[stage] && (
                                 <div style={{
+                                    fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif",
                                     textAlign: 'center',
                                     fontSize: '0.95rem',
                                     fontWeight: '500',
@@ -1318,6 +1321,7 @@
 
                             {/* Progress percentage with glow */}
                             <div style={{
+                                fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif",
                                 textAlign: 'center',
                                 fontSize: '0.875rem',
                                 fontWeight: '600',
