@@ -1160,21 +1160,21 @@
                 }
             }, []);
 
-            // Stage markers for progress bar (completion percentages)
-            const stageMarkers = [12, 30, 50, 70, 72, 85, 95];
+            // Stage markers for progress bar (symmetric distribution)
+            const stageMarkers = [15, 30, 50, 70, 85, 95];
 
             return (
                 <>
-                    {/* Light gradient backdrop - matches chat aesthetic */}
+                    {/* Dark professional backdrop */}
                     <div style={{
                         position: 'fixed',
                         top: 0,
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.25) 0%, rgba(0, 217, 255, 0.25) 100%), rgba(0, 0, 0, 0.8)',
-                        backdropFilter: isFading ? 'blur(0px)' : 'blur(12px)',
-                        WebkitBackdropFilter: isFading ? 'blur(0px)' : 'blur(12px)',
+                        background: 'rgba(0, 0, 0, 0.92)',
+                        backdropFilter: isFading ? 'blur(0px)' : 'blur(16px)',
+                        WebkitBackdropFilter: isFading ? 'blur(0px)' : 'blur(16px)',
                         zIndex: 2000,
                         opacity: isFading ? 0 : 1,
                         transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.8s ease'
@@ -1196,18 +1196,18 @@
                         alignItems: 'center',
                         gap: '3rem'
                     }}>
-                        {/* Light glass quote container - matches chat design */}
+                        {/* Dark futuristic quote container with intense glows */}
                         {quote && (
                             <div style={{
                                 width: '100%',
                                 padding: '3rem 2.5rem',
                                 textAlign: 'center',
-                                background: 'rgba(10, 10, 31, 0.3)',
-                                backdropFilter: 'blur(20px)',
-                                WebkitBackdropFilter: 'blur(20px)',
-                                border: '1px solid rgba(0, 217, 255, 0.1)',
+                                background: 'rgba(10, 10, 31, 0.7)',
+                                backdropFilter: 'blur(40px)',
+                                WebkitBackdropFilter: 'blur(40px)',
+                                border: '2px solid rgba(0, 217, 255, 0.4)',
                                 borderRadius: '20px',
-                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                                boxShadow: '0 0 40px rgba(0, 217, 255, 0.6), 0 0 80px rgba(0, 217, 255, 0.3), 0 16px 48px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 13, 255, 0.1)',
                                 animation: isFading ? 'none' : 'quoteFloat 0.8s cubic-bezier(0.16, 1, 0.3, 1), breathe 4s ease-in-out infinite'
                             }}>
                                 {/* Quote text with delayed fade */}
@@ -1226,14 +1226,14 @@
                                     "{quote.quote}"
                                 </div>
 
-                                {/* Author attribution with glow */}
+                                {/* Author attribution with intense glow */}
                                 <div style={{
                                     fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif",
                                     fontSize: '0.9rem',
                                     fontWeight: '500',
-                                    color: 'rgba(0, 217, 255, 0.85)',
+                                    color: 'rgba(0, 217, 255, 0.95)',
                                     letterSpacing: '0.03em',
-                                    textShadow: '0 0 12px rgba(0, 217, 255, 0.3)',
+                                    textShadow: '0 0 16px rgba(0, 217, 255, 0.6), 0 0 8px rgba(0, 217, 255, 0.4)',
                                     animation: isFading ? 'none' : 'fadeInDelayed 0.6s ease 0.5s both'
                                 }}>
                                     — {quote.author}{quote.discipline && `, ${quote.discipline}`}
@@ -1250,22 +1250,22 @@
                             gap: '1rem',
                             animation: isFading ? 'none' : 'fadeInDelayed 0.6s ease 0.7s both'
                         }}>
-                            {/* Current stage text with glow */}
+                            {/* Current stage text with intense glow */}
                             {stage && SSE_STAGE_MESSAGES[stage] && (
                                 <div style={{
                                     fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif",
                                     textAlign: 'center',
                                     fontSize: '0.95rem',
                                     fontWeight: '500',
-                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    color: 'rgba(255, 255, 255, 0.9)',
                                     letterSpacing: '-0.01em',
-                                    textShadow: '0 0 8px rgba(0, 217, 255, 0.2)'
+                                    textShadow: '0 0 12px rgba(0, 217, 255, 0.5), 0 0 6px rgba(0, 217, 255, 0.3)'
                                 }}>
                                     {SSE_STAGE_MESSAGES[stage]}
                                 </div>
                             )}
 
-                            {/* Enhanced progress bar */}
+                            {/* Intense progress bar */}
                             <div style={{
                                 position: 'relative',
                                 width: '100%',
@@ -1275,7 +1275,7 @@
                                 overflow: 'visible',
                                 boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.3)'
                             }}>
-                                {/* Progress fill with enhanced glow */}
+                                {/* Progress fill with intense glow */}
                                 <div style={{
                                     position: 'absolute',
                                     left: 0,
@@ -1285,7 +1285,7 @@
                                     background: 'linear-gradient(90deg, #000DFF 0%, #00D9FF 100%)',
                                     borderRadius: '3px',
                                     transition: 'width 0.6s ease, box-shadow 0.3s ease',
-                                    boxShadow: '0 0 16px rgba(0, 217, 255, 0.6), 0 0 8px rgba(0, 217, 255, 0.3)'
+                                    boxShadow: '0 0 20px rgba(0, 217, 255, 0.8), 0 0 40px rgba(0, 217, 255, 0.5)'
                                 }} />
 
                                 {/* Enhanced stage markers with animation */}
@@ -1307,7 +1307,7 @@
                                                     : 'rgba(255, 255, 255, 0.25)',
                                                 transition: 'all 0.3s ease',
                                                 boxShadow: isActive
-                                                    ? '0 0 12px rgba(0, 217, 255, 0.8), inset 0 0 4px rgba(255, 255, 255, 0.3)'
+                                                    ? '0 0 16px rgba(0, 217, 255, 1), 0 0 8px rgba(0, 217, 255, 0.6), inset 0 0 6px rgba(255, 255, 255, 0.4)'
                                                     : 'none',
                                                 border: isActive
                                                     ? '1px solid rgba(255, 255, 255, 0.2)'
@@ -1319,16 +1319,16 @@
                                 })}
                             </div>
 
-                            {/* Progress percentage with glow */}
+                            {/* Progress percentage with intense glow */}
                             <div style={{
                                 fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif",
                                 textAlign: 'center',
                                 fontSize: '0.875rem',
                                 fontWeight: '600',
-                                color: 'rgba(0, 217, 255, 0.85)',
+                                color: 'rgba(0, 217, 255, 0.95)',
                                 fontVariantNumeric: 'tabular-nums',
                                 letterSpacing: '0.05em',
-                                textShadow: '0 0 8px rgba(0, 217, 255, 0.3)'
+                                textShadow: '0 0 12px rgba(0, 217, 255, 0.6), 0 0 6px rgba(0, 217, 255, 0.4)'
                             }}>
                                 {Math.round(progress)}%
                             </div>
