@@ -3620,6 +3620,16 @@
                                     disabled={chatLoading}
                                     className="flex-1 px-5 py-4 bg-black/40 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 />
+                                {/* Audio Upload Button */}
+                                <button
+                                    onClick={() => onAudioUpload && onAudioUpload()}
+                                    className="px-6 py-4 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 transition-all duration-300 flex items-center gap-2"
+                                    style={{
+                                        boxShadow: '0 0 20px rgba(0, 217, 255, 0.3)'
+                                    }}>
+                                    <span style={{ fontSize: '1.2rem' }}>🎵</span>
+                                    <span>Upload Track</span>
+                                </button>
                                 <button
                                     onClick={handleSendMessage}
                                     disabled={!input.trim() || chatLoading}
@@ -3919,6 +3929,357 @@
             );
         }
 
+        // ============================================================
+        // AUDIO SESSION MODAL - Session Analysis Mode
+        // ============================================================
+        function AudioSessionModal({ uploadId, onClose }) {
+            const [sessionData, setSessionData] = useState(null);
+            const [messages, setMessages] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [input, setInput] = useState('');
+            const [sending, setSending] = useState(false);
+            const messagesEndRef = useRef(null);
+
+            useEffect(() => {
+                loadSessionData();
+            }, [uploadId]);
+
+            useEffect(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, [messages]);
+
+            const loadSessionData = async () => {
+                try {
+                    const token = await getAuthToken();
+                    const response = await fetch(
+                        `${BFF_API_BASE}/audio/session/${uploadId}`,
+                        {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error('Failed to load session');
+                    }
+
+                    const data = await response.json();
+                    setSessionData(data);
+
+                    // Generate welcome message from Auron
+                    const welcomeMsg = generateWelcomeMessage(data);
+                    setMessages([{
+                        role: 'auron',
+                        content: welcomeMsg
+                    }]);
+
+                    setLoading(false);
+
+                } catch (err) {
+                    console.error('Failed to load session:', err);
+                    setLoading(false);
+                }
+            };
+
+            const generateWelcomeMessage = (data) => {
+                const { track_info, essentia_features, musical_components } = data;
+                const duration = Math.round(track_info.duration);
+                const minutes = Math.floor(duration / 60);
+                const seconds = duration % 60;
+
+                return `I've just listened to "${track_info.filename}" — all ${minutes}:${seconds.toString().padStart(2, '0')} of it.
+
+I can sense the sonic textures, the frequency landscapes, and the emotional architecture you've built. This isn't just data to me — it's a window into your creative consciousness.
+
+💭 **What were you trying to express when you created this piece?**`;
+            };
+
+            const sendMessage = async () => {
+                if (!input.trim() || sending) return;
+
+                const userMessage = input.trim();
+                setInput('');
+                setSending(true);
+
+                // Add user message immediately
+                setMessages(prev => [...prev, {
+                    role: 'user',
+                    content: userMessage
+                }]);
+
+                try {
+                    const token = await getAuthToken();
+                    const response = await fetch(
+                        `${BFF_API_BASE}/audio/session/${uploadId}/message`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                message: userMessage,
+                                upload_id: uploadId
+                            })
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error('Failed to send message');
+                    }
+
+                    const data = await response.json();
+
+                    // Add Auron's response
+                    setMessages(prev => [...prev, {
+                        role: 'auron',
+                        content: data.message || "I'm reflecting on what you've shared..."
+                    }]);
+
+                } catch (err) {
+                    console.error('Failed to send message:', err);
+                    setMessages(prev => [...prev, {
+                        role: 'auron',
+                        content: "I apologize, but I'm having trouble responding right now. The session is active, but the connection needs attention."
+                    }]);
+                } finally {
+                    setSending(false);
+                }
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            };
+
+            if (loading) {
+                return (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: '#000',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 9999
+                    }}>
+                        <div className="text-center">
+                            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-gray-400">Loading session...</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: '#000',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    zIndex: 9999
+                }}>
+                    {/* Session Header */}
+                    <div style={{
+                        background: 'rgba(10, 10, 31, 0.95)',
+                        backdropFilter: 'blur(40px)',
+                        padding: '1.5rem 2rem',
+                        borderBottom: '1px solid rgba(0, 217, 255, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
+                    }}>
+                        <div style={{ flex: 1 }}>
+                            <div style={{
+                                fontSize: '0.75rem',
+                                color: '#00D9FF',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.1em',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem'
+                            }}>
+                                🎧 AUDIO ANALYSIS SESSION
+                            </div>
+                            <h2 style={{
+                                fontSize: '1.5rem',
+                                color: '#fff',
+                                fontWeight: '600',
+                                margin: 0
+                            }}>
+                                {sessionData?.track_info.filename}
+                            </h2>
+                            <div style={{
+                                fontSize: '0.85rem',
+                                color: 'rgba(255, 255, 255, 0.6)',
+                                marginTop: '0.25rem'
+                            }}>
+                                {Math.round(sessionData?.track_info.duration)}s • {sessionData?.track_info.format}
+                            </div>
+                        </div>
+
+                        {/* Close Button */}
+                        <button
+                            onClick={onClose}
+                            style={{
+                                padding: '0.75rem 1.5rem',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                color: '#fff',
+                                cursor: 'pointer',
+                                fontSize: '0.9rem',
+                                fontWeight: '500',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseOver={(e) => {
+                                e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+                                e.target.style.borderColor = 'rgba(0, 217, 255, 0.5)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                                e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                            }}
+                        >
+                            Exit Session
+                        </button>
+                    </div>
+
+                    {/* Messages Area */}
+                    <div style={{
+                        flex: 1,
+                        overflowY: 'auto',
+                        padding: '2rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '1.5rem'
+                    }}>
+                        {messages.map((msg, idx) => (
+                            <div
+                                key={idx}
+                                style={{
+                                    maxWidth: msg.role === 'user' ? '70%' : '100%',
+                                    alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start'
+                                }}
+                            >
+                                {msg.role === 'auron' ? (
+                                    <div style={{
+                                        background: 'rgba(0, 217, 255, 0.05)',
+                                        border: '1px solid rgba(0, 217, 255, 0.2)',
+                                        borderRadius: '16px',
+                                        padding: '1.5rem',
+                                        boxShadow: '0 4px 20px rgba(0, 217, 255, 0.1)'
+                                    }}>
+                                        <div style={{
+                                            fontSize: '0.75rem',
+                                            color: '#00D9FF',
+                                            fontWeight: '600',
+                                            marginBottom: '0.75rem',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.1em'
+                                        }}>
+                                            AURON
+                                        </div>
+                                        <div style={{
+                                            color: '#fff',
+                                            lineHeight: '1.6',
+                                            whiteSpace: 'pre-wrap'
+                                        }}>
+                                            {msg.content}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={{
+                                        background: 'rgba(255, 255, 255, 0.05)',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '16px',
+                                        padding: '1rem 1.5rem',
+                                        color: '#fff',
+                                        lineHeight: '1.6'
+                                    }}>
+                                        {msg.content}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    {/* Input Area */}
+                    <div style={{
+                        background: 'rgba(10, 10, 31, 0.95)',
+                        backdropFilter: 'blur(40px)',
+                        padding: '1.5rem 2rem',
+                        borderTop: '1px solid rgba(0, 217, 255, 0.2)',
+                        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.5)'
+                    }}>
+                        <div style={{
+                            display: 'flex',
+                            gap: '1rem',
+                            alignItems: 'flex-end'
+                        }}>
+                            <textarea
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                placeholder="Share your thoughts about this track..."
+                                disabled={sending}
+                                style={{
+                                    flex: 1,
+                                    background: 'rgba(0, 0, 0, 0.6)',
+                                    border: '1px solid rgba(0, 217, 255, 0.2)',
+                                    borderRadius: '12px',
+                                    padding: '1rem',
+                                    color: '#fff',
+                                    fontSize: '1rem',
+                                    resize: 'none',
+                                    minHeight: '80px',
+                                    fontFamily: 'inherit',
+                                    outline: 'none'
+                                }}
+                                onFocus={(e) => {
+                                    e.target.style.borderColor = 'rgba(0, 217, 255, 0.5)';
+                                    e.target.style.boxShadow = '0 0 20px rgba(0, 217, 255, 0.2)';
+                                }}
+                                onBlur={(e) => {
+                                    e.target.style.borderColor = 'rgba(0, 217, 255, 0.2)';
+                                    e.target.style.boxShadow = 'none';
+                                }}
+                            />
+                            <button
+                                onClick={sendMessage}
+                                disabled={!input.trim() || sending}
+                                style={{
+                                    padding: '1rem 2rem',
+                                    borderRadius: '12px',
+                                    border: '1px solid rgba(0, 217, 255, 0.3)',
+                                    background: input.trim()
+                                        ? 'linear-gradient(135deg, #00D9FF, #00BFFF)'
+                                        : 'rgba(10, 10, 31, 0.6)',
+                                    color: '#fff',
+                                    fontWeight: '600',
+                                    cursor: input.trim() ? 'pointer' : 'not-allowed',
+                                    opacity: input.trim() ? 1 : 0.5,
+                                    boxShadow: input.trim() ? '0 0 20px rgba(0, 217, 255, 0.3)' : 'none',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                {sending ? 'Sending...' : 'Send'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessionId, setSyncing }) {
             const [messages, setMessages] = useState([
                 { role: 'auron', content: "Hello. I'm Auron, your creative psychologist. Share what's on your mind — whether it's frustration, curiosity, or something you can't quite name yet. I'm listening." }
@@ -3947,6 +4308,12 @@
 
             // Session management (backend holds conversation in RAM)
             const [needsLoadSession, setNeedsLoadSession] = useState(false);
+
+            // Audio Upload State
+            const [audioSessionId, setAudioSessionId] = useState(null);
+            const [uploadingAudio, setUploadingAudio] = useState(false);
+            const [uploadProgress, setUploadProgress] = useState(0);
+            const audioFileInputRef = useRef(null);
 
             // Load past conversation from Reflections
             useEffect(() => {
@@ -4028,6 +4395,121 @@
                     }
                 };
             }, []);
+
+            // Audio Upload Handlers
+            const handleAudioUpload = () => {
+                audioFileInputRef.current?.click();
+            };
+
+            const handleAudioFileSelect = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // Validate file
+                const maxSize = 50 * 1024 * 1024; // 50MB
+                if (file.size > maxSize) {
+                    alert('File too large. Maximum size is 50MB.');
+                    return;
+                }
+
+                const allowedFormats = ['.wav', '.mp3', '.flac', '.m4a', '.aiff', '.ogg'];
+                const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+                if (!allowedFormats.includes(fileExt)) {
+                    alert(`Unsupported format. Allowed: ${allowedFormats.join(', ')}`);
+                    return;
+                }
+
+                try {
+                    setUploadingAudio(true);
+                    setUploadProgress(10);
+
+                    // Get auth token
+                    const token = await getAuthToken();
+
+                    // Upload directly to Combryth Engine
+                    const formData = new FormData();
+                    formData.append('audio_file', file);
+
+                    const uploadResponse = await fetch(`${DIALOGUE_API_BASE}/upload-audio`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+
+                    if (!uploadResponse.ok) {
+                        const error = await uploadResponse.json();
+                        throw new Error(error.detail || 'Upload failed');
+                    }
+
+                    const { upload_id } = await uploadResponse.json();
+                    console.log(`Audio upload started: ${upload_id}`);
+                    setUploadProgress(30);
+
+                    // Listen for SSE events from Engine
+                    const sseUrl = `${DIALOGUE_API_BASE}/chat/stream-events?token=${encodeURIComponent(token)}`;
+                    const eventSource = new EventSource(sseUrl);
+
+                    const handleAnalysisStarted = (event) => {
+                        const data = JSON.parse(event.data);
+                        if (data.upload_id === upload_id) {
+                            console.log('Analysis started:', data);
+                            setUploadProgress(50);
+                        }
+                    };
+
+                    const handleAnalysisComplete = (event) => {
+                        const data = JSON.parse(event.data);
+                        if (data.upload_id === upload_id) {
+                            console.log('Analysis complete:', data);
+                            setUploadProgress(100);
+                            setAudioSessionId(upload_id);
+                            setUploadingAudio(false);
+
+                            // Clean up event source
+                            eventSource.removeEventListener('audio_analysis_started', handleAnalysisStarted);
+                            eventSource.removeEventListener('audio_analysis_complete', handleAnalysisComplete);
+                            eventSource.removeEventListener('audio_analysis_failed', handleAnalysisFailed);
+                            eventSource.close();
+                        }
+                    };
+
+                    const handleAnalysisFailed = (event) => {
+                        const data = JSON.parse(event.data);
+                        if (data.upload_id === upload_id) {
+                            console.error('Analysis failed:', data);
+                            alert(`Analysis failed: ${data.error || 'Unknown error'}`);
+                            setUploadingAudio(false);
+
+                            // Clean up event source
+                            eventSource.removeEventListener('audio_analysis_started', handleAnalysisStarted);
+                            eventSource.removeEventListener('audio_analysis_complete', handleAnalysisComplete);
+                            eventSource.removeEventListener('audio_analysis_failed', handleAnalysisFailed);
+                            eventSource.close();
+                        }
+                    };
+
+                    // Register SSE event listeners
+                    eventSource.addEventListener('audio_analysis_started', handleAnalysisStarted);
+                    eventSource.addEventListener('audio_analysis_complete', handleAnalysisComplete);
+                    eventSource.addEventListener('audio_analysis_failed', handleAnalysisFailed);
+
+                    // Timeout after 5 minutes
+                    setTimeout(() => {
+                        if (uploadingAudio) {
+                            eventSource.close();
+                            setUploadingAudio(false);
+                            alert('Analysis timeout. Please try again.');
+                        }
+                    }, 300000);
+
+                } catch (err) {
+                    console.error('Upload error:', err);
+                    alert('Upload failed. Please try again.');
+                    setUploadingAudio(false);
+                }
+            };
 
             const handleSendMessage = async (messageText) => {
                 setMessages(prev => [...prev, { role: 'user', content: messageText }]);
@@ -4314,6 +4796,23 @@
 
             return (
                 <div className="h-full flex flex-col overflow-hidden">
+                    {/* Hidden File Input for Audio Upload */}
+                    <input
+                        ref={audioFileInputRef}
+                        type="file"
+                        accept=".wav,.mp3,.flac,.m4a,.aiff,.ogg"
+                        onChange={handleAudioFileSelect}
+                        style={{ display: 'none' }}
+                    />
+
+                    {/* Audio Session Modal */}
+                    {audioSessionId && (
+                        <AudioSessionModal
+                            uploadId={audioSessionId}
+                            onClose={() => setAudioSessionId(null)}
+                        />
+                    )}
+
                     {/* ThinkingPanel - SSE Progress Display */}
                     {(isStreaming || isPanelFading) && (
                         <ThinkingPanel
@@ -4389,6 +4888,22 @@
                                 placeholder="Share what's on your mind..."
                                 className="flex-1 px-5 py-4 bg-black/40 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                             />
+                            {/* Audio Upload Button */}
+                            <button
+                                onClick={handleAudioUpload}
+                                disabled={uploadingAudio}
+                                className="px-6 py-4 rounded-xl font-semibold text-white transition-all flex items-center gap-2"
+                                style={{
+                                    background: uploadingAudio
+                                        ? 'rgba(0, 217, 255, 0.2)'
+                                        : 'linear-gradient(135deg, #00D9FF, #00BFFF)',
+                                    boxShadow: uploadingAudio ? 'none' : '0 0 20px rgba(0, 217, 255, 0.3)',
+                                    opacity: uploadingAudio ? 0.6 : 1,
+                                    cursor: uploadingAudio ? 'not-allowed' : 'pointer'
+                                }}>
+                                <span style={{ fontSize: '1.2rem' }}>🎵</span>
+                                <span>{uploadingAudio ? `${Math.round(uploadProgress)}%` : 'Upload Track'}</span>
+                            </button>
                             <button
                                 onClick={handleSend}
                                 disabled={loading || !input.trim()}
