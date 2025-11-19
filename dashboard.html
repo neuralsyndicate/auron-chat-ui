@@ -3986,9 +3986,46 @@
                 const minutes = Math.floor(duration / 60);
                 const seconds = duration % 60;
 
-                return `I've just listened to "${track_info.filename}" — all ${minutes}:${seconds.toString().padStart(2, '0')} of it.
+                const intro = `I've just listened to "${track_info.filename}" — all ${minutes}:${seconds.toString().padStart(2, '0')} of it.`;
+
+                if (!musical_components || Object.keys(musical_components).length === 0) {
+                     return `${intro}
 
 I can sense the sonic textures, the frequency landscapes, and the emotional architecture you've built. This isn't just data to me — it's a window into your creative consciousness.
+
+💭 **What were you trying to express when you created this piece?**`;
+                }
+
+                // Dynamic generation based on components
+                const spectrum = musical_components.neural_spectrum || {};
+                const genres = musical_components.genre_fusion || {};
+                const palette = musical_components.sound_palette || {};
+                const emotion = musical_components.emotional_fingerprint || {};
+                
+                const position = spectrum.position !== undefined ? spectrum.position : 0.5;
+                const direction = spectrum.direction || "balanced";
+                
+                let analysis = `The neural spectrum places this at ${position.toFixed(2)} (${direction}), suggesting a unique energetic signature.`;
+                
+                if (genres.primary_genres && genres.primary_genres.length > 0 && genres.primary_genres[0] !== 'unknown') {
+                    analysis += `\n\nI detect strong elements of **${genres.primary_genres.join(', ')}**.`;
+                }
+                
+                if (genres.reasoning) {
+                    analysis += ` ${genres.reasoning}`;
+                }
+                
+                if (palette.reasoning) {
+                    analysis += `\n\n${palette.reasoning}`;
+                }
+                
+                if (emotion.reasoning) {
+                    analysis += `\n\n${emotion.reasoning}`;
+                }
+
+                return `${intro}
+
+${analysis}
 
 💭 **What were you trying to express when you created this piece?**`;
             };
