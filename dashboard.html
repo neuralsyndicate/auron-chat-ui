@@ -3930,6 +3930,654 @@
         }
 
         // ============================================================
+        // TECHNICAL ANALYSIS PANEL - Detailed Audio Analysis Display
+        // ============================================================
+        function TechnicalAnalysisPanel({ components, isOpen, onToggle }) {
+            if (!components) return null;
+
+            const [expandedSections, setExpandedSections] = useState({
+                sound_palette: true,
+                genre_fusion: false,
+                rhythmic_dna: false,
+                emotional_fingerprint: false,
+                neural_spectrum: false,
+                tonal_identity: false,
+                timbre_dna: false,
+                mixing_signature: false,
+                sonic_architecture: false
+            });
+
+            const toggleSection = (section) => {
+                setExpandedSections(prev => ({
+                    ...prev,
+                    [section]: !prev[section]
+                }));
+            };
+
+            // Parse instrument string to extract metrics and description
+            const parseInstrumentLine = (line) => {
+                const match = line.match(/^([^(]+)\(([^)]+)\)\s*[-–]\s*(.*)$/);
+                if (match) {
+                    return {
+                        name: match[1].trim(),
+                        metrics: match[2].trim(),
+                        description: match[3].trim()
+                    };
+                }
+                return { name: line, metrics: '', description: '' };
+            };
+
+            const sectionStyle = {
+                background: 'rgba(10, 10, 31, 0.6)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '0',
+                marginBottom: '0.75rem',
+                overflow: 'hidden'
+            };
+
+            const headerStyle = (isExpanded) => ({
+                padding: '1rem 1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                background: isExpanded ? 'rgba(0, 217, 255, 0.05)' : 'transparent',
+                borderBottom: isExpanded ? '1px solid rgba(0, 217, 255, 0.15)' : 'none',
+                transition: 'all 0.2s ease'
+            });
+
+            const contentStyle = {
+                padding: '1.25rem',
+                borderTop: '1px solid rgba(255, 255, 255, 0.05)'
+            };
+
+            const metricBadgeStyle = {
+                display: 'inline-block',
+                background: 'rgba(0, 217, 255, 0.15)',
+                border: '1px solid rgba(0, 217, 255, 0.3)',
+                borderRadius: '0',
+                padding: '0.25rem 0.5rem',
+                fontSize: '0.75rem',
+                fontFamily: "'JetBrains Mono', 'SF Mono', monospace",
+                color: 'rgba(0, 217, 255, 0.95)',
+                marginRight: '0.5rem',
+                marginBottom: '0.25rem'
+            };
+
+            const renderSoundPalette = (palette) => {
+                if (!palette) return null;
+                return (
+                    <div>
+                        {/* Instruments with per-stem breakdowns */}
+                        {palette.instruments && palette.instruments.length > 0 && (
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <div style={{
+                                    fontSize: '0.75rem',
+                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    marginBottom: '0.75rem',
+                                    fontWeight: '600'
+                                }}>
+                                    Per-Stem Instrument Analysis
+                                </div>
+                                {palette.instruments.map((inst, idx) => {
+                                    const parsed = parseInstrumentLine(inst);
+                                    return (
+                                        <div key={idx} style={{
+                                            background: 'rgba(0, 0, 0, 0.3)',
+                                            border: '1px solid rgba(255, 255, 255, 0.06)',
+                                            borderRadius: '0',
+                                            padding: '1rem',
+                                            marginBottom: '0.5rem'
+                                        }}>
+                                            <div style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                marginBottom: '0.5rem'
+                                            }}>
+                                                <span style={{
+                                                    fontWeight: '600',
+                                                    color: 'rgba(255, 255, 255, 0.95)',
+                                                    fontSize: '0.9375rem'
+                                                }}>
+                                                    {parsed.name}
+                                                </span>
+                                                {palette.confidence && (
+                                                    <span style={{
+                                                        fontSize: '0.7rem',
+                                                        color: 'rgba(0, 217, 255, 0.7)',
+                                                        fontFamily: "'JetBrains Mono', monospace"
+                                                    }}>
+                                                        {(palette.confidence * 100).toFixed(0)}% confidence
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {parsed.metrics && (
+                                                <div style={{ marginBottom: '0.5rem' }}>
+                                                    {parsed.metrics.split(',').map((metric, mIdx) => (
+                                                        <span key={mIdx} style={metricBadgeStyle}>
+                                                            {metric.trim()}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {parsed.description && (
+                                                <div style={{
+                                                    fontSize: '0.875rem',
+                                                    color: 'rgba(255, 255, 255, 0.7)',
+                                                    lineHeight: '1.5'
+                                                }}>
+                                                    {parsed.description}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {/* Textures */}
+                        {palette.textures && palette.textures.length > 0 && (
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <div style={{
+                                    fontSize: '0.75rem',
+                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    marginBottom: '0.75rem',
+                                    fontWeight: '600'
+                                }}>
+                                    Sonic Textures
+                                </div>
+                                {palette.textures.map((texture, idx) => (
+                                    <div key={idx} style={{
+                                        padding: '0.75rem 1rem',
+                                        background: 'rgba(0, 0, 0, 0.2)',
+                                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                                        borderRadius: '0',
+                                        marginBottom: '0.375rem',
+                                        fontSize: '0.875rem',
+                                        color: 'rgba(255, 255, 255, 0.85)',
+                                        lineHeight: '1.5'
+                                    }}>
+                                        {texture}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Frequency Focus */}
+                        {palette.frequency_focus && (
+                            <div style={{
+                                background: 'rgba(0, 217, 255, 0.08)',
+                                border: '1px solid rgba(0, 217, 255, 0.2)',
+                                borderRadius: '0',
+                                padding: '1rem',
+                                marginBottom: '1rem'
+                            }}>
+                                <div style={{
+                                    fontSize: '0.75rem',
+                                    color: 'rgba(0, 217, 255, 0.7)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    marginBottom: '0.5rem',
+                                    fontWeight: '600'
+                                }}>
+                                    Frequency Focus
+                                </div>
+                                <div style={{
+                                    fontSize: '1rem',
+                                    color: 'rgba(255, 255, 255, 0.95)',
+                                    fontWeight: '500'
+                                }}>
+                                    {palette.frequency_focus}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Reasoning Summary */}
+                        {palette.reasoning && (
+                            <div style={{
+                                fontSize: '0.875rem',
+                                color: 'rgba(255, 255, 255, 0.6)',
+                                lineHeight: '1.6',
+                                fontStyle: 'italic',
+                                paddingTop: '0.75rem',
+                                borderTop: '1px solid rgba(255, 255, 255, 0.05)'
+                            }}>
+                                {palette.reasoning}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            const renderGenreFusion = (genre) => {
+                if (!genre) return null;
+                return (
+                    <div>
+                        {/* Primary Genres */}
+                        {genre.primary_genres && genre.primary_genres.length > 0 && (
+                            <div style={{ marginBottom: '1.25rem' }}>
+                                <div style={{
+                                    fontSize: '0.75rem',
+                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    marginBottom: '0.75rem',
+                                    fontWeight: '600'
+                                }}>
+                                    Primary Genres
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                    {genre.primary_genres.map((g, idx) => (
+                                        <span key={idx} style={{
+                                            background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.2) 0%, rgba(0, 217, 255, 0.15) 100%)',
+                                            border: '1px solid rgba(0, 217, 255, 0.4)',
+                                            borderRadius: '0',
+                                            padding: '0.5rem 1rem',
+                                            fontSize: '0.875rem',
+                                            color: 'rgba(255, 255, 255, 0.95)',
+                                            fontWeight: '500'
+                                        }}>
+                                            {g}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Fusion Elements with numerical evidence */}
+                        {genre.fusion_elements && genre.fusion_elements.length > 0 && (
+                            <div style={{ marginBottom: '1.25rem' }}>
+                                <div style={{
+                                    fontSize: '0.75rem',
+                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    marginBottom: '0.75rem',
+                                    fontWeight: '600'
+                                }}>
+                                    Fusion Elements (Evidence-Based)
+                                </div>
+                                {genre.fusion_elements.map((element, idx) => (
+                                    <div key={idx} style={{
+                                        padding: '0.75rem 1rem',
+                                        background: 'rgba(0, 0, 0, 0.25)',
+                                        border: '1px solid rgba(255, 255, 255, 0.06)',
+                                        borderRadius: '0',
+                                        marginBottom: '0.375rem',
+                                        fontSize: '0.875rem',
+                                        color: 'rgba(255, 255, 255, 0.85)',
+                                        lineHeight: '1.5'
+                                    }}>
+                                        {element}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Confidence */}
+                        {genre.confidence && (
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.75rem',
+                                marginBottom: '1rem'
+                            }}>
+                                <span style={{
+                                    fontSize: '0.75rem',
+                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>
+                                    Confidence
+                                </span>
+                                <div style={{
+                                    flex: 1,
+                                    height: '4px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    borderRadius: '2px',
+                                    overflow: 'hidden'
+                                }}>
+                                    <div style={{
+                                        width: `${genre.confidence * 100}%`,
+                                        height: '100%',
+                                        background: 'linear-gradient(90deg, rgba(0, 217, 255, 0.8) 0%, rgba(0, 13, 255, 0.8) 100%)',
+                                        borderRadius: '2px'
+                                    }} />
+                                </div>
+                                <span style={{
+                                    fontSize: '0.8125rem',
+                                    color: 'rgba(0, 217, 255, 0.9)',
+                                    fontFamily: "'JetBrains Mono', monospace",
+                                    fontWeight: '600'
+                                }}>
+                                    {(genre.confidence * 100).toFixed(0)}%
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Reasoning */}
+                        {genre.reasoning && (
+                            <div style={{
+                                fontSize: '0.875rem',
+                                color: 'rgba(255, 255, 255, 0.6)',
+                                lineHeight: '1.6',
+                                fontStyle: 'italic',
+                                paddingTop: '0.75rem',
+                                borderTop: '1px solid rgba(255, 255, 255, 0.05)'
+                            }}>
+                                {genre.reasoning}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            const renderGenericComponent = (component, label) => {
+                if (!component) return null;
+
+                // Render any arrays with numerical evidence
+                const arrayFields = Object.entries(component).filter(([k, v]) =>
+                    Array.isArray(v) && v.length > 0 && !['source'].includes(k)
+                );
+
+                // Render any string fields (except reasoning, source)
+                const stringFields = Object.entries(component).filter(([k, v]) =>
+                    typeof v === 'string' && !['reasoning', 'source'].includes(k) && v.length > 0
+                );
+
+                // Render any number fields
+                const numberFields = Object.entries(component).filter(([k, v]) =>
+                    typeof v === 'number' && !['confidence'].includes(k)
+                );
+
+                return (
+                    <div>
+                        {/* String fields as key-value pairs */}
+                        {stringFields.length > 0 && (
+                            <div style={{ marginBottom: '1.25rem' }}>
+                                {stringFields.map(([key, value]) => (
+                                    <div key={key} style={{
+                                        display: 'flex',
+                                        alignItems: 'flex-start',
+                                        gap: '1rem',
+                                        padding: '0.75rem 0',
+                                        borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+                                    }}>
+                                        <span style={{
+                                            fontSize: '0.75rem',
+                                            color: 'rgba(255, 255, 255, 0.5)',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em',
+                                            minWidth: '120px',
+                                            paddingTop: '0.125rem'
+                                        }}>
+                                            {key.replace(/_/g, ' ')}
+                                        </span>
+                                        <span style={{
+                                            fontSize: '0.9375rem',
+                                            color: 'rgba(255, 255, 255, 0.9)',
+                                            flex: 1
+                                        }}>
+                                            {value}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Number fields as metrics */}
+                        {numberFields.length > 0 && (
+                            <div style={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '0.75rem',
+                                marginBottom: '1.25rem'
+                            }}>
+                                {numberFields.map(([key, value]) => (
+                                    <div key={key} style={{
+                                        background: 'rgba(0, 217, 255, 0.1)',
+                                        border: '1px solid rgba(0, 217, 255, 0.25)',
+                                        borderRadius: '0',
+                                        padding: '0.75rem 1rem',
+                                        textAlign: 'center'
+                                    }}>
+                                        <div style={{
+                                            fontSize: '1.25rem',
+                                            fontFamily: "'JetBrains Mono', monospace",
+                                            color: 'rgba(0, 217, 255, 0.95)',
+                                            fontWeight: '600',
+                                            marginBottom: '0.25rem'
+                                        }}>
+                                            {typeof value === 'number' ? value.toFixed(2) : value}
+                                        </div>
+                                        <div style={{
+                                            fontSize: '0.6875rem',
+                                            color: 'rgba(255, 255, 255, 0.5)',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em'
+                                        }}>
+                                            {key.replace(/_/g, ' ')}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Array fields */}
+                        {arrayFields.map(([key, values]) => (
+                            <div key={key} style={{ marginBottom: '1.25rem' }}>
+                                <div style={{
+                                    fontSize: '0.75rem',
+                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    marginBottom: '0.75rem',
+                                    fontWeight: '600'
+                                }}>
+                                    {key.replace(/_/g, ' ')}
+                                </div>
+                                {values.map((item, idx) => (
+                                    <div key={idx} style={{
+                                        padding: '0.75rem 1rem',
+                                        background: 'rgba(0, 0, 0, 0.2)',
+                                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                                        borderRadius: '0',
+                                        marginBottom: '0.375rem',
+                                        fontSize: '0.875rem',
+                                        color: 'rgba(255, 255, 255, 0.85)',
+                                        lineHeight: '1.5'
+                                    }}>
+                                        {typeof item === 'object' ? JSON.stringify(item) : item}
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+
+                        {/* Confidence bar */}
+                        {component.confidence && (
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.75rem',
+                                marginBottom: '1rem'
+                            }}>
+                                <span style={{
+                                    fontSize: '0.75rem',
+                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>
+                                    Confidence
+                                </span>
+                                <div style={{
+                                    flex: 1,
+                                    height: '4px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    borderRadius: '2px',
+                                    overflow: 'hidden'
+                                }}>
+                                    <div style={{
+                                        width: `${component.confidence * 100}%`,
+                                        height: '100%',
+                                        background: 'linear-gradient(90deg, rgba(0, 217, 255, 0.8) 0%, rgba(0, 13, 255, 0.8) 100%)'
+                                    }} />
+                                </div>
+                                <span style={{
+                                    fontSize: '0.8125rem',
+                                    color: 'rgba(0, 217, 255, 0.9)',
+                                    fontFamily: "'JetBrains Mono', monospace",
+                                    fontWeight: '600'
+                                }}>
+                                    {(component.confidence * 100).toFixed(0)}%
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Reasoning */}
+                        {component.reasoning && (
+                            <div style={{
+                                fontSize: '0.875rem',
+                                color: 'rgba(255, 255, 255, 0.6)',
+                                lineHeight: '1.6',
+                                fontStyle: 'italic',
+                                paddingTop: '0.75rem',
+                                borderTop: '1px solid rgba(255, 255, 255, 0.05)'
+                            }}>
+                                {component.reasoning}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            const sections = [
+                { key: 'sound_palette', label: 'Sound Palette', icon: '🎨', render: renderSoundPalette },
+                { key: 'genre_fusion', label: 'Genre Fusion', icon: '🎵', render: renderGenreFusion },
+                { key: 'rhythmic_dna', label: 'Rhythmic DNA', icon: '🥁', render: (c) => renderGenericComponent(c, 'Rhythmic DNA') },
+                { key: 'emotional_fingerprint', label: 'Emotional Fingerprint', icon: '💜', render: (c) => renderGenericComponent(c, 'Emotional Fingerprint') },
+                { key: 'neural_spectrum', label: 'Neural Spectrum', icon: '🧠', render: (c) => renderGenericComponent(c, 'Neural Spectrum') },
+                { key: 'tonal_identity', label: 'Tonal Identity', icon: '🎹', render: (c) => renderGenericComponent(c, 'Tonal Identity') },
+                { key: 'timbre_dna', label: 'Timbre DNA', icon: '🔊', render: (c) => renderGenericComponent(c, 'Timbre DNA') },
+                { key: 'mixing_signature', label: 'Mixing Signature', icon: '🎚️', render: (c) => renderGenericComponent(c, 'Mixing Signature') },
+                { key: 'sonic_architecture', label: 'Sonic Architecture', icon: '🏗️', render: (c) => renderGenericComponent(c, 'Sonic Architecture') }
+            ];
+
+            return (
+                <div style={{
+                    width: '400px',
+                    minWidth: '400px',
+                    borderLeft: '1px solid rgba(0, 217, 255, 0.15)',
+                    background: 'rgba(5, 5, 20, 0.95)',
+                    backdropFilter: 'blur(40px)',
+                    WebkitBackdropFilter: 'blur(40px)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflowY: 'auto'
+                }}>
+                    {/* Panel Header */}
+                    <div style={{
+                        padding: '1.25rem 1.5rem',
+                        borderBottom: '1px solid rgba(0, 217, 255, 0.15)',
+                        background: 'rgba(0, 217, 255, 0.03)'
+                    }}>
+                        <div style={{
+                            fontSize: '0.6875rem',
+                            color: 'rgba(0, 217, 255, 0.7)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.15em',
+                            marginBottom: '0.375rem',
+                            fontWeight: '600'
+                        }}>
+                            Technical Analysis
+                        </div>
+                        <div style={{
+                            fontSize: '1.125rem',
+                            color: 'rgba(255, 255, 255, 0.95)',
+                            fontWeight: '600'
+                        }}>
+                            Audio Feature Breakdown
+                        </div>
+                        <div style={{
+                            fontSize: '0.8125rem',
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            marginTop: '0.375rem'
+                        }}>
+                            Per-stem metrics with numerical evidence
+                        </div>
+                    </div>
+
+                    {/* Expandable Sections */}
+                    <div style={{
+                        flex: 1,
+                        overflowY: 'auto',
+                        padding: '1rem',
+                        scrollbarWidth: 'thin',
+                        scrollbarColor: 'rgba(0, 217, 255, 0.3) rgba(0, 0, 0, 0.2)'
+                    }}>
+                        {sections.map(({ key, label, icon, render }) => {
+                            const data = components[key];
+                            if (!data) return null;
+
+                            const isExpanded = expandedSections[key];
+
+                            return (
+                                <div key={key} style={sectionStyle}>
+                                    <div
+                                        style={headerStyle(isExpanded)}
+                                        onClick={() => toggleSection(key)}
+                                    >
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.75rem'
+                                        }}>
+                                            <span style={{ fontSize: '1rem' }}>{icon}</span>
+                                            <span style={{
+                                                fontSize: '0.9375rem',
+                                                fontWeight: '500',
+                                                color: isExpanded ? 'rgba(0, 217, 255, 0.95)' : 'rgba(255, 255, 255, 0.85)'
+                                            }}>
+                                                {label}
+                                            </span>
+                                        </div>
+                                        <svg
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke={isExpanded ? 'rgba(0, 217, 255, 0.9)' : 'rgba(255, 255, 255, 0.5)'}
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            style={{
+                                                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                                transition: 'transform 0.2s ease'
+                                            }}
+                                        >
+                                            <polyline points="6 9 12 15 18 9" />
+                                        </svg>
+                                    </div>
+                                    {isExpanded && (
+                                        <div style={contentStyle}>
+                                            {render(data)}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        }
+
+        // ============================================================
         // AUDIO SESSION MODAL - Session Analysis Mode
         // ============================================================
         function AudioSessionModal({ uploadId, onClose }) {
@@ -3986,48 +4634,43 @@
                 const minutes = Math.floor(duration / 60);
                 const seconds = duration % 60;
 
-                const intro = `I've just listened to "${track_info.filename}" — all ${minutes}:${seconds.toString().padStart(2, '0')} of it.`;
+                const intro = `I've analyzed "${track_info.filename}" — ${minutes}:${seconds.toString().padStart(2, '0')} of sonic data processed.`;
 
                 if (!musical_components || Object.keys(musical_components).length === 0) {
                      return `${intro}
 
-I can sense the sonic textures, the frequency landscapes, and the emotional architecture you've built. This isn't just data to me — it's a window into your creative consciousness.
+The full technical breakdown is in the panel to the right. I can sense the sonic architecture you've built here.
 
-💭 **What were you trying to express when you created this piece?**`;
+**What were you trying to express when you created this piece?**`;
                 }
 
-                // Dynamic generation based on components
-                const spectrum = musical_components.neural_spectrum || {};
+                // Brief highlights only - detailed data is in the side panel
                 const genres = musical_components.genre_fusion || {};
                 const palette = musical_components.sound_palette || {};
-                const emotion = musical_components.emotional_fingerprint || {};
-                
-                const position = spectrum.position !== undefined ? spectrum.position : 0.5;
-                const direction = spectrum.direction || "balanced";
-                
-                let analysis = `The neural spectrum places this at ${position.toFixed(2)} (${direction}), suggesting a unique energetic signature.`;
-                
+
+                let highlights = [];
+
                 if (genres.primary_genres && genres.primary_genres.length > 0 && genres.primary_genres[0] !== 'unknown') {
-                    analysis += `\n\nI detect strong elements of **${genres.primary_genres.join(', ')}**.`;
-                }
-                
-                if (genres.reasoning) {
-                    analysis += ` ${genres.reasoning}`;
-                }
-                
-                if (palette.reasoning) {
-                    analysis += `\n\n${palette.reasoning}`;
-                }
-                
-                if (emotion.reasoning) {
-                    analysis += `\n\n${emotion.reasoning}`;
+                    highlights.push(`**${genres.primary_genres.join(' × ')}** fusion`);
                 }
 
-                return `${intro}
+                if (palette.frequency_focus) {
+                    highlights.push(palette.frequency_focus);
+                }
 
-${analysis}
+                if (genres.confidence) {
+                    highlights.push(`${(genres.confidence * 100).toFixed(0)}% genre confidence`);
+                }
 
-💭 **What were you trying to express when you created this piece?**`;
+                const highlightText = highlights.length > 0
+                    ? `\n\n**Quick reads:** ${highlights.join(' • ')}`
+                    : '';
+
+                return `${intro}${highlightText}
+
+The full technical breakdown with per-stem metrics is in the panel to the right. Expand any section to see the numerical evidence behind each analysis.
+
+**What were you trying to express when you created this piece?**`;
             };
 
             const sendMessage = async () => {
@@ -4190,128 +4833,150 @@ ${analysis}
                         </button>
                     </div>
 
-                    {/* Messages Area */}
+                    {/* Main Content Area - Chat + Analysis Panel */}
                     <div style={{
                         flex: 1,
-                        overflowY: 'auto',
-                        padding: '2rem',
                         display: 'flex',
-                        flexDirection: 'column',
-                        gap: '1.5rem'
+                        overflow: 'hidden'
                     }}>
-                        {messages.map((msg, idx) => (
-                            <div
-                                key={idx}
-                                style={{
-                                    maxWidth: msg.role === 'user' ? '70%' : '100%',
-                                    alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start'
-                                }}
-                            >
-                                {msg.role === 'auron' ? (
-                                    <div style={{
-                                        background: 'rgba(0, 217, 255, 0.05)',
-                                        border: '1px solid rgba(0, 217, 255, 0.2)',
-                                        borderRadius: '16px',
-                                        padding: '1.5rem',
-                                        boxShadow: '0 4px 20px rgba(0, 217, 255, 0.1)'
-                                    }}>
-                                        <div style={{
-                                            fontSize: '0.75rem',
-                                            color: '#00D9FF',
-                                            fontWeight: '600',
-                                            marginBottom: '0.75rem',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.1em'
-                                        }}>
-                                            AURON
-                                        </div>
-                                        <div style={{
-                                            color: '#fff',
-                                            lineHeight: '1.6',
-                                            whiteSpace: 'pre-wrap'
-                                        }}>
-                                            {msg.content}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div style={{
-                                        background: 'rgba(255, 255, 255, 0.05)',
-                                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                                        borderRadius: '16px',
-                                        padding: '1rem 1.5rem',
-                                        color: '#fff',
-                                        lineHeight: '1.6'
-                                    }}>
-                                        {msg.content}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                        <div ref={messagesEndRef} />
-                    </div>
-
-                    {/* Input Area */}
-                    <div style={{
-                        background: 'rgba(10, 10, 31, 0.95)',
-                        backdropFilter: 'blur(40px)',
-                        padding: '1.5rem 2rem',
-                        borderTop: '1px solid rgba(0, 217, 255, 0.2)',
-                        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.5)'
-                    }}>
+                        {/* Left: Chat Area */}
                         <div style={{
+                            flex: 1,
                             display: 'flex',
-                            gap: '1rem',
-                            alignItems: 'flex-end'
+                            flexDirection: 'column',
+                            overflow: 'hidden'
                         }}>
-                            <textarea
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                onKeyPress={handleKeyPress}
-                                placeholder="Share your thoughts about this track..."
-                                disabled={sending}
-                                style={{
-                                    flex: 1,
-                                    background: 'rgba(0, 0, 0, 0.6)',
-                                    border: '1px solid rgba(0, 217, 255, 0.2)',
-                                    borderRadius: '12px',
-                                    padding: '1rem',
-                                    color: '#fff',
-                                    fontSize: '1rem',
-                                    resize: 'none',
-                                    minHeight: '80px',
-                                    fontFamily: 'inherit',
-                                    outline: 'none'
-                                }}
-                                onFocus={(e) => {
-                                    e.target.style.borderColor = 'rgba(0, 217, 255, 0.5)';
-                                    e.target.style.boxShadow = '0 0 20px rgba(0, 217, 255, 0.2)';
-                                }}
-                                onBlur={(e) => {
-                                    e.target.style.borderColor = 'rgba(0, 217, 255, 0.2)';
-                                    e.target.style.boxShadow = 'none';
-                                }}
-                            />
-                            <button
-                                onClick={sendMessage}
-                                disabled={!input.trim() || sending}
-                                style={{
-                                    padding: '1rem 2rem',
-                                    borderRadius: '12px',
-                                    border: '1px solid rgba(0, 217, 255, 0.3)',
-                                    background: input.trim()
-                                        ? 'linear-gradient(135deg, #00D9FF, #00BFFF)'
-                                        : 'rgba(10, 10, 31, 0.6)',
-                                    color: '#fff',
-                                    fontWeight: '600',
-                                    cursor: input.trim() ? 'pointer' : 'not-allowed',
-                                    opacity: input.trim() ? 1 : 0.5,
-                                    boxShadow: input.trim() ? '0 0 20px rgba(0, 217, 255, 0.3)' : 'none',
-                                    transition: 'all 0.2s ease'
-                                }}
-                            >
-                                {sending ? 'Sending...' : 'Send'}
-                            </button>
+                            {/* Messages Area */}
+                            <div style={{
+                                flex: 1,
+                                overflowY: 'auto',
+                                padding: '2rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '1.5rem'
+                            }}>
+                                {messages.map((msg, idx) => (
+                                    <div
+                                        key={idx}
+                                        style={{
+                                            maxWidth: msg.role === 'user' ? '70%' : '100%',
+                                            alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start'
+                                        }}
+                                    >
+                                        {msg.role === 'auron' ? (
+                                            <div style={{
+                                                background: 'rgba(0, 217, 255, 0.05)',
+                                                border: '1px solid rgba(0, 217, 255, 0.2)',
+                                                borderRadius: '16px',
+                                                padding: '1.5rem',
+                                                boxShadow: '0 4px 20px rgba(0, 217, 255, 0.1)'
+                                            }}>
+                                                <div style={{
+                                                    fontSize: '0.75rem',
+                                                    color: '#00D9FF',
+                                                    fontWeight: '600',
+                                                    marginBottom: '0.75rem',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.1em'
+                                                }}>
+                                                    AURON
+                                                </div>
+                                                <div style={{
+                                                    color: '#fff',
+                                                    lineHeight: '1.6',
+                                                    whiteSpace: 'pre-wrap'
+                                                }}>
+                                                    {msg.content}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div style={{
+                                                background: 'rgba(255, 255, 255, 0.05)',
+                                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                borderRadius: '16px',
+                                                padding: '1rem 1.5rem',
+                                                color: '#fff',
+                                                lineHeight: '1.6'
+                                            }}>
+                                                {msg.content}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            {/* Input Area */}
+                            <div style={{
+                                background: 'rgba(10, 10, 31, 0.95)',
+                                backdropFilter: 'blur(40px)',
+                                padding: '1.5rem 2rem',
+                                borderTop: '1px solid rgba(0, 217, 255, 0.2)',
+                                boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.5)'
+                            }}>
+                                <div style={{
+                                    display: 'flex',
+                                    gap: '1rem',
+                                    alignItems: 'flex-end'
+                                }}>
+                                    <textarea
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyPress={handleKeyPress}
+                                        placeholder="Share your thoughts about this track..."
+                                        disabled={sending}
+                                        style={{
+                                            flex: 1,
+                                            background: 'rgba(0, 0, 0, 0.6)',
+                                            border: '1px solid rgba(0, 217, 255, 0.2)',
+                                            borderRadius: '12px',
+                                            padding: '1rem',
+                                            color: '#fff',
+                                            fontSize: '1rem',
+                                            resize: 'none',
+                                            minHeight: '80px',
+                                            fontFamily: 'inherit',
+                                            outline: 'none'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = 'rgba(0, 217, 255, 0.5)';
+                                            e.target.style.boxShadow = '0 0 20px rgba(0, 217, 255, 0.2)';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = 'rgba(0, 217, 255, 0.2)';
+                                            e.target.style.boxShadow = 'none';
+                                        }}
+                                    />
+                                    <button
+                                        onClick={sendMessage}
+                                        disabled={!input.trim() || sending}
+                                        style={{
+                                            padding: '1rem 2rem',
+                                            borderRadius: '12px',
+                                            border: '1px solid rgba(0, 217, 255, 0.3)',
+                                            background: input.trim()
+                                                ? 'linear-gradient(135deg, #00D9FF, #00BFFF)'
+                                                : 'rgba(10, 10, 31, 0.6)',
+                                            color: '#fff',
+                                            fontWeight: '600',
+                                            cursor: input.trim() ? 'pointer' : 'not-allowed',
+                                            opacity: input.trim() ? 1 : 0.5,
+                                            boxShadow: input.trim() ? '0 0 20px rgba(0, 217, 255, 0.3)' : 'none',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        {sending ? 'Sending...' : 'Send'}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
+
+                        {/* Right: Technical Analysis Panel */}
+                        {sessionData?.musical_components && (
+                            <TechnicalAnalysisPanel
+                                components={sessionData.musical_components}
+                            />
+                        )}
                     </div>
                 </div>
             );
