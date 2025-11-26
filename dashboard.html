@@ -3930,18 +3930,19 @@
         }
 
         // ============================================================
-        // TECHNICAL ANALYSIS PANEL - Detailed Audio Analysis Display
+        // TECHNICAL ANALYSIS PANEL - Tabbed Interface (Scientific + Profile)
         // ============================================================
-        function TechnicalAnalysisPanel({ components, isOpen, onToggle }) {
-            if (!components) return null;
-
+        function TechnicalAnalysisPanel({ components, scientificAnalysis }) {
+            const [activeTab, setActiveTab] = useState('scientific');
             const [expandedSections, setExpandedSections] = useState({
-                sound_palette: true,
+                sound_description: true,
+                inspirational_triggers: false,
                 genre_fusion: false,
+                neural_spectrum: false,
+                sound_palette: false,
+                tonal_identity: false,
                 rhythmic_dna: false,
                 emotional_fingerprint: false,
-                neural_spectrum: false,
-                tonal_identity: false,
                 timbre_dna: false,
                 mixing_signature: false,
                 sonic_architecture: false
@@ -3954,18 +3955,245 @@
                 }));
             };
 
-            // Parse instrument string to extract metrics and description
-            const parseInstrumentLine = (line) => {
-                const match = line.match(/^([^(]+)\(([^)]+)\)\s*[-–]\s*(.*)$/);
-                if (match) {
-                    return {
-                        name: match[1].trim(),
-                        metrics: match[2].trim(),
-                        description: match[3].trim()
-                    };
+            // Format field names: snake_case → Title Case
+            const formatLabel = (key) => key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+            // Render confidence bar
+            const renderConfidenceBar = (confidence) => (
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    marginTop: '1rem',
+                    paddingTop: '0.75rem',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.05)'
+                }}>
+                    <span style={{
+                        fontSize: '0.75rem',
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                    }}>
+                        Confidence
+                    </span>
+                    <div style={{
+                        flex: 1,
+                        height: '4px',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '2px',
+                        overflow: 'hidden'
+                    }}>
+                        <div style={{
+                            width: `${confidence * 100}%`,
+                            height: '100%',
+                            background: 'linear-gradient(90deg, rgba(0, 217, 255, 0.8) 0%, rgba(0, 13, 255, 0.8) 100%)'
+                        }} />
+                    </div>
+                    <span style={{
+                        fontSize: '0.8125rem',
+                        color: 'rgba(0, 217, 255, 0.9)',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontWeight: '600'
+                    }}>
+                        {(confidence * 100).toFixed(0)}%
+                    </span>
+                </div>
+            );
+
+            // Render reasoning text
+            const renderReasoning = (reasoning) => (
+                <div style={{
+                    fontSize: '0.875rem',
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    lineHeight: '1.6',
+                    fontStyle: 'italic',
+                    marginTop: '0.75rem',
+                    paddingTop: '0.75rem',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.05)'
+                }}>
+                    {reasoning}
+                </div>
+            );
+
+            // Render array field
+            const renderArrayField = (key, values) => (
+                <div key={key} style={{ marginBottom: '1.25rem' }}>
+                    <div style={{
+                        fontSize: '0.75rem',
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        marginBottom: '0.75rem',
+                        fontWeight: '600'
+                    }}>
+                        {formatLabel(key)}
+                    </div>
+                    {values.map((item, idx) => (
+                        <div key={idx} style={{
+                            padding: '0.75rem 1rem',
+                            background: 'rgba(0, 0, 0, 0.2)',
+                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                            borderRadius: '0',
+                            marginBottom: '0.375rem',
+                            fontSize: '0.875rem',
+                            color: 'rgba(255, 255, 255, 0.85)',
+                            lineHeight: '1.5'
+                        }}>
+                            {typeof item === 'object' ? JSON.stringify(item) : item}
+                        </div>
+                    ))}
+                </div>
+            );
+
+            // Render string field
+            const renderStringField = (key, value) => (
+                <div key={key} style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '1rem',
+                    padding: '0.75rem 0',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+                }}>
+                    <span style={{
+                        fontSize: '0.75rem',
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        minWidth: '120px',
+                        paddingTop: '0.125rem'
+                    }}>
+                        {formatLabel(key)}
+                    </span>
+                    <span style={{
+                        fontSize: '0.9375rem',
+                        color: 'rgba(255, 255, 255, 0.9)',
+                        flex: 1,
+                        lineHeight: '1.5'
+                    }}>
+                        {value}
+                    </span>
+                </div>
+            );
+
+            // Render number field
+            const renderNumberField = (key, value) => (
+                <div key={key} style={{
+                    display: 'inline-block',
+                    background: 'rgba(0, 217, 255, 0.1)',
+                    border: '1px solid rgba(0, 217, 255, 0.25)',
+                    borderRadius: '0',
+                    padding: '0.75rem 1rem',
+                    marginRight: '0.75rem',
+                    marginBottom: '0.75rem',
+                    textAlign: 'center'
+                }}>
+                    <div style={{
+                        fontSize: '1.25rem',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        color: 'rgba(0, 217, 255, 0.95)',
+                        fontWeight: '600',
+                        marginBottom: '0.25rem'
+                    }}>
+                        {typeof value === 'number' ? value.toFixed(2) : value}
+                    </div>
+                    <div style={{
+                        fontSize: '0.6875rem',
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                    }}>
+                        {formatLabel(key)}
+                    </div>
+                </div>
+            );
+
+            // Hero description for sound_description
+            const renderHeroDescription = (data) => (
+                <div>
+                    {data.title && (
+                        <div style={{
+                            fontSize: '1.5rem',
+                            fontWeight: '600',
+                            color: 'rgba(0, 217, 255, 0.95)',
+                            marginBottom: '1rem',
+                            lineHeight: '1.3'
+                        }}>
+                            {data.title}
+                        </div>
+                    )}
+                    {data.description && (
+                        <div style={{
+                            fontSize: '1rem',
+                            color: 'rgba(255, 255, 255, 0.85)',
+                            lineHeight: '1.7'
+                        }}>
+                            {data.description}
+                        </div>
+                    )}
+                    {data.confidence && renderConfidenceBar(data.confidence)}
+                </div>
+            );
+
+            // Enhanced generic component renderer
+            const renderGenericComponent = (component) => {
+                if (!component) return null;
+
+                // Special handling for sound_description (hero display)
+                if (component.title && component.description) {
+                    return renderHeroDescription(component);
                 }
-                return { name: line, metrics: '', description: '' };
+
+                // Categorize fields by type
+                const fields = Object.entries(component).filter(([k]) =>
+                    !['confidence', 'reasoning', 'source'].includes(k)
+                );
+
+                const stringFields = fields.filter(([k, v]) => typeof v === 'string');
+                const numberFields = fields.filter(([k, v]) => typeof v === 'number');
+                const arrayFields = fields.filter(([k, v]) => Array.isArray(v) && v.length > 0);
+
+                return (
+                    <div>
+                        {/* Number fields as metric cards */}
+                        {numberFields.length > 0 && (
+                            <div style={{ marginBottom: '1.25rem' }}>
+                                {numberFields.map(([key, value]) => renderNumberField(key, value))}
+                            </div>
+                        )}
+
+                        {/* String fields as key-value pairs */}
+                        {stringFields.length > 0 && (
+                            <div style={{ marginBottom: '1.25rem' }}>
+                                {stringFields.map(([key, value]) => renderStringField(key, value))}
+                            </div>
+                        )}
+
+                        {/* Array fields */}
+                        {arrayFields.map(([key, values]) => renderArrayField(key, values))}
+
+                        {/* Confidence bar */}
+                        {component.confidence && renderConfidenceBar(component.confidence)}
+
+                        {/* Reasoning */}
+                        {component.reasoning && renderReasoning(component.reasoning)}
+                    </div>
+                );
             };
+
+            // Section definitions (11 components)
+            const sections = [
+                { key: 'sound_description', label: 'Sound Description', icon: '✨' },
+                { key: 'inspirational_triggers', label: 'Inspirational Triggers', icon: '💡' },
+                { key: 'genre_fusion', label: 'Genre Fusion', icon: '🎵' },
+                { key: 'neural_spectrum', label: 'Neural Spectrum', icon: '🧠' },
+                { key: 'sound_palette', label: 'Sound Palette', icon: '🎨' },
+                { key: 'tonal_identity', label: 'Tonal Identity', icon: '🎹' },
+                { key: 'rhythmic_dna', label: 'Rhythmic DNA', icon: '🥁' },
+                { key: 'emotional_fingerprint', label: 'Emotional Fingerprint', icon: '💜' },
+                { key: 'timbre_dna', label: 'Timbre DNA', icon: '🔊' },
+                { key: 'mixing_signature', label: 'Mixing Signature', icon: '🎚️' },
+                { key: 'sonic_architecture', label: 'Sonic Architecture', icon: '🏗️' }
+            ];
 
             const sectionStyle = {
                 background: 'rgba(10, 10, 31, 0.6)',
@@ -3993,535 +4221,75 @@
                 borderTop: '1px solid rgba(255, 255, 255, 0.05)'
             };
 
-            const metricBadgeStyle = {
-                display: 'inline-block',
-                background: 'rgba(0, 217, 255, 0.15)',
-                border: '1px solid rgba(0, 217, 255, 0.3)',
-                borderRadius: '0',
-                padding: '0.25rem 0.5rem',
-                fontSize: '0.75rem',
-                fontFamily: "'JetBrains Mono', 'SF Mono', monospace",
-                color: 'rgba(0, 217, 255, 0.95)',
-                marginRight: '0.5rem',
-                marginBottom: '0.25rem'
-            };
+            // Tab button style
+            const tabStyle = (isActive) => ({
+                flex: 1,
+                padding: '1rem',
+                background: isActive ? 'rgba(0, 217, 255, 0.1)' : 'transparent',
+                border: 'none',
+                borderBottom: isActive ? '2px solid rgba(0, 217, 255, 0.8)' : '2px solid transparent',
+                color: isActive ? 'rgba(0, 217, 255, 0.95)' : 'rgba(255, 255, 255, 0.6)',
+                fontSize: '0.8125rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+            });
 
-            const renderSoundPalette = (palette) => {
-                if (!palette) return null;
-                return (
-                    <div>
-                        {/* Instruments with per-stem breakdowns */}
-                        {palette.instruments && palette.instruments.length > 0 && (
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <div style={{
-                                    fontSize: '0.75rem',
-                                    color: 'rgba(255, 255, 255, 0.5)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.1em',
-                                    marginBottom: '0.75rem',
-                                    fontWeight: '600'
-                                }}>
-                                    Per-Stem Instrument Analysis
-                                </div>
-                                {palette.instruments.map((inst, idx) => {
-                                    const parsed = parseInstrumentLine(inst);
-                                    return (
-                                        <div key={idx} style={{
-                                            background: 'rgba(0, 0, 0, 0.3)',
-                                            border: '1px solid rgba(255, 255, 255, 0.06)',
-                                            borderRadius: '0',
-                                            padding: '1rem',
-                                            marginBottom: '0.5rem'
-                                        }}>
-                                            <div style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                marginBottom: '0.5rem'
-                                            }}>
-                                                <span style={{
-                                                    fontWeight: '600',
-                                                    color: 'rgba(255, 255, 255, 0.95)',
-                                                    fontSize: '0.9375rem'
-                                                }}>
-                                                    {parsed.name}
-                                                </span>
-                                                {palette.confidence && (
-                                                    <span style={{
-                                                        fontSize: '0.7rem',
-                                                        color: 'rgba(0, 217, 255, 0.7)',
-                                                        fontFamily: "'JetBrains Mono', monospace"
-                                                    }}>
-                                                        {(palette.confidence * 100).toFixed(0)}% confidence
-                                                    </span>
-                                                )}
-                                            </div>
-                                            {parsed.metrics && (
-                                                <div style={{ marginBottom: '0.5rem' }}>
-                                                    {parsed.metrics.split(',').map((metric, mIdx) => (
-                                                        <span key={mIdx} style={metricBadgeStyle}>
-                                                            {metric.trim()}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                            {parsed.description && (
-                                                <div style={{
-                                                    fontSize: '0.875rem',
-                                                    color: 'rgba(255, 255, 255, 0.7)',
-                                                    lineHeight: '1.5'
-                                                }}>
-                                                    {parsed.description}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        {/* Textures */}
-                        {palette.textures && palette.textures.length > 0 && (
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <div style={{
-                                    fontSize: '0.75rem',
-                                    color: 'rgba(255, 255, 255, 0.5)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.1em',
-                                    marginBottom: '0.75rem',
-                                    fontWeight: '600'
-                                }}>
-                                    Sonic Textures
-                                </div>
-                                {palette.textures.map((texture, idx) => (
-                                    <div key={idx} style={{
-                                        padding: '0.75rem 1rem',
-                                        background: 'rgba(0, 0, 0, 0.2)',
-                                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                                        borderRadius: '0',
-                                        marginBottom: '0.375rem',
-                                        fontSize: '0.875rem',
-                                        color: 'rgba(255, 255, 255, 0.85)',
-                                        lineHeight: '1.5'
-                                    }}>
-                                        {texture}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Frequency Focus */}
-                        {palette.frequency_focus && (
-                            <div style={{
-                                background: 'rgba(0, 217, 255, 0.08)',
-                                border: '1px solid rgba(0, 217, 255, 0.2)',
-                                borderRadius: '0',
-                                padding: '1rem',
-                                marginBottom: '1rem'
-                            }}>
-                                <div style={{
-                                    fontSize: '0.75rem',
-                                    color: 'rgba(0, 217, 255, 0.7)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.1em',
-                                    marginBottom: '0.5rem',
-                                    fontWeight: '600'
-                                }}>
-                                    Frequency Focus
-                                </div>
-                                <div style={{
-                                    fontSize: '1rem',
-                                    color: 'rgba(255, 255, 255, 0.95)',
-                                    fontWeight: '500'
-                                }}>
-                                    {palette.frequency_focus}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Reasoning Summary */}
-                        {palette.reasoning && (
-                            <div style={{
-                                fontSize: '0.875rem',
-                                color: 'rgba(255, 255, 255, 0.6)',
-                                lineHeight: '1.6',
-                                fontStyle: 'italic',
-                                paddingTop: '0.75rem',
-                                borderTop: '1px solid rgba(255, 255, 255, 0.05)'
-                            }}>
-                                {palette.reasoning}
-                            </div>
-                        )}
-                    </div>
-                );
-            };
-
-            const renderGenreFusion = (genre) => {
-                if (!genre) return null;
-                return (
-                    <div>
-                        {/* Primary Genres */}
-                        {genre.primary_genres && genre.primary_genres.length > 0 && (
-                            <div style={{ marginBottom: '1.25rem' }}>
-                                <div style={{
-                                    fontSize: '0.75rem',
-                                    color: 'rgba(255, 255, 255, 0.5)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.1em',
-                                    marginBottom: '0.75rem',
-                                    fontWeight: '600'
-                                }}>
-                                    Primary Genres
-                                </div>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                    {genre.primary_genres.map((g, idx) => (
-                                        <span key={idx} style={{
-                                            background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.2) 0%, rgba(0, 217, 255, 0.15) 100%)',
-                                            border: '1px solid rgba(0, 217, 255, 0.4)',
-                                            borderRadius: '0',
-                                            padding: '0.5rem 1rem',
-                                            fontSize: '0.875rem',
-                                            color: 'rgba(255, 255, 255, 0.95)',
-                                            fontWeight: '500'
-                                        }}>
-                                            {g}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Fusion Elements with numerical evidence */}
-                        {genre.fusion_elements && genre.fusion_elements.length > 0 && (
-                            <div style={{ marginBottom: '1.25rem' }}>
-                                <div style={{
-                                    fontSize: '0.75rem',
-                                    color: 'rgba(255, 255, 255, 0.5)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.1em',
-                                    marginBottom: '0.75rem',
-                                    fontWeight: '600'
-                                }}>
-                                    Fusion Elements (Evidence-Based)
-                                </div>
-                                {genre.fusion_elements.map((element, idx) => (
-                                    <div key={idx} style={{
-                                        padding: '0.75rem 1rem',
-                                        background: 'rgba(0, 0, 0, 0.25)',
-                                        border: '1px solid rgba(255, 255, 255, 0.06)',
-                                        borderRadius: '0',
-                                        marginBottom: '0.375rem',
-                                        fontSize: '0.875rem',
-                                        color: 'rgba(255, 255, 255, 0.85)',
-                                        lineHeight: '1.5'
-                                    }}>
-                                        {element}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Confidence */}
-                        {genre.confidence && (
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.75rem',
-                                marginBottom: '1rem'
-                            }}>
-                                <span style={{
-                                    fontSize: '0.75rem',
-                                    color: 'rgba(255, 255, 255, 0.5)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.05em'
-                                }}>
-                                    Confidence
-                                </span>
-                                <div style={{
-                                    flex: 1,
-                                    height: '4px',
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    borderRadius: '2px',
-                                    overflow: 'hidden'
-                                }}>
-                                    <div style={{
-                                        width: `${genre.confidence * 100}%`,
-                                        height: '100%',
-                                        background: 'linear-gradient(90deg, rgba(0, 217, 255, 0.8) 0%, rgba(0, 13, 255, 0.8) 100%)',
-                                        borderRadius: '2px'
-                                    }} />
-                                </div>
-                                <span style={{
-                                    fontSize: '0.8125rem',
-                                    color: 'rgba(0, 217, 255, 0.9)',
-                                    fontFamily: "'JetBrains Mono', monospace",
-                                    fontWeight: '600'
-                                }}>
-                                    {(genre.confidence * 100).toFixed(0)}%
-                                </span>
-                            </div>
-                        )}
-
-                        {/* Reasoning */}
-                        {genre.reasoning && (
-                            <div style={{
-                                fontSize: '0.875rem',
-                                color: 'rgba(255, 255, 255, 0.6)',
-                                lineHeight: '1.6',
-                                fontStyle: 'italic',
-                                paddingTop: '0.75rem',
-                                borderTop: '1px solid rgba(255, 255, 255, 0.05)'
-                            }}>
-                                {genre.reasoning}
-                            </div>
-                        )}
-                    </div>
-                );
-            };
-
-            const renderGenericComponent = (component, label) => {
-                if (!component) return null;
-
-                // Render any arrays with numerical evidence
-                const arrayFields = Object.entries(component).filter(([k, v]) =>
-                    Array.isArray(v) && v.length > 0 && !['source'].includes(k)
-                );
-
-                // Render any string fields (except reasoning, source)
-                const stringFields = Object.entries(component).filter(([k, v]) =>
-                    typeof v === 'string' && !['reasoning', 'source'].includes(k) && v.length > 0
-                );
-
-                // Render any number fields
-                const numberFields = Object.entries(component).filter(([k, v]) =>
-                    typeof v === 'number' && !['confidence'].includes(k)
-                );
-
-                return (
-                    <div>
-                        {/* String fields as key-value pairs */}
-                        {stringFields.length > 0 && (
-                            <div style={{ marginBottom: '1.25rem' }}>
-                                {stringFields.map(([key, value]) => (
-                                    <div key={key} style={{
-                                        display: 'flex',
-                                        alignItems: 'flex-start',
-                                        gap: '1rem',
-                                        padding: '0.75rem 0',
-                                        borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
-                                    }}>
-                                        <span style={{
-                                            fontSize: '0.75rem',
-                                            color: 'rgba(255, 255, 255, 0.5)',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.05em',
-                                            minWidth: '120px',
-                                            paddingTop: '0.125rem'
-                                        }}>
-                                            {key.replace(/_/g, ' ')}
-                                        </span>
-                                        <span style={{
-                                            fontSize: '0.9375rem',
-                                            color: 'rgba(255, 255, 255, 0.9)',
-                                            flex: 1
-                                        }}>
-                                            {value}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Number fields as metrics */}
-                        {numberFields.length > 0 && (
-                            <div style={{
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                gap: '0.75rem',
-                                marginBottom: '1.25rem'
-                            }}>
-                                {numberFields.map(([key, value]) => (
-                                    <div key={key} style={{
-                                        background: 'rgba(0, 217, 255, 0.1)',
-                                        border: '1px solid rgba(0, 217, 255, 0.25)',
-                                        borderRadius: '0',
-                                        padding: '0.75rem 1rem',
-                                        textAlign: 'center'
-                                    }}>
-                                        <div style={{
-                                            fontSize: '1.25rem',
-                                            fontFamily: "'JetBrains Mono', monospace",
-                                            color: 'rgba(0, 217, 255, 0.95)',
-                                            fontWeight: '600',
-                                            marginBottom: '0.25rem'
-                                        }}>
-                                            {typeof value === 'number' ? value.toFixed(2) : value}
-                                        </div>
-                                        <div style={{
-                                            fontSize: '0.6875rem',
-                                            color: 'rgba(255, 255, 255, 0.5)',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.05em'
-                                        }}>
-                                            {key.replace(/_/g, ' ')}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Array fields */}
-                        {arrayFields.map(([key, values]) => (
-                            <div key={key} style={{ marginBottom: '1.25rem' }}>
-                                <div style={{
-                                    fontSize: '0.75rem',
-                                    color: 'rgba(255, 255, 255, 0.5)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.1em',
-                                    marginBottom: '0.75rem',
-                                    fontWeight: '600'
-                                }}>
-                                    {key.replace(/_/g, ' ')}
-                                </div>
-                                {values.map((item, idx) => (
-                                    <div key={idx} style={{
-                                        padding: '0.75rem 1rem',
-                                        background: 'rgba(0, 0, 0, 0.2)',
-                                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                                        borderRadius: '0',
-                                        marginBottom: '0.375rem',
-                                        fontSize: '0.875rem',
-                                        color: 'rgba(255, 255, 255, 0.85)',
-                                        lineHeight: '1.5'
-                                    }}>
-                                        {typeof item === 'object' ? JSON.stringify(item) : item}
-                                    </div>
-                                ))}
-                            </div>
-                        ))}
-
-                        {/* Confidence bar */}
-                        {component.confidence && (
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.75rem',
-                                marginBottom: '1rem'
-                            }}>
-                                <span style={{
-                                    fontSize: '0.75rem',
-                                    color: 'rgba(255, 255, 255, 0.5)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.05em'
-                                }}>
-                                    Confidence
-                                </span>
-                                <div style={{
-                                    flex: 1,
-                                    height: '4px',
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    borderRadius: '2px',
-                                    overflow: 'hidden'
-                                }}>
-                                    <div style={{
-                                        width: `${component.confidence * 100}%`,
-                                        height: '100%',
-                                        background: 'linear-gradient(90deg, rgba(0, 217, 255, 0.8) 0%, rgba(0, 13, 255, 0.8) 100%)'
-                                    }} />
-                                </div>
-                                <span style={{
-                                    fontSize: '0.8125rem',
-                                    color: 'rgba(0, 217, 255, 0.9)',
-                                    fontFamily: "'JetBrains Mono', monospace",
-                                    fontWeight: '600'
-                                }}>
-                                    {(component.confidence * 100).toFixed(0)}%
-                                </span>
-                            </div>
-                        )}
-
-                        {/* Reasoning */}
-                        {component.reasoning && (
-                            <div style={{
-                                fontSize: '0.875rem',
-                                color: 'rgba(255, 255, 255, 0.6)',
-                                lineHeight: '1.6',
-                                fontStyle: 'italic',
-                                paddingTop: '0.75rem',
-                                borderTop: '1px solid rgba(255, 255, 255, 0.05)'
-                            }}>
-                                {component.reasoning}
-                            </div>
-                        )}
-                    </div>
-                );
-            };
-
-            const sections = [
-                { key: 'sound_palette', label: 'Sound Palette', icon: '🎨', render: renderSoundPalette },
-                { key: 'genre_fusion', label: 'Genre Fusion', icon: '🎵', render: renderGenreFusion },
-                { key: 'rhythmic_dna', label: 'Rhythmic DNA', icon: '🥁', render: (c) => renderGenericComponent(c, 'Rhythmic DNA') },
-                { key: 'emotional_fingerprint', label: 'Emotional Fingerprint', icon: '💜', render: (c) => renderGenericComponent(c, 'Emotional Fingerprint') },
-                { key: 'neural_spectrum', label: 'Neural Spectrum', icon: '🧠', render: (c) => renderGenericComponent(c, 'Neural Spectrum') },
-                { key: 'tonal_identity', label: 'Tonal Identity', icon: '🎹', render: (c) => renderGenericComponent(c, 'Tonal Identity') },
-                { key: 'timbre_dna', label: 'Timbre DNA', icon: '🔊', render: (c) => renderGenericComponent(c, 'Timbre DNA') },
-                { key: 'mixing_signature', label: 'Mixing Signature', icon: '🎚️', render: (c) => renderGenericComponent(c, 'Mixing Signature') },
-                { key: 'sonic_architecture', label: 'Sonic Architecture', icon: '🏗️', render: (c) => renderGenericComponent(c, 'Sonic Architecture') }
-            ];
-
-            return (
+            // Scientific Analysis Tab Content
+            const ScientificAnalysisTab = () => (
                 <div style={{
-                    width: '400px',
-                    minWidth: '400px',
-                    borderLeft: '1px solid rgba(0, 217, 255, 0.15)',
-                    background: 'rgba(5, 5, 20, 0.95)',
-                    backdropFilter: 'blur(40px)',
-                    WebkitBackdropFilter: 'blur(40px)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflowY: 'auto'
+                    flex: 1,
+                    overflowY: 'auto',
+                    padding: '1.5rem',
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'rgba(0, 217, 255, 0.3) rgba(0, 0, 0, 0.2)'
                 }}>
-                    {/* Panel Header */}
-                    <div style={{
-                        padding: '1.25rem 1.5rem',
-                        borderBottom: '1px solid rgba(0, 217, 255, 0.15)',
-                        background: 'rgba(0, 217, 255, 0.03)'
-                    }}>
+                    {scientificAnalysis ? (
+                        <>
+                            <div style={{
+                                fontSize: '0.6875rem',
+                                color: 'rgba(0, 217, 255, 0.7)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.15em',
+                                marginBottom: '1rem',
+                                fontWeight: '600'
+                            }}>
+                                DSP Analysis & Reasoning
+                            </div>
+                            <div style={{
+                                color: 'rgba(255, 255, 255, 0.85)',
+                                lineHeight: '1.8',
+                                whiteSpace: 'pre-wrap',
+                                fontSize: '0.9375rem'
+                            }}>
+                                {scientificAnalysis}
+                            </div>
+                        </>
+                    ) : (
                         <div style={{
-                            fontSize: '0.6875rem',
-                            color: 'rgba(0, 217, 255, 0.7)',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.15em',
-                            marginBottom: '0.375rem',
-                            fontWeight: '600'
-                        }}>
-                            Technical Analysis
-                        </div>
-                        <div style={{
-                            fontSize: '1.125rem',
-                            color: 'rgba(255, 255, 255, 0.95)',
-                            fontWeight: '600'
-                        }}>
-                            Audio Feature Breakdown
-                        </div>
-                        <div style={{
-                            fontSize: '0.8125rem',
                             color: 'rgba(255, 255, 255, 0.5)',
-                            marginTop: '0.375rem'
+                            textAlign: 'center',
+                            padding: '2rem'
                         }}>
-                            Per-stem metrics with numerical evidence
+                            No scientific analysis available
                         </div>
-                    </div>
+                    )}
+                </div>
+            );
 
-                    {/* Expandable Sections */}
-                    <div style={{
-                        flex: 1,
-                        overflowY: 'auto',
-                        padding: '1rem',
-                        scrollbarWidth: 'thin',
-                        scrollbarColor: 'rgba(0, 217, 255, 0.3) rgba(0, 0, 0, 0.2)'
-                    }}>
-                        {sections.map(({ key, label, icon, render }) => {
+            // Neural Profile Tab Content
+            const NeuralProfileTab = () => (
+                <div style={{
+                    flex: 1,
+                    overflowY: 'auto',
+                    padding: '1rem',
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'rgba(0, 217, 255, 0.3) rgba(0, 0, 0, 0.2)'
+                }}>
+                    {components ? (
+                        sections.map(({ key, label, icon }) => {
                             const data = components[key];
                             if (!data) return null;
 
@@ -4566,13 +4334,61 @@
                                     </div>
                                     {isExpanded && (
                                         <div style={contentStyle}>
-                                            {render(data)}
+                                            {renderGenericComponent(data)}
                                         </div>
                                     )}
                                 </div>
                             );
-                        })}
+                        })
+                    ) : (
+                        <div style={{
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            textAlign: 'center',
+                            padding: '2rem'
+                        }}>
+                            No profile components available
+                        </div>
+                    )}
+                </div>
+            );
+
+            // Don't render if no data at all
+            if (!components && !scientificAnalysis) return null;
+
+            return (
+                <div style={{
+                    width: '400px',
+                    minWidth: '400px',
+                    borderLeft: '1px solid rgba(0, 217, 255, 0.15)',
+                    background: 'rgba(5, 5, 20, 0.95)',
+                    backdropFilter: 'blur(40px)',
+                    WebkitBackdropFilter: 'blur(40px)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden'
+                }}>
+                    {/* Tab Headers */}
+                    <div style={{
+                        display: 'flex',
+                        borderBottom: '1px solid rgba(0, 217, 255, 0.15)',
+                        background: 'rgba(0, 0, 0, 0.3)'
+                    }}>
+                        <button
+                            onClick={() => setActiveTab('scientific')}
+                            style={tabStyle(activeTab === 'scientific')}
+                        >
+                            Scientific
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('profile')}
+                            style={tabStyle(activeTab === 'profile')}
+                        >
+                            Neural Profile
+                        </button>
                     </div>
+
+                    {/* Tab Content */}
+                    {activeTab === 'scientific' ? <ScientificAnalysisTab /> : <NeuralProfileTab />}
                 </div>
             );
         }
@@ -4972,9 +4788,10 @@ The full technical breakdown with per-stem metrics is in the panel to the right.
                         </div>
 
                         {/* Right: Technical Analysis Panel */}
-                        {sessionData?.musical_components && (
+                        {(sessionData?.musical_components || sessionData?.scientific_analysis) && (
                             <TechnicalAnalysisPanel
                                 components={sessionData.musical_components}
+                                scientificAnalysis={sessionData.scientific_analysis}
                             />
                         )}
                     </div>
