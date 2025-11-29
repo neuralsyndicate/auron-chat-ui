@@ -3930,10 +3930,9 @@
         }
 
         // ============================================================
-        // TECHNICAL ANALYSIS PANEL - Tabbed Interface (Scientific + Profile)
+        // TECHNICAL ANALYSIS PANEL - Neural Music Profile
         // ============================================================
-        function TechnicalAnalysisPanel({ components, scientificAnalysis }) {
-            const [activeTab, setActiveTab] = useState('scientific');
+        function TechnicalAnalysisPanel({ components }) {
             const [expandedSections, setExpandedSections] = useState({
                 sound_description: true,
                 inspirational_triggers: false,
@@ -4221,65 +4220,7 @@
                 borderTop: '1px solid rgba(255, 255, 255, 0.05)'
             };
 
-            // Tab button style
-            const tabStyle = (isActive) => ({
-                flex: 1,
-                padding: '1rem',
-                background: isActive ? 'rgba(0, 217, 255, 0.1)' : 'transparent',
-                border: 'none',
-                borderBottom: isActive ? '2px solid rgba(0, 217, 255, 0.8)' : '2px solid transparent',
-                color: isActive ? 'rgba(0, 217, 255, 0.95)' : 'rgba(255, 255, 255, 0.6)',
-                fontSize: '0.8125rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em'
-            });
-
-            // Scientific Analysis Tab Content
-            const ScientificAnalysisTab = () => (
-                <div style={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    padding: '1.5rem',
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: 'rgba(0, 217, 255, 0.3) rgba(0, 0, 0, 0.2)'
-                }}>
-                    {scientificAnalysis ? (
-                        <>
-                            <div style={{
-                                fontSize: '0.6875rem',
-                                color: 'rgba(0, 217, 255, 0.7)',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.15em',
-                                marginBottom: '1rem',
-                                fontWeight: '600'
-                            }}>
-                                DSP Analysis & Reasoning
-                            </div>
-                            <div style={{
-                                color: 'rgba(255, 255, 255, 0.85)',
-                                lineHeight: '1.8',
-                                whiteSpace: 'pre-wrap',
-                                fontSize: '0.9375rem'
-                            }}>
-                                {scientificAnalysis}
-                            </div>
-                        </>
-                    ) : (
-                        <div style={{
-                            color: 'rgba(255, 255, 255, 0.5)',
-                            textAlign: 'center',
-                            padding: '2rem'
-                        }}>
-                            No scientific analysis available
-                        </div>
-                    )}
-                </div>
-            );
-
-            // Neural Profile Tab Content
+            // Neural Profile Content
             const NeuralProfileTab = () => (
                 <div style={{
                     flex: 1,
@@ -4352,8 +4293,8 @@
                 </div>
             );
 
-            // Don't render if no data at all
-            if (!components && !scientificAnalysis) return null;
+            // Don't render if no data
+            if (!components) return null;
 
             return (
                 <div style={{
@@ -4367,28 +4308,33 @@
                     flexDirection: 'column',
                     overflow: 'hidden'
                 }}>
-                    {/* Tab Headers */}
+                    {/* Panel Header */}
                     <div style={{
-                        display: 'flex',
+                        padding: '1rem 1.25rem',
                         borderBottom: '1px solid rgba(0, 217, 255, 0.15)',
-                        background: 'rgba(0, 0, 0, 0.3)'
+                        background: 'rgba(0, 217, 255, 0.05)'
                     }}>
-                        <button
-                            onClick={() => setActiveTab('scientific')}
-                            style={tabStyle(activeTab === 'scientific')}
-                        >
-                            Scientific
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('profile')}
-                            style={tabStyle(activeTab === 'profile')}
-                        >
-                            Neural Profile
-                        </button>
+                        <div style={{
+                            fontSize: '0.6875rem',
+                            color: 'rgba(0, 217, 255, 0.7)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.15em',
+                            marginBottom: '0.25rem',
+                            fontWeight: '600'
+                        }}>
+                            Technical Analysis
+                        </div>
+                        <div style={{
+                            fontSize: '1rem',
+                            color: 'rgba(255, 255, 255, 0.95)',
+                            fontWeight: '600'
+                        }}>
+                            Neural Music Profile
+                        </div>
                     </div>
 
-                    {/* Tab Content */}
-                    {activeTab === 'scientific' ? <ScientificAnalysisTab /> : <NeuralProfileTab />}
+                    {/* Profile Content */}
+                    <NeuralProfileTab />
                 </div>
             );
         }
@@ -4788,10 +4734,9 @@ The full technical breakdown with per-stem metrics is in the panel to the right.
                         </div>
 
                         {/* Right: Technical Analysis Panel */}
-                        {(sessionData?.musical_components || sessionData?.scientific_analysis) && (
+                        {sessionData?.musical_components && (
                             <TechnicalAnalysisPanel
                                 components={sessionData.musical_components}
-                                scientificAnalysis={sessionData.scientific_analysis}
                             />
                         )}
                     </div>
