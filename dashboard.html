@@ -4821,17 +4821,30 @@
         // ============================================================
         // AUDIO SESSION MODAL - Session Analysis Mode
         // ============================================================
-        function AudioSessionModal({ uploadId, onClose }) {
+        function AudioSessionModal({ uploadId, synthesizedProfile, onClose }) {
             const [sessionData, setSessionData] = useState(null);
             const [messages, setMessages] = useState([]);
-            const [loading, setLoading] = useState(true);
+            const [loading, setLoading] = useState(!synthesizedProfile);
             const [input, setInput] = useState('');
             const [sending, setSending] = useState(false);
+            const [expandedModules, setExpandedModules] = useState({});
+            const [showChat, setShowChat] = useState(false);
             const messagesEndRef = useRef(null);
 
+            // Profile data from synthesized response
+            const profile = synthesizedProfile?.profile || {};
+            const creativeIdentity = synthesizedProfile?.creative_identity || profile?.creative_identity_statement;
+            const dspFacts = synthesizedProfile?.dsp_facts;
+
             useEffect(() => {
-                loadSessionData();
-            }, [uploadId]);
+                if (!synthesizedProfile) {
+                    loadSessionData();
+                } else {
+                    // Generate welcome message from synthesized profile
+                    const welcomeMsg = generateSynthesizedWelcome();
+                    setMessages([{ role: 'auron', content: welcomeMsg }]);
+                }
+            }, [uploadId, synthesizedProfile]);
 
             useEffect(() => {
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -4842,76 +4855,46 @@
                     const token = await getAuthToken();
                     const response = await fetch(
                         `${BFF_API_BASE}/audio/session/${uploadId}`,
-                        {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        }
+                        { headers: { 'Authorization': `Bearer ${token}` } }
                     );
 
-                    if (!response.ok) {
-                        throw new Error('Failed to load session');
-                    }
+                    if (!response.ok) throw new Error('Failed to load session');
 
                     const data = await response.json();
                     setSessionData(data);
 
-                    // Generate welcome message from Auron
-                    const welcomeMsg = generateWelcomeMessage(data);
-                    setMessages([{
-                        role: 'auron',
-                        content: welcomeMsg
-                    }]);
-
+                    const welcomeMsg = generateLegacyWelcome(data);
+                    setMessages([{ role: 'auron', content: welcomeMsg }]);
                     setLoading(false);
-
                 } catch (err) {
                     console.error('Failed to load session:', err);
                     setLoading(false);
                 }
             };
 
-            const generateWelcomeMessage = (data) => {
-                const { track_info, essentia_features, musical_components } = data;
-                const duration = Math.round(track_info.duration);
+            const generateSynthesizedWelcome = () => {
+                const soundDesc = profile?.sound_description;
+                const sonicTitle = soundDesc?.sonic_title || 'Your Track';
+                return `Your sonic fingerprint has been synthesized. I see "${sonicTitle}" — explore the modules below to understand the architecture of your sound.
+
+What aspects of this profile resonate most with your intentions?`;
+            };
+
+            const generateLegacyWelcome = (data) => {
+                const { track_info } = data;
+                const duration = Math.round(track_info?.duration || 0);
                 const minutes = Math.floor(duration / 60);
                 const seconds = duration % 60;
+                return `I've analyzed "${track_info?.filename}" — ${minutes}:${seconds.toString().padStart(2, '0')} of sonic data processed.
 
-                const intro = `I've analyzed "${track_info.filename}" — ${minutes}:${seconds.toString().padStart(2, '0')} of sonic data processed.`;
+What were you trying to express when you created this piece?`;
+            };
 
-                if (!musical_components || Object.keys(musical_components).length === 0) {
-                     return `${intro}
-
-The full technical breakdown is in the panel to the right. I can sense the sonic architecture you've built here.
-
-**What were you trying to express when you created this piece?**`;
-                }
-
-                // Brief highlights only - detailed data is in the side panel
-                const genres = musical_components.genre_fusion || {};
-                const palette = musical_components.sound_palette || {};
-
-                let highlights = [];
-
-                if (genres.primary_genres && genres.primary_genres.length > 0 && genres.primary_genres[0] !== 'unknown') {
-                    highlights.push(`**${genres.primary_genres.join(' × ')}** fusion`);
-                }
-
-                if (palette.frequency_focus) {
-                    highlights.push(palette.frequency_focus);
-                }
-
-                if (genres.confidence) {
-                    highlights.push(`${(genres.confidence * 100).toFixed(0)}% genre confidence`);
-                }
-
-                const highlightText = highlights.length > 0
-                    ? `\n\n**Quick reads:** ${highlights.join(' • ')}`
-                    : '';
-
-                return `${intro}${highlightText}
-
-The full technical breakdown with per-stem metrics is in the panel to the right. Expand any section to see the numerical evidence behind each analysis.
-
-**What were you trying to express when you created this piece?**`;
+            const toggleModule = (moduleKey) => {
+                setExpandedModules(prev => ({
+                    ...prev,
+                    [moduleKey]: !prev[moduleKey]
+                }));
             };
 
             const sendMessage = async () => {
@@ -4974,250 +4957,423 @@ The full technical breakdown with per-stem metrics is in the panel to the right.
                 }
             };
 
+            // Module Card Component
+            const ModuleCard = ({ title, moduleKey, children, fullWidth }) => (
+                <div
+                    onClick={() => toggleModule(moduleKey)}
+                    style={{
+                        background: 'rgba(10, 10, 31, 0.8)',
+                        border: expandedModules[moduleKey] ? '1px solid rgba(0, 217, 255, 0.4)' : '1px solid rgba(0, 217, 255, 0.15)',
+                        borderRadius: '0',
+                        padding: '1rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        gridColumn: fullWidth ? '1 / -1' : 'auto',
+                        boxShadow: expandedModules[moduleKey] ? '0 0 20px rgba(0, 217, 255, 0.15)' : 'none'
+                    }}
+                >
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: expandedModules[moduleKey] ? '0.75rem' : 0
+                    }}>
+                        <div style={{
+                            fontSize: '0.6875rem',
+                            color: 'rgba(0, 217, 255, 0.8)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.1em',
+                            fontWeight: '600'
+                        }}>
+                            {title}
+                        </div>
+                        <div style={{ color: 'rgba(0, 217, 255, 0.6)', fontSize: '0.75rem' }}>
+                            {expandedModules[moduleKey] ? '−' : '+'}
+                        </div>
+                    </div>
+                    {expandedModules[moduleKey] && (
+                        <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.875rem', lineHeight: '1.5' }}>
+                            {children}
+                        </div>
+                    )}
+                    {!expandedModules[moduleKey] && children && (
+                        <div style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.8rem', marginTop: '0.5rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {typeof children === 'string' ? children.substring(0, 50) + '...' : 'Click to expand'}
+                        </div>
+                    )}
+                </div>
+            );
+
             if (loading) {
                 return (
                     <div style={{
                         position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
+                        inset: 0,
                         background: '#000',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         zIndex: 9999
                     }}>
-                        <div className="text-center">
-                            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                            <p className="text-gray-400">Loading session...</p>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{
+                                width: '48px',
+                                height: '48px',
+                                border: '2px solid rgba(0, 217, 255, 0.2)',
+                                borderTop: '2px solid rgba(0, 217, 255, 0.8)',
+                                borderRadius: '50%',
+                                animation: 'spin 1s linear infinite',
+                                margin: '0 auto 1rem'
+                            }} />
+                            <p style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Loading session...</p>
                         </div>
                     </div>
                 );
             }
 
+            // Get sonic title from profile
+            const sonicTitle = profile?.sound_description?.sonic_title || sessionData?.track_info?.filename || 'Your Track';
+            const soundSynthesis = profile?.sound_description?.synthesis;
+
             return (
                 <div style={{
                     position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
+                    inset: 0,
                     background: '#000',
                     display: 'flex',
                     flexDirection: 'column',
-                    zIndex: 9999
+                    zIndex: 9999,
+                    overflow: 'hidden'
                 }}>
-                    {/* Session Header */}
+                    {/* Header */}
                     <div style={{
                         background: 'rgba(10, 10, 31, 0.95)',
                         backdropFilter: 'blur(40px)',
-                        padding: '1.5rem 2rem',
+                        padding: '1.25rem 2rem',
                         borderBottom: '1px solid rgba(0, 217, 255, 0.2)',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'space-between',
-                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
+                        justifyContent: 'space-between'
                     }}>
-                        <div style={{ flex: 1 }}>
+                        <div>
                             <div style={{
-                                fontSize: '0.75rem',
-                                color: '#00D9FF',
+                                fontSize: '0.6875rem',
+                                color: 'rgba(0, 217, 255, 0.8)',
                                 textTransform: 'uppercase',
-                                letterSpacing: '0.1em',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem'
+                                letterSpacing: '0.15em',
+                                marginBottom: '0.25rem'
                             }}>
-                                🎧 AUDIO ANALYSIS SESSION
+                                YOUR SONIC FINGERPRINT
                             </div>
                             <h2 style={{
                                 fontSize: '1.5rem',
                                 color: '#fff',
                                 fontWeight: '600',
-                                margin: 0
+                                margin: 0,
+                                background: 'linear-gradient(135deg, #00D9FF 0%, #0066FF 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text'
                             }}>
-                                {sessionData?.track_info.filename}
+                                {sonicTitle}
                             </h2>
-                            <div style={{
-                                fontSize: '0.85rem',
-                                color: 'rgba(255, 255, 255, 0.6)',
-                                marginTop: '0.25rem'
-                            }}>
-                                {Math.round(sessionData?.track_info.duration)}s • {sessionData?.track_info.format}
-                            </div>
                         </div>
-
-                        {/* Close Button */}
                         <button
                             onClick={onClose}
                             style={{
-                                padding: '0.75rem 1.5rem',
-                                borderRadius: '12px',
+                                padding: '0.625rem 1.25rem',
                                 border: '1px solid rgba(255, 255, 255, 0.2)',
                                 background: 'rgba(255, 255, 255, 0.05)',
                                 color: '#fff',
                                 cursor: 'pointer',
-                                fontSize: '0.9rem',
-                                fontWeight: '500',
+                                fontSize: '0.875rem',
+                                borderRadius: '0',
                                 transition: 'all 0.2s ease'
                             }}
-                            onMouseOver={(e) => {
-                                e.target.style.background = 'rgba(255, 255, 255, 0.1)';
-                                e.target.style.borderColor = 'rgba(0, 217, 255, 0.5)';
-                            }}
-                            onMouseOut={(e) => {
-                                e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                                e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                            }}
                         >
-                            Exit Session
+                            Close
                         </button>
                     </div>
 
-                    {/* Main Content Area - Chat + Analysis Panel */}
-                    <div style={{
-                        flex: 1,
-                        display: 'flex',
-                        overflow: 'hidden'
-                    }}>
-                        {/* Left: Chat Area */}
-                        <div style={{
-                            flex: 1,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            overflow: 'hidden'
-                        }}>
-                            {/* Messages Area */}
-                            <div style={{
-                                flex: 1,
-                                overflowY: 'auto',
-                                padding: '2rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '1.5rem'
-                            }}>
-                                {messages.map((msg, idx) => (
-                                    <div
-                                        key={idx}
-                                        style={{
-                                            maxWidth: msg.role === 'user' ? '70%' : '100%',
-                                            alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start'
-                                        }}
-                                    >
-                                        {msg.role === 'auron' ? (
-                                            <div style={{
-                                                background: 'rgba(0, 217, 255, 0.05)',
-                                                border: '1px solid rgba(0, 217, 255, 0.2)',
-                                                borderRadius: '16px',
-                                                padding: '1.5rem',
-                                                boxShadow: '0 4px 20px rgba(0, 217, 255, 0.1)'
-                                            }}>
-                                                <div style={{
-                                                    fontSize: '0.75rem',
-                                                    color: '#00D9FF',
-                                                    fontWeight: '600',
-                                                    marginBottom: '0.75rem',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.1em'
-                                                }}>
-                                                    AURON
-                                                </div>
-                                                <div style={{
-                                                    color: '#fff',
-                                                    lineHeight: '1.6',
-                                                    whiteSpace: 'pre-wrap'
-                                                }}>
-                                                    {msg.content}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div style={{
-                                                background: 'rgba(255, 255, 255, 0.05)',
-                                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                                borderRadius: '16px',
-                                                padding: '1rem 1.5rem',
-                                                color: '#fff',
-                                                lineHeight: '1.6'
-                                            }}>
-                                                {msg.content}
+                    {/* Main Content - Scrollable */}
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '2rem' }}>
+                        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+
+                            {/* Creative Identity Statement */}
+                            {creativeIdentity && (
+                                <div style={{
+                                    background: 'rgba(0, 217, 255, 0.05)',
+                                    border: '1px solid rgba(0, 217, 255, 0.3)',
+                                    borderRadius: '0',
+                                    padding: '1.5rem 2rem',
+                                    marginBottom: '2rem',
+                                    boxShadow: '0 0 40px rgba(0, 217, 255, 0.1)'
+                                }}>
+                                    <div style={{
+                                        fontSize: '0.6875rem',
+                                        color: 'rgba(0, 217, 255, 0.8)',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.15em',
+                                        marginBottom: '0.75rem'
+                                    }}>
+                                        CREATIVE IDENTITY
+                                    </div>
+                                    <div style={{
+                                        fontSize: '1.125rem',
+                                        color: 'rgba(255, 255, 255, 0.95)',
+                                        lineHeight: '1.7',
+                                        fontStyle: 'italic'
+                                    }}>
+                                        "{creativeIdentity}"
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 11-Module Grid */}
+                            {synthesizedProfile && (
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(3, 1fr)',
+                                    gap: '1rem',
+                                    marginBottom: '2rem'
+                                }}>
+                                    {/* Row 1: Sound Description, Genre Fusion, Neural Spectrum */}
+                                    <ModuleCard title="Sound Description" moduleKey="sound_desc">
+                                        {soundSynthesis || profile?.sound_description?.description || 'No synthesis available'}
+                                    </ModuleCard>
+
+                                    <ModuleCard title="Genre Fusion" moduleKey="genre">
+                                        {profile?.genre_fusion?.primary_genres?.join(' × ') || 'Unknown'}
+                                        {profile?.genre_fusion?.fusion_description && (
+                                            <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', opacity: 0.7 }}>
+                                                {profile.genre_fusion.fusion_description}
                                             </div>
                                         )}
-                                    </div>
-                                ))}
-                                <div ref={messagesEndRef} />
-                            </div>
+                                    </ModuleCard>
 
-                            {/* Input Area */}
-                            <div style={{
-                                background: 'rgba(10, 10, 31, 0.95)',
-                                backdropFilter: 'blur(40px)',
-                                padding: '1.5rem 2rem',
-                                borderTop: '1px solid rgba(0, 217, 255, 0.2)',
-                                boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.5)'
-                            }}>
-                                <div style={{
-                                    display: 'flex',
-                                    gap: '1rem',
-                                    alignItems: 'flex-end'
-                                }}>
-                                    <textarea
-                                        value={input}
-                                        onChange={(e) => setInput(e.target.value)}
-                                        onKeyPress={handleKeyPress}
-                                        placeholder="Share your thoughts about this track..."
-                                        disabled={sending}
-                                        style={{
-                                            flex: 1,
-                                            background: 'rgba(0, 0, 0, 0.6)',
-                                            border: '1px solid rgba(0, 217, 255, 0.2)',
-                                            borderRadius: '12px',
-                                            padding: '1rem',
-                                            color: '#fff',
-                                            fontSize: '1rem',
-                                            resize: 'none',
-                                            minHeight: '80px',
-                                            fontFamily: 'inherit',
-                                            outline: 'none'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = 'rgba(0, 217, 255, 0.5)';
-                                            e.target.style.boxShadow = '0 0 20px rgba(0, 217, 255, 0.2)';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = 'rgba(0, 217, 255, 0.2)';
-                                            e.target.style.boxShadow = 'none';
-                                        }}
-                                    />
-                                    <button
-                                        onClick={sendMessage}
-                                        disabled={!input.trim() || sending}
-                                        style={{
-                                            padding: '1rem 2rem',
-                                            borderRadius: '12px',
-                                            border: '1px solid rgba(0, 217, 255, 0.3)',
-                                            background: input.trim()
-                                                ? 'linear-gradient(135deg, #00D9FF, #00BFFF)'
-                                                : 'rgba(10, 10, 31, 0.6)',
-                                            color: '#fff',
-                                            fontWeight: '600',
-                                            cursor: input.trim() ? 'pointer' : 'not-allowed',
-                                            opacity: input.trim() ? 1 : 0.5,
-                                            boxShadow: input.trim() ? '0 0 20px rgba(0, 217, 255, 0.3)' : 'none',
-                                            transition: 'all 0.2s ease'
-                                        }}
-                                    >
-                                        {sending ? 'Sending...' : 'Send'}
-                                    </button>
+                                    <ModuleCard title="Neural Spectrum" moduleKey="neural">
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Analytical</span>
+                                            <div style={{
+                                                flex: 1,
+                                                height: '4px',
+                                                background: 'rgba(255, 255, 255, 0.1)',
+                                                position: 'relative'
+                                            }}>
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    left: `${(profile?.neural_spectrum?.position || 0.5) * 100}%`,
+                                                    top: '-3px',
+                                                    width: '10px',
+                                                    height: '10px',
+                                                    background: '#00D9FF',
+                                                    borderRadius: '50%',
+                                                    transform: 'translateX(-50%)'
+                                                }} />
+                                            </div>
+                                            <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Intuitive</span>
+                                        </div>
+                                        {profile?.neural_spectrum?.direction && (
+                                            <div style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
+                                                Direction: {profile.neural_spectrum.direction}
+                                            </div>
+                                        )}
+                                    </ModuleCard>
+
+                                    {/* Row 2: Tonal Identity, Rhythmic DNA, Sound Palette */}
+                                    <ModuleCard title="Tonal Identity" moduleKey="tonal">
+                                        {profile?.tonal_identity?.harmonic_character || 'Unknown'}
+                                        {profile?.tonal_identity?.key && (
+                                            <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', opacity: 0.7 }}>
+                                                Key: {profile.tonal_identity.key} {profile.tonal_identity.mode}
+                                            </div>
+                                        )}
+                                    </ModuleCard>
+
+                                    <ModuleCard title="Rhythmic DNA" moduleKey="rhythm">
+                                        {profile?.rhythmic_dna?.groove_type || 'Unknown'}
+                                        {profile?.rhythmic_dna?.tempo_feel && (
+                                            <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', opacity: 0.7 }}>
+                                                {profile.rhythmic_dna.tempo_feel}
+                                            </div>
+                                        )}
+                                    </ModuleCard>
+
+                                    <ModuleCard title="Sound Palette" moduleKey="palette">
+                                        {profile?.sound_palette?.frequency_focus || 'Unknown'}
+                                        {profile?.sound_palette?.texture_layers && (
+                                            <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', opacity: 0.7 }}>
+                                                {profile.sound_palette.texture_layers.join(', ')}
+                                            </div>
+                                        )}
+                                    </ModuleCard>
+
+                                    {/* Row 3: Emotional Fingerprint, Processing Signature, Sonic Architecture */}
+                                    <ModuleCard title="Emotional Fingerprint" moduleKey="emotional">
+                                        {(profile?.emotional_psychological_fingerprint?.nodes || profile?.emotional_fingerprint?.nodes || [])
+                                            .slice(0, 4)
+                                            .map((node, i) => (
+                                                <span key={i} style={{
+                                                    display: 'inline-block',
+                                                    padding: '0.25rem 0.5rem',
+                                                    background: 'rgba(0, 217, 255, 0.1)',
+                                                    border: '1px solid rgba(0, 217, 255, 0.2)',
+                                                    marginRight: '0.5rem',
+                                                    marginBottom: '0.25rem',
+                                                    fontSize: '0.75rem'
+                                                }}>
+                                                    {typeof node === 'string' ? node : node.emotion || node.name}
+                                                </span>
+                                            ))}
+                                    </ModuleCard>
+
+                                    <ModuleCard title="Processing Signature" moduleKey="processing">
+                                        {profile?.processing_signature?.mix_approach || 'Unknown'}
+                                        {profile?.processing_signature?.compression_style && (
+                                            <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', opacity: 0.7 }}>
+                                                {profile.processing_signature.compression_style}
+                                            </div>
+                                        )}
+                                    </ModuleCard>
+
+                                    <ModuleCard title="Sonic Architecture" moduleKey="architecture">
+                                        {profile?.sonic_architecture?.layering_approach || 'Unknown'}
+                                        {profile?.sonic_architecture?.tension_release && (
+                                            <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', opacity: 0.7 }}>
+                                                {profile.sonic_architecture.tension_release}
+                                            </div>
+                                        )}
+                                    </ModuleCard>
+
+                                    {/* Full Width: Inspirational Triggers */}
+                                    <ModuleCard title="Inspirational Triggers" moduleKey="triggers" fullWidth>
+                                        {(profile?.inspirational_triggers?.sources || []).join(' • ') || 'No triggers identified'}
+                                    </ModuleCard>
                                 </div>
+                            )}
+
+                            {/* Legacy fallback - show TechnicalAnalysisPanel if no synthesized profile */}
+                            {!synthesizedProfile && sessionData?.musical_components && (
+                                <TechnicalAnalysisPanel components={sessionData.musical_components} />
+                            )}
+
+                            {/* Chat Section */}
+                            <div style={{
+                                background: 'rgba(10, 10, 31, 0.6)',
+                                border: '1px solid rgba(0, 217, 255, 0.15)',
+                                borderRadius: '0',
+                                overflow: 'hidden'
+                            }}>
+                                <button
+                                    onClick={() => setShowChat(!showChat)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '1rem 1.5rem',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        cursor: 'pointer',
+                                        color: '#fff'
+                                    }}
+                                >
+                                    <span style={{
+                                        fontSize: '0.6875rem',
+                                        color: 'rgba(0, 217, 255, 0.8)',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.15em'
+                                    }}>
+                                        DISCUSS WITH AURON
+                                    </span>
+                                    <span style={{ color: 'rgba(0, 217, 255, 0.6)' }}>
+                                        {showChat ? '−' : '+'}
+                                    </span>
+                                </button>
+
+                                {showChat && (
+                                    <div style={{ borderTop: '1px solid rgba(0, 217, 255, 0.1)' }}>
+                                        {/* Messages */}
+                                        <div style={{
+                                            maxHeight: '300px',
+                                            overflowY: 'auto',
+                                            padding: '1rem 1.5rem',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '1rem'
+                                        }}>
+                                            {messages.map((msg, idx) => (
+                                                <div key={idx} style={{
+                                                    alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                                                    maxWidth: '80%'
+                                                }}>
+                                                    <div style={{
+                                                        background: msg.role === 'auron'
+                                                            ? 'rgba(0, 217, 255, 0.05)'
+                                                            : 'rgba(255, 255, 255, 0.05)',
+                                                        border: msg.role === 'auron'
+                                                            ? '1px solid rgba(0, 217, 255, 0.2)'
+                                                            : '1px solid rgba(255, 255, 255, 0.1)',
+                                                        borderRadius: '0',
+                                                        padding: '0.75rem 1rem',
+                                                        color: '#fff',
+                                                        fontSize: '0.875rem',
+                                                        lineHeight: '1.5',
+                                                        whiteSpace: 'pre-wrap'
+                                                    }}>
+                                                        {msg.content}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            <div ref={messagesEndRef} />
+                                        </div>
+
+                                        {/* Input */}
+                                        <div style={{
+                                            padding: '1rem 1.5rem',
+                                            borderTop: '1px solid rgba(0, 217, 255, 0.1)',
+                                            display: 'flex',
+                                            gap: '0.75rem'
+                                        }}>
+                                            <input
+                                                type="text"
+                                                value={input}
+                                                onChange={(e) => setInput(e.target.value)}
+                                                onKeyPress={handleKeyPress}
+                                                placeholder="Ask about your profile..."
+                                                disabled={sending}
+                                                style={{
+                                                    flex: 1,
+                                                    background: 'rgba(0, 0, 0, 0.4)',
+                                                    border: '1px solid rgba(0, 217, 255, 0.2)',
+                                                    borderRadius: '0',
+                                                    padding: '0.75rem 1rem',
+                                                    color: '#fff',
+                                                    fontSize: '0.875rem',
+                                                    outline: 'none'
+                                                }}
+                                            />
+                                            <button
+                                                onClick={sendMessage}
+                                                disabled={!input.trim() || sending}
+                                                style={{
+                                                    padding: '0.75rem 1.5rem',
+                                                    border: '1px solid rgba(0, 217, 255, 0.3)',
+                                                    background: input.trim() ? 'rgba(0, 217, 255, 0.2)' : 'transparent',
+                                                    color: '#fff',
+                                                    cursor: input.trim() ? 'pointer' : 'not-allowed',
+                                                    opacity: input.trim() ? 1 : 0.5,
+                                                    borderRadius: '0',
+                                                    fontSize: '0.875rem'
+                                                }}
+                                            >
+                                                {sending ? '...' : 'Send'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
-
-                        {/* Right: Technical Analysis Panel */}
-                        {sessionData?.musical_components && (
-                            <TechnicalAnalysisPanel
-                                components={sessionData.musical_components}
-                            />
-                        )}
                     </div>
                 </div>
             );
@@ -5264,6 +5420,9 @@ The full technical breakdown with per-stem metrics is in the panel to the right.
             const [dspComplete, setDspComplete] = useState(false);
             const [questionnaireAnswers, setQuestionnaireAnswers] = useState(null);
             const dspFeaturesRef = useRef(null);
+
+            // Synthesized Profile State (from BFF after synthesis complete)
+            const [synthesizedProfile, setSynthesizedProfile] = useState(null);
 
             // Load past conversation from Reflections
             useEffect(() => {
@@ -5547,6 +5706,9 @@ The full technical breakdown with per-stem metrics is in the panel to the right.
                     const result = await response.json();
                     console.log('Profile synthesis complete:', result);
 
+                    // Store synthesized profile for display in modal
+                    setSynthesizedProfile(result);
+
                     // Close questionnaire and show audio session modal with synthesized profile
                     setShowQuestionnaire(false);
                     setAudioSessionId(uploadId);
@@ -5578,6 +5740,7 @@ The full technical breakdown with per-stem metrics is in the panel to the right.
                 setDspComplete(false);
                 setQuestionnaireAnswers(null);
                 dspFeaturesRef.current = null;
+                setSynthesizedProfile(null);
             };
 
             const handleSendMessage = async (messageText) => {
@@ -5878,7 +6041,11 @@ The full technical breakdown with per-stem metrics is in the panel to the right.
                     {audioSessionId && (
                         <AudioSessionModal
                             uploadId={audioSessionId}
-                            onClose={() => setAudioSessionId(null)}
+                            synthesizedProfile={synthesizedProfile}
+                            onClose={() => {
+                                setAudioSessionId(null);
+                                setSynthesizedProfile(null);
+                            }}
                         />
                     )}
 
