@@ -3942,30 +3942,72 @@
                 temporal_movement: null,
                 listener_intention: []
             });
-            const [customInfluence, setCustomInfluence] = useState('');
+            const [customInputValue, setCustomInputValue] = useState('');
+            const [activeArchetypeTab, setActiveArchetypeTab] = useState('Opening');
             const [submitting, setSubmitting] = useState(false);
             const [allAnswered, setAllAnswered] = useState(false);
 
-            // Question definitions
+            // Q1 Creator State Archetypes (16 states in 4 categories)
+            const creatorStateArchetypes = {
+                'Opening': {
+                    description: 'Entering the process',
+                    states: [
+                        { id: 'searching', label: 'Searching', hint: 'Looking for something without knowing what' },
+                        { id: 'play', label: 'Play', hint: 'Un-serious exploration, touching sound like clay' },
+                        { id: 'dropped_in', label: 'Dropped In', hint: 'Presence, flow, thinking quiets' }
+                    ]
+                },
+                'Tension': {
+                    description: 'Where meaning forms',
+                    states: [
+                        { id: 'obsession', label: 'Obsession', hint: 'Looping details, hunting something invisible' },
+                        { id: 'friction', label: 'Friction', hint: 'Resistance between idea and current version' },
+                        { id: 'disruption', label: 'Disruption', hint: 'Breaking habits to find truth' },
+                        { id: 'construction', label: 'Construction', hint: 'Layering, building, shaping structure' }
+                    ]
+                },
+                'Clarity': {
+                    description: 'Where identity appears',
+                    states: [
+                        { id: 'surrender', label: 'Surrender', hint: 'Letting the track tell you what it wants' },
+                        { id: 'reduction', label: 'Reduction', hint: 'Removing what doesn\'t belong' },
+                        { id: 'integration', label: 'Integration', hint: 'Pieces connecting, idea becoming whole' },
+                        { id: 'expansion', label: 'Expansion', hint: 'Seeing the bigger arc' }
+                    ]
+                },
+                'Embodied': {
+                    description: 'The nervous system layer',
+                    states: [
+                        { id: 'stillness', label: 'Stillness', hint: 'Internal quiet, spaciousness' },
+                        { id: 'charge', label: 'Charge', hint: 'High energy, momentum, forward-pull' },
+                        { id: 'pressure', label: 'Pressure', hint: 'Nervous-system load from expectation' },
+                        { id: 'dissolution', label: 'Dissolution', hint: 'Boundaries soften, intuition dominates' },
+                        { id: 'reflection', label: 'Reflection', hint: 'Evaluating from a calm distance' }
+                    ]
+                }
+            };
+
+            // Question definitions with Title Case and allowCustom for all
             const questions = [
                 {
                     id: 'creator_state',
-                    question: 'What was your state while creating this?',
-                    type: 'multi',
-                    options: ['calm', 'focused', 'chaotic', 'energized', 'introspective', 'emotional', 'playful', 'analytical'],
+                    question: 'What was your creative state while making this?',
+                    type: 'multi-archetypes',
+                    archetypes: creatorStateArchetypes,
+                    allowCustom: true,
                     minSelect: 1
                 },
                 {
                     id: 'influences',
-                    question: 'Which 3 influences describe this track?',
+                    question: 'Which influences shaped this track?',
                     type: 'multi-categorized',
                     categories: {
-                        'Genres': ['ambient', 'techno', 'house', 'jazz', 'classical', 'hip-hop', 'rock', 'electronic', 'folk', 'world', 'experimental'],
-                        'Eras': ['60s', '70s', '80s', '90s', '2000s', '2010s', 'modern', 'timeless'],
-                        'Cultures': ['japanese', 'african', 'latin', 'nordic', 'middle-eastern', 'indian', 'slavic', 'mediterranean'],
-                        'Production': ['minimalist', 'maximalist', 'lo-fi', 'hi-fi', 'analog', 'digital', 'hybrid'],
-                        'Movements': ['impressionist', 'brutalist', 'romantic', 'futurist', 'ambient', 'industrial'],
-                        'Textures': ['tribal', 'urban', 'natural', 'synthetic', 'cosmic', 'earthly']
+                        'Genres': ['Ambient', 'Techno', 'House', 'Jazz', 'Classical', 'Hip-Hop', 'Rock', 'Electronic', 'Folk', 'World', 'Experimental'],
+                        'Eras': ['60s', '70s', '80s', '90s', '2000s', '2010s', 'Modern', 'Timeless'],
+                        'Cultures': ['Japanese', 'African', 'Latin', 'Nordic', 'Middle-Eastern', 'Indian', 'Slavic', 'Mediterranean'],
+                        'Production': ['Minimalist', 'Maximalist', 'Lo-Fi', 'Hi-Fi', 'Analog', 'Digital', 'Hybrid'],
+                        'Movements': ['Impressionist', 'Brutalist', 'Romantic', 'Futurist', 'Ambient', 'Industrial'],
+                        'Textures': ['Tribal', 'Urban', 'Natural', 'Synthetic', 'Cosmic', 'Earthly']
                     },
                     allowCustom: true,
                     minSelect: 3
@@ -3974,26 +4016,30 @@
                     id: 'body_sensations',
                     question: 'Which body sensations match the track?',
                     type: 'multi',
-                    options: ['pressure', 'openness', 'movement', 'stillness', 'heaviness', 'weightlessness', 'tightness', 'spaciousness'],
+                    options: ['Pressure', 'Openness', 'Movement', 'Stillness', 'Heaviness', 'Weightlessness', 'Tightness', 'Spaciousness'],
+                    allowCustom: true,
                     minSelect: 1
                 },
                 {
                     id: 'sound_role',
                     question: 'What role does your main sound play?',
                     type: 'single',
-                    options: ['lead voice', 'rhythmic engine', 'atmosphere', 'harmony bed', 'foundation bass', 'texture layer', 'percussive accent']
+                    options: ['Lead Voice', 'Rhythmic Engine', 'Atmosphere', 'Harmony Bed', 'Foundation Bass', 'Texture Layer', 'Percussive Accent'],
+                    allowCustom: true
                 },
                 {
                     id: 'temporal_movement',
                     question: 'How does the track move through time?',
                     type: 'single',
-                    options: ['steady', 'rising', 'falling', 'tension → release', 'cycles', 'bursts', 'expanding', 'dissolving']
+                    options: ['Steady', 'Rising', 'Falling', 'Tension → Release', 'Cycles', 'Bursts', 'Expanding', 'Dissolving'],
+                    allowCustom: true
                 },
                 {
                     id: 'listener_intention',
                     question: 'What do you want the listener to feel?',
                     type: 'multi',
-                    options: ['clarity', 'energy', 'calm', 'focus', 'nostalgia', 'tension', 'curiosity', 'transcendence', 'introspection'],
+                    options: ['Clarity', 'Energy', 'Calm', 'Focus', 'Nostalgia', 'Tension', 'Curiosity', 'Transcendence', 'Introspection'],
+                    allowCustom: true,
                     minSelect: 1
                 }
             ];
@@ -4033,25 +4079,51 @@
                 }
             };
 
-            const addCustomInfluence = () => {
-                if (customInfluence.trim()) {
-                    setAnswers(prev => ({
-                        ...prev,
-                        influences: [...(prev.influences || []), customInfluence.trim()]
-                    }));
-                    setCustomInfluence('');
+            // Add custom value for any question
+            const addCustomValue = (questionId) => {
+                if (customInputValue.trim()) {
+                    const q = questions.find(q => q.id === questionId);
+                    if (q.type === 'single') {
+                        setAnswers(prev => ({ ...prev, [questionId]: customInputValue.trim() }));
+                    } else {
+                        setAnswers(prev => ({
+                            ...prev,
+                            [questionId]: [...(prev[questionId] || []), customInputValue.trim()]
+                        }));
+                    }
+                    setCustomInputValue('');
                 }
+            };
+
+            // Get all predefined options for a question (for detecting custom values)
+            const getPredefinedOptions = (q) => {
+                if (q.type === 'multi-archetypes') {
+                    return Object.values(q.archetypes).flatMap(a => a.states.map(s => s.id));
+                }
+                if (q.type === 'multi-categorized') {
+                    return Object.values(q.categories).flat();
+                }
+                return q.options || [];
+            };
+
+            // Check if a value is custom (not in predefined options)
+            const isCustomValue = (q, value) => {
+                return !getPredefinedOptions(q).includes(value);
             };
 
             const canProceed = () => {
                 const answer = answers[currentQ.id];
                 if (currentQ.type === 'single') return answer !== null;
+                if (currentQ.type === 'multi-archetypes') {
+                    return Array.isArray(answer) && answer.length >= (currentQ.minSelect || 1);
+                }
                 return Array.isArray(answer) && answer.length >= (currentQ.minSelect || 1);
             };
 
             const handleNext = () => {
                 if (currentQuestion < questions.length - 1) {
                     setCurrentQuestion(prev => prev + 1);
+                    setCustomInputValue(''); // Reset custom input
                 } else {
                     // All questions answered
                     setCurrentQuestion(6); // Move to waiting/complete state
@@ -4061,6 +4133,7 @@
             const handleBack = () => {
                 if (currentQuestion > 0) {
                     setCurrentQuestion(prev => prev - 1);
+                    setCustomInputValue(''); // Reset custom input
                 }
             };
 
@@ -4071,18 +4144,45 @@
                 onComplete(answers);
             };
 
-            // Chip styling
-            const chipStyle = (isSelected) => ({
-                padding: '0.625rem 1rem',
-                background: isSelected ? 'rgba(0, 217, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-                border: isSelected ? '1px solid rgba(0, 217, 255, 0.6)' : '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '0',
-                color: isSelected ? 'rgba(0, 217, 255, 0.95)' : 'rgba(255, 255, 255, 0.7)',
-                fontSize: '0.875rem',
-                fontWeight: '500',
+            // Get selection count for current question
+            const getSelectionCount = () => {
+                const answer = answers[currentQ.id];
+                if (currentQ.type === 'single') return answer ? 1 : 0;
+                return Array.isArray(answer) ? answer.length : 0;
+            };
+
+            // Enhanced chip styling with hover effects
+            const chipStyle = (isSelected, isHovered = false) => ({
+                padding: '0.75rem 1.25rem',
+                background: isSelected
+                    ? 'rgba(0, 217, 255, 0.18)'
+                    : 'rgba(255, 255, 255, 0.04)',
+                border: isSelected
+                    ? '1px solid rgba(0, 217, 255, 0.7)'
+                    : '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '4px',
+                color: isSelected
+                    ? 'rgba(0, 217, 255, 1)'
+                    : 'rgba(255, 255, 255, 0.75)',
+                fontSize: '0.9375rem',
+                fontWeight: isSelected ? '600' : '500',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: isSelected ? '0 0 15px rgba(0, 217, 255, 0.3)' : 'none'
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                transform: isSelected ? 'scale(1.02)' : 'scale(1)',
+                boxShadow: isSelected
+                    ? '0 0 20px rgba(0, 217, 255, 0.35), inset 0 0 20px rgba(0, 217, 255, 0.08)'
+                    : '0 2px 8px rgba(0, 0, 0, 0.15)'
+            });
+
+            // Archetype state chip (larger, with hint)
+            const archetypeChipStyle = (isSelected) => ({
+                ...chipStyle(isSelected),
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                padding: '1rem 1.25rem',
+                minHeight: '72px',
+                textAlign: 'left'
             });
 
             // Render waiting state
@@ -4153,6 +4253,94 @@
                 </div>
             );
 
+            // Custom input field component for all questions
+            const CustomInputField = ({ questionId }) => (
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    marginTop: '1rem',
+                    padding: '0.75rem',
+                    background: customInputValue ? 'rgba(0, 217, 255, 0.05)' : 'transparent',
+                    border: '1px dashed rgba(0, 217, 255, 0.3)',
+                    borderRadius: '4px',
+                    transition: 'all 0.2s ease'
+                }}>
+                    <span style={{
+                        color: 'rgba(0, 217, 255, 0.7)',
+                        fontSize: '1.25rem',
+                        fontWeight: '300'
+                    }}>+</span>
+                    <input
+                        type="text"
+                        value={customInputValue}
+                        onChange={(e) => setCustomInputValue(e.target.value)}
+                        onKeyPress={(e) => {
+                            if (e.key === 'Enter' && customInputValue.trim()) {
+                                addCustomValue(questionId);
+                            }
+                        }}
+                        placeholder="Add your own..."
+                        style={{
+                            flex: 1,
+                            background: 'transparent',
+                            border: 'none',
+                            outline: 'none',
+                            color: 'rgba(255, 255, 255, 0.9)',
+                            fontSize: '0.9375rem',
+                            fontFamily: 'inherit'
+                        }}
+                    />
+                    {customInputValue.trim() && (
+                        <button
+                            onClick={() => addCustomValue(questionId)}
+                            style={{
+                                padding: '0.375rem 0.75rem',
+                                background: 'rgba(0, 217, 255, 0.15)',
+                                border: '1px solid rgba(0, 217, 255, 0.4)',
+                                borderRadius: '4px',
+                                color: 'rgba(0, 217, 255, 1)',
+                                fontSize: '0.8125rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            Add
+                        </button>
+                    )}
+                </div>
+            );
+
+            // Render custom values display (for any question type)
+            const renderCustomValues = (q, selected) => {
+                const customValues = Array.isArray(selected)
+                    ? selected.filter(s => isCustomValue(q, s))
+                    : (selected && isCustomValue(q, selected) ? [selected] : []);
+
+                if (customValues.length === 0) return null;
+
+                return (
+                    <div style={{ marginTop: '1rem' }}>
+                        <div style={{
+                            fontSize: '0.6875rem',
+                            color: 'rgba(0, 217, 255, 0.7)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.15em',
+                            marginBottom: '0.5rem'
+                        }}>
+                            Your Additions
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            {customValues.map(tag => (
+                                <button key={tag} onClick={() => toggleOption(q.id, tag)} style={chipStyle(true)}>
+                                    {tag} ×
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                );
+            };
+
             // Render question content
             const renderQuestionContent = () => {
                 if (currentQuestion >= questions.length) {
@@ -4162,9 +4350,109 @@
                 const q = currentQ;
                 const selected = answers[q.id] || (q.type === 'single' ? null : []);
 
+                // Q1: Multi-archetypes with tabs
+                if (q.type === 'multi-archetypes') {
+                    const archetypes = q.archetypes;
+                    const currentArchetype = archetypes[activeArchetypeTab];
+
+                    return (
+                        <div>
+                            {/* Archetype Tabs */}
+                            <div style={{
+                                display: 'flex',
+                                gap: '0.25rem',
+                                marginBottom: '1.5rem',
+                                borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+                            }}>
+                                {Object.entries(archetypes).map(([name, data]) => {
+                                    const hasSelection = selected.some(s => data.states.some(st => st.id === s));
+                                    return (
+                                        <button
+                                            key={name}
+                                            onClick={() => setActiveArchetypeTab(name)}
+                                            style={{
+                                                padding: '0.75rem 1.25rem',
+                                                background: activeArchetypeTab === name
+                                                    ? 'rgba(0, 217, 255, 0.1)'
+                                                    : 'transparent',
+                                                border: 'none',
+                                                borderBottom: activeArchetypeTab === name
+                                                    ? '2px solid rgba(0, 217, 255, 0.8)'
+                                                    : '2px solid transparent',
+                                                color: activeArchetypeTab === name
+                                                    ? 'rgba(0, 217, 255, 1)'
+                                                    : 'rgba(255, 255, 255, 0.5)',
+                                                fontSize: '0.875rem',
+                                                fontWeight: '600',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease',
+                                                position: 'relative'
+                                            }}
+                                        >
+                                            {name}
+                                            {hasSelection && (
+                                                <span style={{
+                                                    position: 'absolute',
+                                                    top: '6px',
+                                                    right: '6px',
+                                                    width: '6px',
+                                                    height: '6px',
+                                                    borderRadius: '50%',
+                                                    background: 'rgba(0, 217, 255, 1)'
+                                                }} />
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Tab Description */}
+                            <div style={{
+                                fontSize: '0.8125rem',
+                                color: 'rgba(255, 255, 255, 0.4)',
+                                marginBottom: '1rem',
+                                fontStyle: 'italic'
+                            }}>
+                                {currentArchetype.description}
+                            </div>
+
+                            {/* States Grid */}
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                                gap: '0.75rem'
+                            }}>
+                                {currentArchetype.states.map(state => (
+                                    <button
+                                        key={state.id}
+                                        onClick={() => toggleOption(q.id, state.id)}
+                                        style={archetypeChipStyle(selected.includes(state.id))}
+                                    >
+                                        <span style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                                            {state.label}
+                                        </span>
+                                        <span style={{
+                                            fontSize: '0.75rem',
+                                            opacity: 0.6,
+                                            lineHeight: 1.3
+                                        }}>
+                                            {state.hint}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Custom values + input */}
+                            {renderCustomValues(q, selected)}
+                            {q.allowCustom && <CustomInputField questionId={q.id} />}
+                        </div>
+                    );
+                }
+
+                // Q2: Multi-categorized (influences)
                 if (q.type === 'multi-categorized') {
                     return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxHeight: '450px', overflowY: 'auto', paddingRight: '0.5rem' }}>
                             {Object.entries(q.categories).map(([category, options]) => (
                                 <div key={category}>
                                     <div style={{
@@ -4189,75 +4477,30 @@
                                     </div>
                                 </div>
                             ))}
-                            {/* Custom tags display */}
-                            {selected.filter(s => !Object.values(q.categories).flat().includes(s)).length > 0 && (
-                                <div>
-                                    <div style={{
-                                        fontSize: '0.6875rem',
-                                        color: 'rgba(0, 217, 255, 0.7)',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.15em',
-                                        marginBottom: '0.5rem'
-                                    }}>
-                                        Custom
-                                    </div>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                        {selected.filter(s => !Object.values(q.categories).flat().includes(s)).map(tag => (
-                                            <button key={tag} onClick={() => toggleOption(q.id, tag)} style={chipStyle(true)}>
-                                                {tag} ×
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                            {/* Custom input */}
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <input
-                                    type="text"
-                                    value={customInfluence}
-                                    onChange={(e) => setCustomInfluence(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && addCustomInfluence()}
-                                    placeholder="+ Add your own..."
-                                    style={{
-                                        flex: 1,
-                                        padding: '0.625rem 1rem',
-                                        background: 'rgba(0, 0, 0, 0.3)',
-                                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                                        borderRadius: '0',
-                                        color: 'rgba(255, 255, 255, 0.9)',
-                                        fontSize: '0.875rem'
-                                    }}
-                                />
-                                <button
-                                    onClick={addCustomInfluence}
-                                    style={{
-                                        padding: '0.625rem 1rem',
-                                        background: 'rgba(0, 217, 255, 0.1)',
-                                        border: '1px solid rgba(0, 217, 255, 0.3)',
-                                        borderRadius: '0',
-                                        color: 'rgba(0, 217, 255, 0.9)',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    Add
-                                </button>
-                            </div>
+                            {/* Custom values + input */}
+                            {renderCustomValues(q, selected)}
+                            {q.allowCustom && <CustomInputField questionId={q.id} />}
                         </div>
                     );
                 }
 
                 // Regular multi or single select
                 return (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                        {q.options.map(opt => (
-                            <button
-                                key={opt}
-                                onClick={() => toggleOption(q.id, opt)}
-                                style={chipStyle(q.type === 'single' ? selected === opt : selected.includes(opt))}
-                            >
-                                {opt}
-                            </button>
-                        ))}
+                    <div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.625rem' }}>
+                            {q.options.map(opt => (
+                                <button
+                                    key={opt}
+                                    onClick={() => toggleOption(q.id, opt)}
+                                    style={chipStyle(q.type === 'single' ? selected === opt : selected.includes(opt))}
+                                >
+                                    {opt}
+                                </button>
+                            ))}
+                        </div>
+                        {/* Custom values + input */}
+                        {renderCustomValues(q, selected)}
+                        {q.allowCustom && <CustomInputField questionId={q.id} />}
                     </div>
                 );
             };
@@ -4266,87 +4509,182 @@
                 <div style={{
                     position: 'fixed',
                     inset: 0,
-                    background: 'rgba(0, 0, 0, 0.85)',
-                    backdropFilter: 'blur(8px)',
+                    background: 'rgba(0, 0, 0, 0.9)',
+                    backdropFilter: 'blur(12px)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     zIndex: 10000
                 }}>
                     <div style={{
-                        width: '600px',
-                        maxWidth: '90vw',
-                        maxHeight: '80vh',
-                        background: 'rgba(10, 10, 31, 0.95)',
+                        width: '900px',
+                        maxWidth: '95vw',
+                        maxHeight: '85vh',
+                        minHeight: '500px',
+                        background: 'rgba(10, 10, 31, 0.97)',
                         backdropFilter: 'blur(40px)',
                         border: '1px solid rgba(0, 217, 255, 0.2)',
-                        borderRadius: '0',
-                        boxShadow: '0 0 60px rgba(0, 13, 255, 0.3)',
+                        borderRadius: '8px',
+                        boxShadow: '0 0 80px rgba(0, 13, 255, 0.4)',
                         overflow: 'hidden',
                         display: 'flex',
                         flexDirection: 'column'
                     }}>
-                        {/* Header */}
+                        {/* Enhanced Header */}
                         <div style={{
-                            padding: '1.5rem 2rem',
-                            borderBottom: '1px solid rgba(0, 217, 255, 0.15)',
-                            background: 'rgba(0, 217, 255, 0.03)'
+                            padding: '2rem 2.5rem',
+                            borderBottom: '1px solid rgba(0, 217, 255, 0.12)',
+                            background: 'linear-gradient(135deg, rgba(0, 217, 255, 0.05) 0%, transparent 50%)'
                         }}>
                             <div style={{
-                                fontSize: '0.6875rem',
-                                color: 'rgba(0, 217, 255, 0.7)',
+                                fontSize: '0.75rem',
+                                color: 'rgba(0, 217, 255, 0.8)',
                                 textTransform: 'uppercase',
-                                letterSpacing: '0.15em',
-                                marginBottom: '0.5rem'
+                                letterSpacing: '0.2em',
+                                marginBottom: '0.75rem',
+                                fontWeight: '600'
                             }}>
-                                Before Auron reflects...
+                                Neural Music Profile
                             </div>
                             <div style={{
-                                fontSize: '1.125rem',
+                                fontSize: '1.5rem',
                                 color: 'rgba(255, 255, 255, 0.95)',
-                                fontWeight: '500'
+                                fontWeight: '600',
+                                lineHeight: '1.3'
                             }}>
-                                Help me understand your creative intent
+                                Tell me about your creative process
+                            </div>
+                            <div style={{
+                                fontSize: '0.875rem',
+                                color: 'rgba(255, 255, 255, 0.5)',
+                                marginTop: '0.5rem'
+                            }}>
+                                Your answers shape how Auron understands your music
                             </div>
                         </div>
 
-                        {/* Progress dots */}
+                        {/* Enhanced Progress Track */}
                         {currentQuestion < questions.length && (
                             <div style={{
                                 display: 'flex',
+                                alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '0.5rem',
-                                padding: '1rem 2rem'
+                                padding: '1.5rem 2rem',
+                                position: 'relative'
                             }}>
+                                {/* Background track line */}
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '15%',
+                                    right: '15%',
+                                    height: '2px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    transform: 'translateY(-50%)'
+                                }} />
+                                {/* Progress fill */}
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '15%',
+                                    width: `${Math.max(0, (currentQuestion / (questions.length - 1)) * 70)}%`,
+                                    height: '2px',
+                                    background: 'linear-gradient(90deg, rgba(0, 217, 255, 0.8), rgba(0, 217, 255, 0.4))',
+                                    transform: 'translateY(-50%)',
+                                    transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                                }} />
+                                {/* Nodes */}
                                 {questions.map((_, idx) => (
                                     <div
                                         key={idx}
+                                        onClick={() => idx < currentQuestion && setCurrentQuestion(idx)}
                                         style={{
-                                            width: '8px',
-                                            height: '8px',
+                                            width: idx === currentQuestion ? '16px' : '12px',
+                                            height: idx === currentQuestion ? '16px' : '12px',
                                             borderRadius: '50%',
                                             background: idx < currentQuestion
-                                                ? 'rgba(0, 217, 255, 0.9)'
+                                                ? 'rgba(0, 217, 255, 1)'
                                                 : idx === currentQuestion
-                                                    ? 'rgba(0, 217, 255, 0.5)'
-                                                    : 'rgba(255, 255, 255, 0.2)',
+                                                    ? 'rgba(10, 10, 31, 1)'
+                                                    : 'rgba(255, 255, 255, 0.15)',
+                                            border: idx === currentQuestion
+                                                ? '2px solid rgba(0, 217, 255, 1)'
+                                                : 'none',
+                                            boxShadow: idx <= currentQuestion
+                                                ? '0 0 12px rgba(0, 217, 255, 0.5)'
+                                                : 'none',
                                             transition: 'all 0.3s ease',
-                                            cursor: idx < currentQuestion ? 'pointer' : 'default'
+                                            cursor: idx < currentQuestion ? 'pointer' : 'default',
+                                            position: 'relative',
+                                            zIndex: 1,
+                                            margin: '0 1.5rem'
                                         }}
-                                        onClick={() => idx < currentQuestion && setCurrentQuestion(idx)}
                                     />
                                 ))}
                             </div>
                         )}
 
-                        {/* Question */}
-                        <div style={{ flex: 1, padding: '1rem 2rem', overflowY: 'auto' }}>
+                        {/* Question Number + Selection Badge */}
+                        {currentQuestion < questions.length && (
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: '0 2.5rem',
+                                marginBottom: '0.5rem'
+                            }}>
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'baseline',
+                                    gap: '0.5rem'
+                                }}>
+                                    <span style={{
+                                        fontSize: '2rem',
+                                        fontWeight: '700',
+                                        color: 'rgba(0, 217, 255, 0.9)',
+                                        lineHeight: 1
+                                    }}>
+                                        {currentQuestion + 1}
+                                    </span>
+                                    <span style={{
+                                        fontSize: '1rem',
+                                        color: 'rgba(255, 255, 255, 0.4)',
+                                        fontWeight: '400'
+                                    }}>
+                                        of {questions.length}
+                                    </span>
+                                </div>
+                                {/* Selection counter badge */}
+                                {(currentQ.type !== 'single') && (
+                                    <div style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        padding: '0.375rem 0.75rem',
+                                        background: getSelectionCount() >= (currentQ.minSelect || 1)
+                                            ? 'rgba(0, 217, 255, 0.1)'
+                                            : 'rgba(255, 200, 0, 0.1)',
+                                        border: `1px solid ${getSelectionCount() >= (currentQ.minSelect || 1) ? 'rgba(0, 217, 255, 0.3)' : 'rgba(255, 200, 0, 0.3)'}`,
+                                        borderRadius: '20px',
+                                        fontSize: '0.75rem',
+                                        color: getSelectionCount() >= (currentQ.minSelect || 1) ? 'rgba(0, 217, 255, 0.9)' : 'rgba(255, 200, 0, 0.9)'
+                                    }}>
+                                        <span>{getSelectionCount()} selected</span>
+                                        {currentQ.minSelect && <span style={{ opacity: 0.6 }}>/ min {currentQ.minSelect}</span>}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Question Content */}
+                        <div style={{ flex: 1, padding: '1.5rem 2.5rem', overflowY: 'auto' }}>
                             {currentQuestion < questions.length && (
                                 <div style={{
-                                    fontSize: '1rem',
+                                    fontSize: '1.125rem',
                                     color: 'rgba(255, 255, 255, 0.9)',
                                     marginBottom: '1.5rem',
-                                    fontWeight: '500'
+                                    fontWeight: '500',
+                                    lineHeight: '1.4'
                                 }}>
                                     {currentQ.question}
                                 </div>
@@ -4354,45 +4692,58 @@
                             {renderQuestionContent()}
                         </div>
 
-                        {/* Footer with navigation */}
+                        {/* Enhanced Footer with Navigation */}
                         {currentQuestion < questions.length && (
                             <div style={{
                                 display: 'flex',
                                 justifyContent: 'space-between',
-                                padding: '1.5rem 2rem',
-                                borderTop: '1px solid rgba(0, 217, 255, 0.15)'
+                                alignItems: 'center',
+                                padding: '1.5rem 2.5rem',
+                                borderTop: '1px solid rgba(0, 217, 255, 0.12)',
+                                background: 'rgba(0, 0, 0, 0.2)'
                             }}>
                                 <button
                                     onClick={handleBack}
                                     disabled={currentQuestion === 0}
                                     style={{
-                                        padding: '0.75rem 1.5rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        padding: '0.875rem 1.75rem',
                                         background: 'transparent',
-                                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                                        color: currentQuestion === 0 ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.7)',
-                                        fontSize: '0.875rem',
+                                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                                        borderRadius: '4px',
+                                        color: currentQuestion === 0 ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.6)',
+                                        fontSize: '0.9375rem',
+                                        fontWeight: '500',
                                         cursor: currentQuestion === 0 ? 'not-allowed' : 'pointer',
-                                        borderRadius: '0'
+                                        transition: 'all 0.2s ease',
+                                        opacity: currentQuestion === 0 ? 0.5 : 1
                                     }}
                                 >
-                                    Back
+                                    ← Back
                                 </button>
                                 <button
                                     onClick={handleNext}
                                     disabled={!canProceed()}
                                     style={{
-                                        padding: '0.75rem 2rem',
-                                        background: canProceed() ? 'rgba(0, 217, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-                                        border: canProceed() ? '1px solid rgba(0, 217, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
-                                        color: canProceed() ? 'rgba(0, 217, 255, 0.95)' : 'rgba(255, 255, 255, 0.4)',
-                                        fontSize: '0.875rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        padding: '0.875rem 2rem',
+                                        background: canProceed() ? 'rgba(0, 217, 255, 0.2)' : 'rgba(0, 217, 255, 0.08)',
+                                        border: canProceed() ? '1px solid rgba(0, 217, 255, 0.5)' : '1px solid rgba(0, 217, 255, 0.2)',
+                                        borderRadius: '4px',
+                                        color: canProceed() ? 'rgba(0, 217, 255, 1)' : 'rgba(0, 217, 255, 0.4)',
+                                        fontSize: '0.9375rem',
                                         fontWeight: '600',
                                         cursor: canProceed() ? 'pointer' : 'not-allowed',
-                                        borderRadius: '0',
-                                        boxShadow: canProceed() ? '0 0 20px rgba(0, 217, 255, 0.2)' : 'none'
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: canProceed() ? '0 0 25px rgba(0, 217, 255, 0.25)' : 'none',
+                                        opacity: canProceed() ? 1 : 0.6
                                     }}
                                 >
-                                    {currentQuestion === questions.length - 1 ? 'Complete' : 'Next'}
+                                    {currentQuestion === questions.length - 1 ? 'Complete' : 'Continue'} →
                                 </button>
                             </div>
                         )}
@@ -4402,6 +4753,16 @@
                         @keyframes spin {
                             0% { transform: rotate(0deg); }
                             100% { transform: rotate(360deg); }
+                        }
+                        @keyframes fadeUp {
+                            from {
+                                opacity: 0;
+                                transform: translateY(15px);
+                            }
+                            to {
+                                opacity: 1;
+                                transform: translateY(0);
+                            }
                         }
                     `}</style>
                 </div>
