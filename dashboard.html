@@ -5537,6 +5537,14 @@ What were you trying to express when you created this piece?`;
                     setUploadProgress(10);
                     setIsDraggingAudio(false);
 
+                    // IMMEDIATELY show questionnaire with temp ID (parallel with upload + DSP)
+                    const tempUploadId = `temp-${Date.now()}`;
+                    setQuestionnaireUploadId(tempUploadId);
+                    setDspComplete(false);
+                    setQuestionnaireAnswers(null);
+                    dspFeaturesRef.current = null;
+                    setShowQuestionnaire(true);
+
                     // Get auth token
                     const token = await getAuthToken();
 
@@ -5561,12 +5569,8 @@ What were you trying to express when you created this piece?`;
                     console.log(`Audio upload started: ${upload_id}`);
                     setUploadProgress(30);
 
-                    // IMMEDIATELY show questionnaire (parallel with DSP extraction)
+                    // Update with real upload_id (questionnaire already showing)
                     setQuestionnaireUploadId(upload_id);
-                    setDspComplete(false);
-                    setQuestionnaireAnswers(null);
-                    dspFeaturesRef.current = null;
-                    setShowQuestionnaire(true);
 
                     // Listen for SSE events from Engine
                     const sseUrl = `${DIALOGUE_API_BASE}/chat/stream-events?token=${encodeURIComponent(token)}`;
