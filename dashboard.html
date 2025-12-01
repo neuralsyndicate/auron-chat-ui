@@ -5780,7 +5780,7 @@ What were you trying to express when you created this piece?`;
             const [questionnaireUploadId, setQuestionnaireUploadId] = useState(null);
             const [dspComplete, setDspComplete] = useState(false);
             const [questionnaireAnswers, setQuestionnaireAnswers] = useState(null);
-            const dspFeaturesRef = useRef(null);
+            // v5 RAM-based: DSP stays in Engine, no longer stored client-side
 
             // Synthesized Profile State (from BFF after synthesis complete)
             const [synthesizedProfile, setSynthesizedProfile] = useState(null);
@@ -5903,7 +5903,6 @@ What were you trying to express when you created this piece?`;
                     setQuestionnaireUploadId(tempUploadId);
                     setDspComplete(false);
                     setQuestionnaireAnswers(null);
-                    dspFeaturesRef.current = null;
                     setShowQuestionnaire(true);
 
                     // Get auth token
@@ -5948,14 +5947,11 @@ What were you trying to express when you created this piece?`;
                     const handleAnalysisComplete = (event) => {
                         const data = JSON.parse(event.data);
                         if (data.upload_id === upload_id) {
+                            // v5 RAM-based: SSE payload is minimal {upload_id, status, duration_seconds, bpm}
+                            // DSP stays in Engine RAM, not sent to frontend
                             console.log('Analysis complete:', data);
                             setUploadProgress(100);
                             setUploadingAudio(false);
-
-                            // Store DSP features and mark complete (questionnaire handles the rest)
-                            if (data.dsp_features) {
-                                dspFeaturesRef.current = data.dsp_features;
-                            }
                             setDspComplete(true);
 
                             // Clean up event source
@@ -6104,7 +6100,6 @@ What were you trying to express when you created this piece?`;
                 setQuestionnaireUploadId(null);
                 setDspComplete(false);
                 setQuestionnaireAnswers(null);
-                dspFeaturesRef.current = null;
                 setSynthesizedProfile(null);
             };
 
