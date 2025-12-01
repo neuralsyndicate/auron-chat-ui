@@ -6050,7 +6050,7 @@ What were you trying to express when you created this piece?`;
                     if (!token) {
                         throw new Error('Not authenticated - please log in again');
                     }
-                    const response = await fetch(`${BFF_API_BASE}/audio/synthesize-profile`, {
+                    const response = await fetch(`${DIALOGUE_API_BASE}/synthesize-profile`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -6096,6 +6096,14 @@ What were you trying to express when you created this piece?`;
                 }
                 // Otherwise, the modal will show waiting state and auto-submit when DSP completes
             };
+
+            // Auto-submit profile when both DSP and questionnaire are complete
+            // Handles case where user finishes questionnaire before audio analysis completes
+            React.useEffect(() => {
+                if (dspComplete && questionnaireAnswers && questionnaireUploadId) {
+                    submitProfileSynthesis(questionnaireUploadId, questionnaireAnswers);
+                }
+            }, [dspComplete, questionnaireAnswers, questionnaireUploadId]);
 
             // Handle questionnaire close (cancel)
             const handleQuestionnaireClose = () => {
