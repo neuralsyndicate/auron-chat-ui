@@ -6043,7 +6043,89 @@ What were you trying to express when you created this piece?`;
                 }
             };
 
-            // Submit profile synthesis to BFF (called when both questionnaire + DSP are complete)
+            // Normalize Engine profile response to match Frontend expectations
+            const normalizeProfile = (profile) => {
+                if (!profile) return profile;
+
+                const normalized = { ...profile };
+
+                // 1. Field name mapping
+                if (profile.mix_signature && !profile.processing_signature) {
+                    normalized.processing_signature = profile.mix_signature;
+                }
+                if (profile.emotional_psychological_fingerprint && !profile.emotional_fingerprint) {
+                    normalized.emotional_fingerprint = profile.emotional_psychological_fingerprint;
+                }
+
+                // 2. Structure normalization - map .synthesis and .characteristics to flat properties
+
+                // Genre Fusion
+                if (normalized.genre_fusion?.synthesis) {
+                    normalized.genre_fusion.fusion_description = normalized.genre_fusion.synthesis;
+                    normalized.genre_fusion.primary_genres = normalized.genre_fusion.characteristics?.influences || [];
+                }
+
+                // Tonal Identity
+                if (normalized.tonal_identity?.synthesis) {
+                    normalized.tonal_identity.harmonic_character = normalized.tonal_identity.synthesis;
+                    normalized.tonal_identity.key = normalized.tonal_identity.characteristics?.key || '';
+                    normalized.tonal_identity.mode = normalized.tonal_identity.characteristics?.mode || '';
+                }
+
+                // Rhythmic DNA
+                if (normalized.rhythmic_dna?.synthesis) {
+                    normalized.rhythmic_dna.groove_type = normalized.rhythmic_dna.synthesis;
+                    normalized.rhythmic_dna.tempo_feel = `${normalized.rhythmic_dna.characteristics?.tempo_bpm || ''} BPM`;
+                }
+
+                // Sound Palette (from timbre_dna if sound_palette missing)
+                if (!normalized.sound_palette && normalized.timbre_dna) {
+                    normalized.sound_palette = {
+                        frequency_focus: normalized.timbre_dna.synthesis,
+                        texture_layers: []
+                    };
+                } else if (normalized.sound_palette?.synthesis) {
+                    normalized.sound_palette.frequency_focus = normalized.sound_palette.synthesis;
+                    normalized.sound_palette.texture_layers = normalized.sound_palette.characteristics?.textures || [];
+                }
+
+                // Processing Signature (from mix_signature)
+                if (normalized.processing_signature?.synthesis) {
+                    normalized.processing_signature.mix_approach = normalized.processing_signature.synthesis;
+                    normalized.processing_signature.compression_style = '';
+                }
+
+                // Sonic Architecture
+                if (normalized.sonic_architecture?.synthesis) {
+                    normalized.sonic_architecture.layering_approach = normalized.sonic_architecture.synthesis;
+                    normalized.sonic_architecture.tension_release = normalized.sonic_architecture.characteristics?.temporal_movement || '';
+                }
+
+                // Inspirational Triggers
+                if (normalized.inspirational_triggers?.synthesis) {
+                    normalized.inspirational_triggers.sources =
+                        normalized.inspirational_triggers.characteristics?.body_sensations ||
+                        normalized.inspirational_triggers.characteristics?.influences || [];
+                }
+
+                // Emotional Fingerprint
+                if (normalized.emotional_fingerprint?.synthesis) {
+                    normalized.emotional_fingerprint.nodes = [
+                        { label: 'Creator Intent', value: normalized.emotional_fingerprint.synthesis }
+                    ];
+                }
+
+                // Neural Spectrum
+                if (normalized.neural_spectrum?.characteristics) {
+                    const { placement, intensity } = normalized.neural_spectrum.characteristics;
+                    normalized.neural_spectrum.analytical = placement === 'sympathetic' ? 0.7 : 0.3;
+                    normalized.neural_spectrum.intuitive = placement === 'parasympathetic' ? 0.7 : 0.3;
+                }
+
+                return normalized;
+            };
+
+            // Submit profile synthesis to Engine (called when both questionnaire + DSP are complete)
             const submitProfileSynthesis = async (uploadId, answers) => {
                 try {
                     const token = await getAuthToken();
@@ -6070,8 +6152,12 @@ What were you trying to express when you created this piece?`;
                     const result = await response.json();
                     console.log('Profile synthesis complete:', result);
 
-                    // Store synthesized profile for display in modal
-                    setSynthesizedProfile(result);
+                    // Normalize and store synthesized profile for display in modal
+                    const normalizedResult = {
+                        ...result,
+                        profile: normalizeProfile(result.profile)
+                    };
+                    setSynthesizedProfile(normalizedResult);
 
                     // Close questionnaire and show audio session modal with synthesized profile
                     setShowQuestionnaire(false);
