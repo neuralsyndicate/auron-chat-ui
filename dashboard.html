@@ -505,6 +505,312 @@
             color: var(--ns-white);
             box-shadow: 0 0 20px rgba(0, 13, 255, 0.3);
         }
+
+        /* ========================================
+           NEURAL LAB - 3-Panel Layout
+           ======================================== */
+
+        /* Main Container - 3 Column Grid */
+        .neural-lab-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 360px;
+            height: calc(100vh - 80px);
+            gap: 0;
+        }
+
+        /* Left Panel - Creative Identity */
+        .neural-lab-left {
+            background: linear-gradient(180deg, rgba(10,10,31,0.95) 0%, rgba(0,0,0,0.98) 100%);
+            border-right: 1px solid rgba(0, 217, 255, 0.15);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Center Panel - Neural Map */
+        .neural-lab-center {
+            background: radial-gradient(ellipse at center, rgba(0,13,255,0.08) 0%, rgba(0,0,0,0.95) 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Right Panel - Module Explanations */
+        .neural-lab-right {
+            background: rgba(10, 10, 31, 0.9);
+            border-left: 1px solid rgba(0, 217, 255, 0.15);
+            overflow-y: auto;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Creative Emblem SVG Container */
+        .creative-emblem {
+            width: 180px;
+            height: 180px;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        /* Audio Player Styling */
+        .neural-player {
+            width: 100%;
+            margin-top: auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 217, 255, 0.1);
+        }
+
+        .neural-player-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .play-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(0, 217, 255, 0.15);
+            border: 1px solid rgba(0, 217, 255, 0.4);
+            color: #00D9FF;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1.2rem;
+        }
+
+        .play-button:hover {
+            background: rgba(0, 217, 255, 0.25);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+        }
+
+        /* Waveform/Progress Container */
+        .waveform-container {
+            height: 40px;
+            margin-top: 1rem;
+            background: rgba(0, 217, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        /* Neural Map Canvas/SVG */
+        .neural-map {
+            width: 100%;
+            height: 100%;
+            max-width: 550px;
+            max-height: 550px;
+        }
+
+        /* Module Node in Neural Map */
+        .neural-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .neural-node:hover {
+            filter: brightness(1.3);
+        }
+
+        /* Module Card in Right Panel */
+        .module-card-neural {
+            background: rgba(10, 10, 31, 0.6);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.08);
+            transition: all 0.25s ease;
+        }
+
+        .module-card-neural.active {
+            background: rgba(0, 217, 255, 0.05);
+            border-left: 2px solid #00D9FF;
+        }
+
+        .module-card-neural:hover {
+            background: rgba(0, 217, 255, 0.03);
+        }
+
+        /* Glow Rings Animation */
+        @keyframes glow-ring-pulse {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.03); }
+        }
+
+        .glow-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid currentColor;
+            animation: glow-ring-pulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        /* Neural Spectrum Reactive Colors */
+        .spectrum-parasympathetic { --spectrum-color: #005CFF; }
+        .spectrum-hybrid { --spectrum-color: #9D00FF; }
+        .spectrum-sympathetic { --spectrum-color: #FF6B00; }
+
+        /* Right Panel Tabs */
+        .right-panel-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(0, 217, 255, 0.15);
+            flex-shrink: 0;
+        }
+
+        .right-panel-tab {
+            flex: 1;
+            padding: 0.875rem;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .right-panel-tab:hover {
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(0, 217, 255, 0.03);
+        }
+
+        .right-panel-tab.active {
+            color: #00D9FF;
+            border-bottom-color: #00D9FF;
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        .right-panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        /* Mobile: Tabs/Swipe Layout */
+        @media (max-width: 1024px) {
+            .neural-lab-container {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+
+            .neural-lab-tabs {
+                display: flex;
+                position: sticky;
+                top: 0;
+                background: rgba(0,0,0,0.95);
+                z-index: 10;
+                border-bottom: 1px solid rgba(0,217,255,0.2);
+            }
+
+            .neural-lab-tab {
+                flex: 1;
+                padding: 1rem 0.5rem;
+                text-align: center;
+                background: transparent;
+                border: none;
+                border-bottom: 2px solid transparent;
+                color: rgba(255,255,255,0.6);
+                font-size: 0.8rem;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .neural-lab-tab.active {
+                color: #00D9FF;
+                border-bottom-color: #00D9FF;
+            }
+
+            .neural-lab-left,
+            .neural-lab-center,
+            .neural-lab-right {
+                display: none;
+                width: 100%;
+                border: none;
+                min-height: calc(100vh - 60px);
+            }
+
+            .neural-lab-left.active,
+            .neural-lab-center.active,
+            .neural-lab-right.active {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .neural-lab-center.active {
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
+            }
+
+            .neural-lab-right.active {
+                min-height: auto;
+            }
+        }
+
+        /* Desktop: Hide mobile tabs */
+        @media (min-width: 1025px) {
+            .neural-lab-tabs {
+                display: none;
+            }
+
+            .neural-lab-left,
+            .neural-lab-center,
+            .neural-lab-right {
+                display: flex !important;
+            }
+        }
+
+        /* Chat Container in Right Panel */
+        .neural-chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 1rem;
+        }
+
+        .neural-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .neural-chat-input-wrapper {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .neural-chat-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 4px;
+            padding: 0.75rem;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+
+        .neural-chat-input:focus {
+            outline: none;
+            border-color: rgba(0, 217, 255, 0.5);
+        }
+
+        .neural-chat-send {
+            background: rgba(0, 217, 255, 0.2);
+            border: 1px solid rgba(0, 217, 255, 0.4);
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            color: #00D9FF;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .neural-chat-send:hover {
+            background: rgba(0, 217, 255, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -5180,9 +5486,365 @@
         }
 
         // ============================================================
+        // NEURAL LAB COMPONENTS
+        // ============================================================
+
+        // Helper to generate polygon points for emblem
+        const generateEmblemPoints = (cx, cy, radius, sides) => {
+            const points = [];
+            for (let i = 0; i < sides * 2; i++) {
+                const angle = (i / (sides * 2)) * Math.PI * 2 - Math.PI / 2;
+                const r = i % 2 === 0 ? radius : radius * 0.55;
+                points.push(`${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`);
+            }
+            return points.join(' ');
+        };
+
+        // Creative Emblem - Procedural SVG based on neural spectrum + timbre
+        function CreativeEmblem({ profile, neuralSpectrum }) {
+            const placement = neuralSpectrum?.placement || 'hybrid';
+            const value = neuralSpectrum?.value ?? 0.5;
+
+            const colors = {
+                parasympathetic: { primary: '#005CFF', secondary: '#00A8FF' },
+                hybrid: { primary: '#9D00FF', secondary: '#D000FF' },
+                sympathetic: { primary: '#FF6B00', secondary: '#FF9500' }
+            };
+            const c = colors[placement] || colors.hybrid;
+
+            const timbreStability = profile?.timbre_dna?.characteristics?.stability ?? 0.5;
+            const timbreBrightness = profile?.timbre_dna?.characteristics?.brightness ?? 0.5;
+            const bpm = profile?.rhythmic_dna?.characteristics?.tempo_bpm ?? 120;
+            const sides = Math.floor(timbreStability * 3) + 4; // 4-7 sides
+
+            return (
+                <div className="creative-emblem">
+                    {[1, 2, 3].map(i => (
+                        <div
+                            key={`ring-${i}`}
+                            className="glow-ring"
+                            style={{
+                                width: `${100 + i * 25}%`,
+                                height: `${100 + i * 25}%`,
+                                top: `${-12.5 * i}%`,
+                                left: `${-12.5 * i}%`,
+                                color: c.primary,
+                                animationDelay: `${i * 0.4}s`,
+                                animationDuration: `${(60 / bpm) * 4}s`
+                            }}
+                        />
+                    ))}
+                    <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%', position: 'relative', zIndex: 1 }}>
+                        <defs>
+                            <radialGradient id="emblem-grad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stopColor={c.secondary} stopOpacity="0.8" />
+                                <stop offset="100%" stopColor={c.primary} stopOpacity="0.3" />
+                            </radialGradient>
+                            <filter id="emblem-glow">
+                                <feGaussianBlur stdDeviation="4" result="blur" />
+                                <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <circle cx="100" cy="100" r="92" fill="none" stroke={c.primary} strokeWidth="0.5" opacity="0.4" />
+                        <circle cx="100" cy="100" r="75" fill="none" stroke={c.primary} strokeWidth="0.5" opacity="0.3" />
+                        <polygon
+                            points={generateEmblemPoints(100, 100, 55, sides)}
+                            fill="url(#emblem-grad)"
+                            stroke={c.secondary}
+                            strokeWidth="1"
+                            filter="url(#emblem-glow)"
+                            style={{
+                                transformOrigin: 'center',
+                                animation: `spin ${(60 / bpm) * 16}s linear infinite`
+                            }}
+                        />
+                        <circle
+                            cx="100" cy="100"
+                            r={18 + value * 12}
+                            fill={c.primary}
+                            opacity={0.5 + timbreBrightness * 0.35}
+                            filter="url(#emblem-glow)"
+                        />
+                    </svg>
+                </div>
+            );
+        }
+
+        // Neural Map - Radial visualization of 11 modules
+        function NeuralMap({ profile, selectedModule, onModuleSelect }) {
+            const modulesDef = [
+                { key: 'sound_description', label: 'Sound', icon: '✨', angle: 0 },
+                { key: 'genre_fusion', label: 'Genre', icon: '🎵', angle: 32.7 },
+                { key: 'neural_spectrum', label: 'Neural', icon: '🧠', angle: 65.4 },
+                { key: 'sound_palette', label: 'Palette', icon: '🎨', angle: 98.1 },
+                { key: 'tonal_identity', label: 'Tonal', icon: '🎹', angle: 130.8 },
+                { key: 'rhythmic_dna', label: 'Rhythm', icon: '🥁', angle: 163.5 },
+                { key: 'timbre_dna', label: 'Timbre', icon: '🔊', angle: 196.2 },
+                { key: 'emotional_fingerprint', label: 'Emotion', icon: '💜', angle: 228.9 },
+                { key: 'processing_signature', label: 'Mix', icon: '🎚️', angle: 261.6 },
+                { key: 'sonic_architecture', label: 'Sonic', icon: '🏗️', angle: 294.3 },
+                { key: 'inspirational_triggers', label: 'Inspire', icon: '💡', angle: 327 }
+            ];
+
+            const placement = profile?.neural_spectrum?.placement || 'hybrid';
+            const colors = {
+                parasympathetic: '#005CFF',
+                hybrid: '#9D00FF',
+                sympathetic: '#FF6B00'
+            };
+            const baseColor = colors[placement];
+            const cx = 275, cy = 275, radius = 180;
+
+            return (
+                <svg viewBox="0 0 550 550" className="neural-map">
+                    <defs>
+                        <filter id="node-glow">
+                            <feGaussianBlur stdDeviation="5" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+
+                    {/* Connection lines */}
+                    {modulesDef.map((mod, i) => {
+                        const nextMod = modulesDef[(i + 1) % modulesDef.length];
+                        const x1 = cx + radius * Math.cos(mod.angle * Math.PI / 180);
+                        const y1 = cy + radius * Math.sin(mod.angle * Math.PI / 180);
+                        const x2 = cx + radius * Math.cos(nextMod.angle * Math.PI / 180);
+                        const y2 = cy + radius * Math.sin(nextMod.angle * Math.PI / 180);
+                        return <line key={`line-${i}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={baseColor} strokeWidth="1" opacity="0.25" />;
+                    })}
+
+                    {/* Lines to center */}
+                    {modulesDef.map((mod, i) => {
+                        const x = cx + radius * Math.cos(mod.angle * Math.PI / 180);
+                        const y = cy + radius * Math.sin(mod.angle * Math.PI / 180);
+                        return <line key={`center-${i}`} x1={cx} y1={cy} x2={x} y2={y} stroke={baseColor} strokeWidth="0.5" opacity="0.15" />;
+                    })}
+
+                    {/* Center hub */}
+                    <circle cx={cx} cy={cy} r={35} fill={baseColor} opacity="0.15" filter="url(#node-glow)" />
+                    <circle cx={cx} cy={cy} r={20} fill={baseColor} opacity="0.3" />
+
+                    {/* Module nodes */}
+                    {modulesDef.map((mod) => {
+                        const x = cx + radius * Math.cos(mod.angle * Math.PI / 180);
+                        const y = cy + radius * Math.sin(mod.angle * Math.PI / 180);
+                        const moduleData = profile?.[mod.key];
+                        const hasData = !!moduleData?.synthesis;
+                        const isSelected = selectedModule === mod.key;
+                        const nodeRadius = isSelected ? 32 : 26;
+
+                        return (
+                            <g
+                                key={mod.key}
+                                className="neural-node"
+                                onClick={() => onModuleSelect(mod.key)}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <circle
+                                    cx={x} cy={y} r={nodeRadius}
+                                    fill={hasData ? baseColor : 'rgba(255,255,255,0.08)'}
+                                    opacity={isSelected ? 0.85 : 0.45}
+                                    filter={isSelected ? 'url(#node-glow)' : 'none'}
+                                    stroke={isSelected ? '#fff' : baseColor}
+                                    strokeWidth={isSelected ? 2 : 1}
+                                />
+                                <text x={x} y={y + 5} textAnchor="middle" fontSize="14" fill="#fff">
+                                    {mod.icon}
+                                </text>
+                                <text
+                                    x={x}
+                                    y={y + nodeRadius + 14}
+                                    textAnchor="middle"
+                                    fontSize="10"
+                                    fill="rgba(255,255,255,0.6)"
+                                    fontFamily="JetBrains Mono, monospace"
+                                >
+                                    {mod.label}
+                                </text>
+                            </g>
+                        );
+                    })}
+                </svg>
+            );
+        }
+
+        // Neural Player - Audio playback with progress
+        function NeuralPlayer({ audioUrl, trackTitle }) {
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [currentTime, setCurrentTime] = useState(0);
+            const [duration, setDuration] = useState(0);
+            const audioRef = useRef(null);
+
+            useEffect(() => {
+                if (audioUrl && audioRef.current) {
+                    audioRef.current.volume = 0.25;
+                }
+            }, [audioUrl]);
+
+            const togglePlay = () => {
+                if (!audioRef.current) return;
+                if (isPlaying) {
+                    audioRef.current.pause();
+                } else {
+                    audioRef.current.play();
+                }
+                setIsPlaying(!isPlaying);
+            };
+
+            const formatTime = (t) => {
+                const mins = Math.floor(t / 60);
+                const secs = Math.floor(t % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            const handleSeek = (e) => {
+                if (!audioRef.current || !duration) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const pct = (e.clientX - rect.left) / rect.width;
+                audioRef.current.currentTime = pct * duration;
+            };
+
+            if (!audioUrl) return null;
+
+            return (
+                <div className="neural-player">
+                    <audio
+                        ref={audioRef}
+                        src={audioUrl}
+                        onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
+                        onLoadedMetadata={(e) => setDuration(e.target.duration)}
+                        onEnded={() => setIsPlaying(false)}
+                    />
+                    <div style={{
+                        textAlign: 'center',
+                        marginBottom: '0.75rem',
+                        fontSize: '0.8rem',
+                        color: 'rgba(255,255,255,0.6)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                    }}>
+                        {trackTitle || 'Your Track'}
+                    </div>
+                    <div className="neural-player-controls">
+                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono' }}>
+                            {formatTime(currentTime)}
+                        </span>
+                        <button className="play-button" onClick={togglePlay}>
+                            {isPlaying ? '⏸' : '▶'}
+                        </button>
+                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono' }}>
+                            {formatTime(duration)}
+                        </span>
+                    </div>
+                    <div className="waveform-container" onClick={handleSeek}>
+                        <div style={{
+                            width: `${duration ? (currentTime / duration) * 100 : 0}%`,
+                            height: '100%',
+                            background: 'linear-gradient(90deg, rgba(0,217,255,0.5) 0%, rgba(0,217,255,0.2) 100%)',
+                            transition: 'width 0.1s linear'
+                        }} />
+                    </div>
+                </div>
+            );
+        }
+
+        // Module Explanation - Expandable card for right panel
+        function ModuleExplanation({ moduleKey, moduleData, isActive, onToggle, sectionDef }) {
+            if (!moduleData?.synthesis) return null;
+
+            const synthesis = moduleData.synthesis || '';
+            const characteristics = moduleData.characteristics || {};
+
+            return (
+                <div className={`module-card-neural ${isActive ? 'active' : ''}`}>
+                    <div
+                        onClick={onToggle}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '0.75rem 1rem',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <span style={{ marginRight: '0.5rem', fontSize: '1rem' }}>{sectionDef?.icon || '●'}</span>
+                        <span style={{
+                            flex: 1,
+                            fontWeight: 500,
+                            fontSize: '0.85rem',
+                            color: isActive ? '#00D9FF' : 'rgba(255,255,255,0.85)'
+                        }}>
+                            {sectionDef?.title || moduleKey}
+                        </span>
+                        <span style={{
+                            color: '#00D9FF',
+                            fontSize: '0.65rem',
+                            transition: 'transform 0.2s ease',
+                            transform: isActive ? 'rotate(180deg)' : 'rotate(0deg)'
+                        }}>▼</span>
+                    </div>
+
+                    {isActive && (
+                        <div style={{ padding: '0 1rem 1rem 1rem', animation: 'fadeIn 0.2s ease' }}>
+                            <div style={{
+                                marginBottom: '0.75rem',
+                                padding: '0.75rem',
+                                background: 'rgba(0,217,255,0.03)',
+                                borderLeft: '2px solid rgba(0,217,255,0.3)',
+                                fontSize: '0.8rem',
+                                lineHeight: 1.6,
+                                color: 'rgba(255,255,255,0.8)'
+                            }}>
+                                {synthesis}
+                            </div>
+
+                            {Object.keys(characteristics).length > 0 && (
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(2, 1fr)',
+                                    gap: '0.4rem',
+                                    fontSize: '0.7rem'
+                                }}>
+                                    {Object.entries(characteristics).slice(0, 6).map(([key, value]) => (
+                                        <div key={key} style={{
+                                            padding: '0.4rem',
+                                            background: 'rgba(255,255,255,0.02)',
+                                            borderRadius: '2px'
+                                        }}>
+                                            <div style={{
+                                                color: 'rgba(255,255,255,0.4)',
+                                                marginBottom: '0.2rem',
+                                                textTransform: 'uppercase',
+                                                fontSize: '0.6rem',
+                                                letterSpacing: '0.5px'
+                                            }}>
+                                                {key.replace(/_/g, ' ')}
+                                            </div>
+                                            <div style={{ color: '#00D9FF', fontFamily: 'JetBrains Mono' }}>
+                                                {Array.isArray(value) ? value.slice(0, 2).join(', ') :
+                                                    typeof value === 'number' ? value.toFixed(2) : String(value)}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // ============================================================
         // AUDIO SESSION MODAL - Session Analysis Mode
         // ============================================================
-        function AudioSessionModal({ uploadId, synthesizedProfile, onClose }) {
+        function AudioSessionModal({ uploadId, synthesizedProfile, onClose, audioUrl }) {
             const [sessionData, setSessionData] = useState(null);
             const [messages, setMessages] = useState([]);
             const [loading, setLoading] = useState(!synthesizedProfile);
@@ -5191,6 +5853,11 @@
             const [expandedModules, setExpandedModules] = useState({});
             const [showChat, setShowChat] = useState(false);
             const messagesEndRef = useRef(null);
+
+            // Neural Lab state
+            const [selectedModule, setSelectedModule] = useState(null);
+            const [rightPanelTab, setRightPanelTab] = useState('modules');
+            const [mobileTab, setMobileTab] = useState('identity');
 
             // Profile data from synthesized response
             const profile = synthesizedProfile?.profile || {};
@@ -5456,259 +6123,213 @@ What were you trying to express when you created this piece?`;
                         </button>
                     </div>
 
-                    {/* Main Content - Scrollable */}
-                    <div style={{ flex: 1, overflowY: 'auto', padding: '2rem' }}>
-                        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                    {/* Neural Lab 3-Panel Layout */}
+                    <div className="neural-lab-container" style={{ flex: 1 }}>
+
+                        {/* Mobile Tab Bar */}
+                        <div className="neural-lab-tabs">
+                            <button
+                                className={`neural-lab-tab ${mobileTab === 'identity' ? 'active' : ''}`}
+                                onClick={() => setMobileTab('identity')}
+                            >
+                                Identity
+                            </button>
+                            <button
+                                className={`neural-lab-tab ${mobileTab === 'map' ? 'active' : ''}`}
+                                onClick={() => setMobileTab('map')}
+                            >
+                                Neural Map
+                            </button>
+                            <button
+                                className={`neural-lab-tab ${mobileTab === 'modules' ? 'active' : ''}`}
+                                onClick={() => setMobileTab('modules')}
+                            >
+                                Details
+                            </button>
+                        </div>
+
+                        {/* LEFT PANEL - Creative Identity */}
+                        <div className={`neural-lab-left ${mobileTab === 'identity' ? 'active' : ''}`}>
+                            <CreativeEmblem
+                                profile={profile}
+                                neuralSpectrum={profile?.neural_spectrum}
+                            />
+
+                            <h2 style={{
+                                fontSize: '1rem',
+                                fontWeight: 600,
+                                textAlign: 'center',
+                                margin: '0 0 0.25rem 0',
+                                color: '#fff'
+                            }}>
+                                {profile?.sound_description?.characteristics?.sonic_title || sonicTitle}
+                            </h2>
+
+                            <div style={{
+                                fontSize: '0.75rem',
+                                color: 'rgba(255,255,255,0.5)',
+                                marginBottom: '1.25rem'
+                            }}>
+                                Neural Music Profile
+                            </div>
 
                             {/* Creative Identity Statement */}
                             {creativeIdentity && (
                                 <div style={{
-                                    background: 'rgba(0, 217, 255, 0.05)',
-                                    border: '1px solid rgba(0, 217, 255, 0.3)',
-                                    borderRadius: '0',
-                                    padding: '1.5rem 2rem',
-                                    marginBottom: '2rem',
-                                    boxShadow: '0 0 40px rgba(0, 217, 255, 0.1)'
+                                    fontSize: '0.8rem',
+                                    lineHeight: 1.7,
+                                    color: 'rgba(255,255,255,0.7)',
+                                    textAlign: 'center',
+                                    padding: '0 0.5rem',
+                                    maxHeight: '180px',
+                                    overflow: 'auto',
+                                    fontStyle: 'italic'
                                 }}>
-                                    <div style={{
-                                        fontSize: '0.6875rem',
-                                        color: 'rgba(0, 217, 255, 0.8)',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.15em',
-                                        marginBottom: '0.75rem'
-                                    }}>
-                                        CREATIVE IDENTITY
-                                    </div>
-                                    <div style={{
-                                        fontSize: '1.125rem',
-                                        color: 'rgba(255, 255, 255, 0.95)',
-                                        lineHeight: '1.7',
-                                        fontStyle: 'italic'
-                                    }}>
-                                        "{creativeIdentity}"
-                                    </div>
+                                    "{creativeIdentity}"
                                 </div>
                             )}
 
-                            {/* 11-Module Grid */}
-                            {synthesizedProfile && (
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(3, 1fr)',
-                                    gap: '1rem',
-                                    marginBottom: '2rem'
-                                }}>
-                                    {/* Row 1: Sound Description, Genre Fusion, Neural Spectrum */}
-                                    <ModuleCard title="Sound Description" moduleKey="sound_desc">
-                                        {soundSynthesis || profile?.sound_description?.description || 'No synthesis available'}
-                                    </ModuleCard>
+                            {/* Audio Player */}
+                            <NeuralPlayer
+                                audioUrl={audioUrl}
+                                trackTitle={profile?.sound_description?.characteristics?.sonic_title || sonicTitle}
+                            />
+                        </div>
 
-                                    <ModuleCard title="Genre Fusion" moduleKey="genre">
-                                        {profile?.genre_fusion?.primary_genres?.join(' × ') || 'Unknown'}
-                                        {profile?.genre_fusion?.fusion_description && (
-                                            <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', opacity: 0.7 }}>
-                                                {profile.genre_fusion.fusion_description}
-                                            </div>
-                                        )}
-                                    </ModuleCard>
+                        {/* CENTER PANEL - Neural Map */}
+                        <div className={`neural-lab-center ${mobileTab === 'map' ? 'active' : ''}`}>
+                            <NeuralMap
+                                profile={profile}
+                                selectedModule={selectedModule}
+                                onModuleSelect={setSelectedModule}
+                            />
+                        </div>
 
-                                    <ModuleCard title="Neural Spectrum™" moduleKey="neural">
-                                        {/* 3-Zone Spectrum: Parasympathetic | Hybrid | Sympathetic */}
-                                        <div style={{ marginBottom: '0.75rem' }}>
-                                            {/* Zone labels */}
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                                                <span style={{ fontSize: '0.65rem', opacity: 0.6, flex: 1, textAlign: 'left' }}>Parasympathetic</span>
-                                                <span style={{ fontSize: '0.65rem', opacity: 0.6, flex: 1, textAlign: 'center' }}>Hybrid</span>
-                                                <span style={{ fontSize: '0.65rem', opacity: 0.6, flex: 1, textAlign: 'right' }}>Sympathetic</span>
-                                            </div>
-                                            {/* Spectrum bar with 3 zones */}
-                                            <div style={{
-                                                height: '8px',
-                                                background: 'linear-gradient(to right, #005CFF 0%, #005CFF 33%, #00A8FF 33%, #00A8FF 66%, #AD00FF 66%, #AD00FF 100%)',
-                                                borderRadius: '4px',
-                                                position: 'relative',
-                                                boxShadow: '0 0 10px rgba(0, 168, 255, 0.3)'
-                                            }}>
-                                                {/* Position indicator */}
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    left: `${(profile?.neural_spectrum?.value ?? 0.5) * 100}%`,
-                                                    top: '-4px',
-                                                    width: '16px',
-                                                    height: '16px',
-                                                    background: '#00D9FF',
-                                                    borderRadius: '50%',
-                                                    transform: 'translateX(-50%)',
-                                                    border: '2px solid #fff',
-                                                    boxShadow: '0 0 12px rgba(0, 217, 255, 0.8)'
-                                                }} />
-                                            </div>
-                                        </div>
-                                        {/* State + Percentage + Intensity */}
-                                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
-                                            <span style={{
-                                                fontSize: '0.85rem',
-                                                fontWeight: '600',
-                                                color: profile?.neural_spectrum?.placement === 'parasympathetic' ? '#005CFF' :
-                                                       profile?.neural_spectrum?.placement === 'sympathetic' ? '#AD00FF' : '#00A8FF'
-                                            }}>
-                                                {(profile?.neural_spectrum?.placement || 'Hybrid').charAt(0).toUpperCase() + (profile?.neural_spectrum?.placement || 'hybrid').slice(1)}
-                                            </span>
-                                            <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>
-                                                ({Math.round((profile?.neural_spectrum?.value ?? 0.5) * 100)}%)
-                                            </span>
-                                            {profile?.neural_spectrum?.intensity && (
-                                                <span style={{
-                                                    fontSize: '0.7rem',
-                                                    padding: '0.15rem 0.4rem',
-                                                    background: 'rgba(0, 217, 255, 0.15)',
-                                                    borderRadius: '4px',
-                                                    textTransform: 'uppercase'
-                                                }}>
-                                                    {profile.neural_spectrum.intensity}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </ModuleCard>
-
-                                    {/* Row 2: Tonal Identity, Rhythmic DNA, Sound Palette */}
-                                    <ModuleCard title="Tonal Identity" moduleKey="tonal">
-                                        {profile?.tonal_identity?.harmonic_character || 'Unknown'}
-                                        {profile?.tonal_identity?.key && (
-                                            <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', opacity: 0.7 }}>
-                                                Key: {profile.tonal_identity.key} {profile.tonal_identity.mode}
-                                            </div>
-                                        )}
-                                    </ModuleCard>
-
-                                    <ModuleCard title="Rhythmic DNA" moduleKey="rhythm">
-                                        {profile?.rhythmic_dna?.groove_type || 'Unknown'}
-                                        {profile?.rhythmic_dna?.tempo_feel && (
-                                            <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', opacity: 0.7 }}>
-                                                {profile.rhythmic_dna.tempo_feel}
-                                            </div>
-                                        )}
-                                    </ModuleCard>
-
-                                    <ModuleCard title="Sound Palette" moduleKey="palette">
-                                        {profile?.sound_palette?.frequency_focus || 'Unknown'}
-                                        {profile?.sound_palette?.texture_layers && (
-                                            <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', opacity: 0.7 }}>
-                                                {profile.sound_palette.texture_layers.join(', ')}
-                                            </div>
-                                        )}
-                                    </ModuleCard>
-
-                                    {/* Row 3: Emotional Fingerprint, Processing Signature, Sonic Architecture */}
-                                    <ModuleCard title="Emotional Fingerprint" moduleKey="emotional">
-                                        {(profile?.emotional_psychological_fingerprint?.nodes || profile?.emotional_fingerprint?.nodes || [])
-                                            .slice(0, 4)
-                                            .map((node, i) => (
-                                                <span key={i} style={{
-                                                    display: 'inline-block',
-                                                    padding: '0.25rem 0.5rem',
-                                                    background: 'rgba(0, 217, 255, 0.1)',
-                                                    border: '1px solid rgba(0, 217, 255, 0.2)',
-                                                    marginRight: '0.5rem',
-                                                    marginBottom: '0.25rem',
-                                                    fontSize: '0.75rem'
-                                                }}>
-                                                    {typeof node === 'string' ? node : node.emotion || node.name}
-                                                </span>
-                                            ))}
-                                    </ModuleCard>
-
-                                    <ModuleCard title="Processing Signature" moduleKey="processing">
-                                        {profile?.processing_signature?.mix_approach || 'Unknown'}
-                                        {profile?.processing_signature?.compression_style && (
-                                            <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', opacity: 0.7 }}>
-                                                {profile.processing_signature.compression_style}
-                                            </div>
-                                        )}
-                                    </ModuleCard>
-
-                                    <ModuleCard title="Sonic Architecture" moduleKey="architecture">
-                                        {profile?.sonic_architecture?.layering_approach || 'Unknown'}
-                                        {profile?.sonic_architecture?.tension_release && (
-                                            <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', opacity: 0.7 }}>
-                                                {profile.sonic_architecture.tension_release}
-                                            </div>
-                                        )}
-                                    </ModuleCard>
-
-                                    {/* Full Width: Inspirational Triggers */}
-                                    <ModuleCard title="Inspirational Triggers" moduleKey="triggers" fullWidth>
-                                        {(profile?.inspirational_triggers?.sources || []).join(' • ') || 'No triggers identified'}
-                                    </ModuleCard>
-                                </div>
-                            )}
-
-                            {/* Legacy fallback - show TechnicalAnalysisPanel if no synthesized profile */}
-                            {!synthesizedProfile && sessionData?.musical_components && (
-                                <TechnicalAnalysisPanel components={sessionData.musical_components} />
-                            )}
-
-                            {/* Chat Section */}
-                            <div style={{
-                                background: 'rgba(10, 10, 31, 0.6)',
-                                border: '1px solid rgba(0, 217, 255, 0.15)',
-                                borderRadius: '0',
-                                overflow: 'hidden'
-                            }}>
+                        {/* RIGHT PANEL - Modules + Chat */}
+                        <div className={`neural-lab-right ${mobileTab === 'modules' ? 'active' : ''}`}>
+                            {/* Tab Header */}
+                            <div className="right-panel-tabs">
                                 <button
-                                    onClick={() => setShowChat(!showChat)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '1rem 1.5rem',
-                                        background: 'transparent',
-                                        border: 'none',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        cursor: 'pointer',
-                                        color: '#fff'
-                                    }}
+                                    className={`right-panel-tab ${rightPanelTab === 'modules' ? 'active' : ''}`}
+                                    onClick={() => setRightPanelTab('modules')}
                                 >
-                                    <span style={{
-                                        fontSize: '0.6875rem',
-                                        color: 'rgba(0, 217, 255, 0.8)',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.15em'
-                                    }}>
-                                        DISCUSS WITH AURON
-                                    </span>
-                                    <span style={{ color: 'rgba(0, 217, 255, 0.6)' }}>
-                                        {showChat ? '−' : '+'}
-                                    </span>
+                                    Modules
                                 </button>
+                                <button
+                                    className={`right-panel-tab ${rightPanelTab === 'chat' ? 'active' : ''}`}
+                                    onClick={() => setRightPanelTab('chat')}
+                                >
+                                    Chat with Auron
+                                </button>
+                            </div>
 
-                                {showChat && (
-                                    <div style={{ borderTop: '1px solid rgba(0, 217, 255, 0.1)' }}>
+                            {/* Tab Content */}
+                            <div className="right-panel-content">
+                                {rightPanelTab === 'modules' && (
+                                    <>
+                                        {/* 11 Module Explanations */}
+                                        <ModuleExplanation
+                                            moduleKey="sound_description"
+                                            moduleData={profile?.sound_description}
+                                            isActive={selectedModule === 'sound_description'}
+                                            onToggle={() => setSelectedModule(selectedModule === 'sound_description' ? null : 'sound_description')}
+                                            sectionDef={{ icon: '✨', title: 'Sound Description' }}
+                                        />
+                                        <ModuleExplanation
+                                            moduleKey="genre_fusion"
+                                            moduleData={profile?.genre_fusion}
+                                            isActive={selectedModule === 'genre_fusion'}
+                                            onToggle={() => setSelectedModule(selectedModule === 'genre_fusion' ? null : 'genre_fusion')}
+                                            sectionDef={{ icon: '🎵', title: 'Genre Fusion' }}
+                                        />
+                                        <ModuleExplanation
+                                            moduleKey="neural_spectrum"
+                                            moduleData={profile?.neural_spectrum}
+                                            isActive={selectedModule === 'neural_spectrum'}
+                                            onToggle={() => setSelectedModule(selectedModule === 'neural_spectrum' ? null : 'neural_spectrum')}
+                                            sectionDef={{ icon: '🧠', title: 'Neural Spectrum™' }}
+                                        />
+                                        <ModuleExplanation
+                                            moduleKey="sound_palette"
+                                            moduleData={profile?.sound_palette}
+                                            isActive={selectedModule === 'sound_palette'}
+                                            onToggle={() => setSelectedModule(selectedModule === 'sound_palette' ? null : 'sound_palette')}
+                                            sectionDef={{ icon: '🎨', title: 'Sound Palette' }}
+                                        />
+                                        <ModuleExplanation
+                                            moduleKey="tonal_identity"
+                                            moduleData={profile?.tonal_identity}
+                                            isActive={selectedModule === 'tonal_identity'}
+                                            onToggle={() => setSelectedModule(selectedModule === 'tonal_identity' ? null : 'tonal_identity')}
+                                            sectionDef={{ icon: '🎹', title: 'Tonal Identity' }}
+                                        />
+                                        <ModuleExplanation
+                                            moduleKey="rhythmic_dna"
+                                            moduleData={profile?.rhythmic_dna}
+                                            isActive={selectedModule === 'rhythmic_dna'}
+                                            onToggle={() => setSelectedModule(selectedModule === 'rhythmic_dna' ? null : 'rhythmic_dna')}
+                                            sectionDef={{ icon: '🥁', title: 'Rhythmic DNA' }}
+                                        />
+                                        <ModuleExplanation
+                                            moduleKey="timbre_dna"
+                                            moduleData={profile?.timbre_dna}
+                                            isActive={selectedModule === 'timbre_dna'}
+                                            onToggle={() => setSelectedModule(selectedModule === 'timbre_dna' ? null : 'timbre_dna')}
+                                            sectionDef={{ icon: '🔊', title: 'Timbre DNA' }}
+                                        />
+                                        <ModuleExplanation
+                                            moduleKey="emotional_fingerprint"
+                                            moduleData={profile?.emotional_fingerprint}
+                                            isActive={selectedModule === 'emotional_fingerprint'}
+                                            onToggle={() => setSelectedModule(selectedModule === 'emotional_fingerprint' ? null : 'emotional_fingerprint')}
+                                            sectionDef={{ icon: '💜', title: 'Emotional Fingerprint' }}
+                                        />
+                                        <ModuleExplanation
+                                            moduleKey="processing_signature"
+                                            moduleData={profile?.processing_signature}
+                                            isActive={selectedModule === 'processing_signature'}
+                                            onToggle={() => setSelectedModule(selectedModule === 'processing_signature' ? null : 'processing_signature')}
+                                            sectionDef={{ icon: '🎚️', title: 'Mix Signature' }}
+                                        />
+                                        <ModuleExplanation
+                                            moduleKey="sonic_architecture"
+                                            moduleData={profile?.sonic_architecture}
+                                            isActive={selectedModule === 'sonic_architecture'}
+                                            onToggle={() => setSelectedModule(selectedModule === 'sonic_architecture' ? null : 'sonic_architecture')}
+                                            sectionDef={{ icon: '🏗️', title: 'Sonic Architecture' }}
+                                        />
+                                        <ModuleExplanation
+                                            moduleKey="inspirational_triggers"
+                                            moduleData={profile?.inspirational_triggers}
+                                            isActive={selectedModule === 'inspirational_triggers'}
+                                            onToggle={() => setSelectedModule(selectedModule === 'inspirational_triggers' ? null : 'inspirational_triggers')}
+                                            sectionDef={{ icon: '💡', title: 'Inspirational Triggers' }}
+                                        />
+                                    </>
+                                )}
+
+                                {/* Chat Tab Content */}
+                                {rightPanelTab === 'chat' && (
+                                    <div className="neural-chat-container">
                                         {/* Messages */}
-                                        <div style={{
-                                            maxHeight: '300px',
-                                            overflowY: 'auto',
-                                            padding: '1rem 1.5rem',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: '1rem'
-                                        }}>
+                                        <div className="neural-chat-messages">
                                             {messages.map((msg, idx) => (
                                                 <div key={idx} style={{
-                                                    alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                                                    maxWidth: '80%'
+                                                    marginBottom: '0.75rem',
+                                                    textAlign: msg.role === 'user' ? 'right' : 'left'
                                                 }}>
                                                     <div style={{
+                                                        display: 'inline-block',
+                                                        maxWidth: '85%',
                                                         background: msg.role === 'auron'
                                                             ? 'rgba(0, 217, 255, 0.05)'
                                                             : 'rgba(255, 255, 255, 0.05)',
                                                         border: msg.role === 'auron'
                                                             ? '1px solid rgba(0, 217, 255, 0.2)'
                                                             : '1px solid rgba(255, 255, 255, 0.1)',
-                                                        borderRadius: '0',
-                                                        padding: '0.75rem 1rem',
+                                                        padding: '0.65rem 0.85rem',
                                                         color: '#fff',
-                                                        fontSize: '0.875rem',
+                                                        fontSize: '0.8rem',
                                                         lineHeight: '1.5',
                                                         whiteSpace: 'pre-wrap'
                                                     }}>
@@ -5720,43 +6341,21 @@ What were you trying to express when you created this piece?`;
                                         </div>
 
                                         {/* Input */}
-                                        <div style={{
-                                            padding: '1rem 1.5rem',
-                                            borderTop: '1px solid rgba(0, 217, 255, 0.1)',
-                                            display: 'flex',
-                                            gap: '0.75rem'
-                                        }}>
+                                        <div className="neural-chat-input-wrapper">
                                             <input
                                                 type="text"
+                                                className="neural-chat-input"
                                                 value={input}
                                                 onChange={(e) => setInput(e.target.value)}
                                                 onKeyPress={handleKeyPress}
                                                 placeholder="Ask about your profile..."
                                                 disabled={sending}
-                                                style={{
-                                                    flex: 1,
-                                                    background: 'rgba(0, 0, 0, 0.4)',
-                                                    border: '1px solid rgba(0, 217, 255, 0.2)',
-                                                    borderRadius: '0',
-                                                    padding: '0.75rem 1rem',
-                                                    color: '#fff',
-                                                    fontSize: '0.875rem',
-                                                    outline: 'none'
-                                                }}
                                             />
                                             <button
+                                                className="neural-chat-send"
                                                 onClick={sendMessage}
                                                 disabled={!input.trim() || sending}
-                                                style={{
-                                                    padding: '0.75rem 1.5rem',
-                                                    border: '1px solid rgba(0, 217, 255, 0.3)',
-                                                    background: input.trim() ? 'rgba(0, 217, 255, 0.2)' : 'transparent',
-                                                    color: '#fff',
-                                                    cursor: input.trim() ? 'pointer' : 'not-allowed',
-                                                    opacity: input.trim() ? 1 : 0.5,
-                                                    borderRadius: '0',
-                                                    fontSize: '0.875rem'
-                                                }}
+                                                style={{ opacity: input.trim() ? 1 : 0.5 }}
                                             >
                                                 {sending ? '...' : 'Send'}
                                             </button>
@@ -5814,6 +6413,9 @@ What were you trying to express when you created this piece?`;
 
             // Synthesized Profile State (from BFF after synthesis complete)
             const [synthesizedProfile, setSynthesizedProfile] = useState(null);
+
+            // Audio File URL (for playback in Neural Lab)
+            const [audioFileUrl, setAudioFileUrl] = useState(null);
 
             // Load past conversation from Reflections
             useEffect(() => {
@@ -5927,6 +6529,10 @@ What were you trying to express when you created this piece?`;
                     setUploadingAudio(true);
                     setUploadProgress(10);
                     setIsDraggingAudio(false);
+
+                    // Store blob URL for audio playback in Neural Lab
+                    const blobUrl = URL.createObjectURL(file);
+                    setAudioFileUrl(blobUrl);
 
                     // IMMEDIATELY show questionnaire with temp ID (parallel with upload + DSP)
                     const tempUploadId = `temp-${Date.now()}`;
@@ -6095,11 +6701,23 @@ What were you trying to express when you created this piece?`;
                     normalized.genre_fusion.primary_genres = normalized.genre_fusion.characteristics?.influences || [];
                 }
 
-                // Tonal Identity
+                // Tonal Identity - Engine sends {key, harmonic_ratio}
+                // Key string already contains mode (e.g., "F minor", "C major")
                 if (normalized.tonal_identity?.synthesis) {
                     normalized.tonal_identity.harmonic_character = normalized.tonal_identity.synthesis;
-                    normalized.tonal_identity.key = normalized.tonal_identity.characteristics?.key || '';
-                    normalized.tonal_identity.mode = normalized.tonal_identity.characteristics?.mode || '';
+                    const tonalChars = normalized.tonal_identity.characteristics || {};
+                    const keyString = tonalChars.key || '';
+                    normalized.tonal_identity.harmonic_ratio = tonalChars.harmonic_ratio ?? 0;
+
+                    // Extract root and mode from key string (e.g., "F minor" → root="F", mode="minor")
+                    const keyParts = keyString.split(' ');
+                    if (keyParts.length >= 2) {
+                        normalized.tonal_identity.key = keyParts[0];
+                        normalized.tonal_identity.mode = keyParts.slice(1).join(' ');
+                    } else {
+                        normalized.tonal_identity.key = keyString;
+                        normalized.tonal_identity.mode = '';
+                    }
                 }
 
                 // Rhythmic DNA
@@ -6108,21 +6726,38 @@ What were you trying to express when you created this piece?`;
                     normalized.rhythmic_dna.tempo_feel = `${normalized.rhythmic_dna.characteristics?.tempo_bpm || ''} BPM`;
                 }
 
-                // Sound Palette (from timbre_dna if sound_palette missing)
+                // Timbre DNA - Engine sends {stability, brightness}
+                if (normalized.timbre_dna?.synthesis) {
+                    normalized.timbre_dna.texture_description = normalized.timbre_dna.synthesis;
+                    const timbreChars = normalized.timbre_dna.characteristics || {};
+                    normalized.timbre_dna.stability = timbreChars.stability ?? 0;
+                    normalized.timbre_dna.brightness = timbreChars.brightness ?? 0;
+                }
+
+                // Sound Palette - Engine sends {role, timbre}
                 if (!normalized.sound_palette && normalized.timbre_dna) {
                     normalized.sound_palette = {
                         frequency_focus: normalized.timbre_dna.synthesis,
-                        texture_layers: []
+                        texture_description: ''
                     };
                 } else if (normalized.sound_palette?.synthesis) {
                     normalized.sound_palette.frequency_focus = normalized.sound_palette.synthesis;
-                    normalized.sound_palette.texture_layers = normalized.sound_palette.characteristics?.textures || [];
+                    const paletteChars = normalized.sound_palette.characteristics || {};
+                    normalized.sound_palette.role = paletteChars.role || '';
+                    normalized.sound_palette.timbre = paletteChars.timbre || 'balanced';
+                    // Create descriptive texture from role+timbre for display
+                    normalized.sound_palette.texture_description = paletteChars.role ?
+                        `${paletteChars.role} (${paletteChars.timbre})` : '';
                 }
 
-                // Processing Signature (from mix_signature)
+                // Processing Signature (from mix_signature) - Engine sends {stereo_width, dynamic_range}
                 if (normalized.processing_signature?.synthesis) {
                     normalized.processing_signature.mix_approach = normalized.processing_signature.synthesis;
-                    normalized.processing_signature.compression_style = '';
+                    const mixChars = normalized.processing_signature.characteristics || {};
+                    normalized.processing_signature.stereo_width = mixChars.stereo_width ?? 0;
+                    normalized.processing_signature.dynamic_range = mixChars.dynamic_range ?? 0;
+                    normalized.processing_signature.compression_style = mixChars.dynamic_range > 10 ?
+                        'Dynamic' : 'Compressed';
                 }
 
                 // Sonic Architecture
@@ -6138,11 +6773,27 @@ What were you trying to express when you created this piece?`;
                         normalized.inspirational_triggers.characteristics?.influences || [];
                 }
 
-                // Emotional Fingerprint
+                // Emotional Fingerprint - Engine sends {creator_state: [], listener_intention: []}
                 if (normalized.emotional_fingerprint?.synthesis) {
-                    normalized.emotional_fingerprint.nodes = [
-                        { label: 'Creator Intent', value: normalized.emotional_fingerprint.synthesis }
-                    ];
+                    const emotionalChars = normalized.emotional_fingerprint.characteristics || {};
+                    const nodes = [];
+
+                    // Add creator states as nodes
+                    (emotionalChars.creator_state || []).forEach(state => {
+                        nodes.push({ label: 'Creator', value: state });
+                    });
+
+                    // Add listener intentions as nodes
+                    (emotionalChars.listener_intention || []).forEach(intent => {
+                        nodes.push({ label: 'Listener', value: intent });
+                    });
+
+                    // Fallback to synthesis if no arrays
+                    if (nodes.length === 0) {
+                        nodes.push({ label: 'Emotional Core', value: normalized.emotional_fingerprint.synthesis });
+                    }
+
+                    normalized.emotional_fingerprint.nodes = nodes;
                 }
 
                 // Neural Spectrum™ - extract value, placement, intensity from characteristics
@@ -6530,9 +7181,15 @@ What were you trying to express when you created this piece?`;
                         <AudioSessionModal
                             uploadId={audioSessionId}
                             synthesizedProfile={synthesizedProfile}
+                            audioUrl={audioFileUrl}
                             onClose={() => {
                                 setAudioSessionId(null);
                                 setSynthesizedProfile(null);
+                                // Clean up blob URL
+                                if (audioFileUrl) {
+                                    URL.revokeObjectURL(audioFileUrl);
+                                    setAudioFileUrl(null);
+                                }
                             }}
                         />
                     )}
