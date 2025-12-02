@@ -7171,21 +7171,24 @@ What were you trying to express when you created this piece?`;
                 animate();
             }, [data, position]);
 
-            // Get state label - use placement from Engine or compute from position
+            // Trust DSP placement directly - no position-based thresholds
+            // Position (value) is only for slider UI, placement is the truth
             const getStateLabel = () => {
-                if (placement && placement !== 'hybrid') {
-                    return placement.charAt(0).toUpperCase() + placement.slice(1);
-                }
-                if (position < 0.33) return 'Parasympathetic';
-                if (position > 0.66) return 'Sympathetic';
-                return 'Hybrid';
+                return placement.charAt(0).toUpperCase() + placement.slice(1);
             };
 
-            // Get color based on placement
+            // Color based on DSP placement only
             const getStateColor = () => {
-                if (placement === 'parasympathetic' || position < 0.33) return '#005CFF';
-                if (placement === 'sympathetic' || position > 0.66) return '#AD00FF';
-                return '#00A8FF';
+                if (placement === 'parasympathetic') return '#005CFF';
+                if (placement === 'sympathetic') return '#AD00FF';
+                return '#00A8FF'; // hybrid
+            };
+
+            // Description based on DSP placement only
+            const getDescription = () => {
+                if (placement === 'parasympathetic') return 'Calm, relaxed, slower waves';
+                if (placement === 'sympathetic') return 'Aroused, alert, faster waves';
+                return 'Balanced, medium energy'; // hybrid
             };
 
             return (
@@ -7216,9 +7219,7 @@ What were you trying to express when you created this piece?`;
                         </span>
                     </div>
                     <div className="text-center text-xs text-gray-600 mt-1">
-                        {(placement === 'parasympathetic' || position < 0.33) && 'Calm, relaxed, slower waves'}
-                        {(placement === 'hybrid' || (position >= 0.33 && position <= 0.66)) && 'Balanced, medium energy'}
-                        {(placement === 'sympathetic' || position > 0.66) && 'Aroused, alert, faster waves'}
+                        {getDescription()}
                     </div>
                 </div>
             );
