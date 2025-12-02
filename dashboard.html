@@ -5024,7 +5024,7 @@
                 { key: 'sound_description', label: 'Sound Description', icon: '✨' },
                 { key: 'inspirational_triggers', label: 'Inspirational Triggers', icon: '💡' },
                 { key: 'genre_fusion', label: 'Genre Fusion', icon: '🎵' },
-                { key: 'neural_spectrum', label: 'Neural Spectrum', icon: '🧠' },
+                { key: 'neural_spectrum', label: 'Neural Spectrum™', icon: '🧠' },
                 { key: 'sound_palette', label: 'Sound Palette', icon: '🎨' },
                 { key: 'tonal_identity', label: 'Tonal Identity', icon: '🎹' },
                 { key: 'rhythmic_dna', label: 'Rhythmic DNA', icon: '🥁' },
@@ -5512,33 +5512,63 @@ What were you trying to express when you created this piece?`;
                                         )}
                                     </ModuleCard>
 
-                                    <ModuleCard title="Neural Spectrum" moduleKey="neural">
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Analytical</span>
+                                    <ModuleCard title="Neural Spectrum™" moduleKey="neural">
+                                        {/* 3-Zone Spectrum: Parasympathetic | Hybrid | Sympathetic */}
+                                        <div style={{ marginBottom: '0.75rem' }}>
+                                            {/* Zone labels */}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                                                <span style={{ fontSize: '0.65rem', opacity: 0.6, flex: 1, textAlign: 'left' }}>Parasympathetic</span>
+                                                <span style={{ fontSize: '0.65rem', opacity: 0.6, flex: 1, textAlign: 'center' }}>Hybrid</span>
+                                                <span style={{ fontSize: '0.65rem', opacity: 0.6, flex: 1, textAlign: 'right' }}>Sympathetic</span>
+                                            </div>
+                                            {/* Spectrum bar with 3 zones */}
                                             <div style={{
-                                                flex: 1,
-                                                height: '4px',
-                                                background: 'rgba(255, 255, 255, 0.1)',
-                                                position: 'relative'
+                                                height: '8px',
+                                                background: 'linear-gradient(to right, #005CFF 0%, #005CFF 33%, #00A8FF 33%, #00A8FF 66%, #AD00FF 66%, #AD00FF 100%)',
+                                                borderRadius: '4px',
+                                                position: 'relative',
+                                                boxShadow: '0 0 10px rgba(0, 168, 255, 0.3)'
                                             }}>
+                                                {/* Position indicator */}
                                                 <div style={{
                                                     position: 'absolute',
-                                                    left: `${(profile?.neural_spectrum?.position || 0.5) * 100}%`,
-                                                    top: '-3px',
-                                                    width: '10px',
-                                                    height: '10px',
+                                                    left: `${(profile?.neural_spectrum?.value ?? 0.5) * 100}%`,
+                                                    top: '-4px',
+                                                    width: '16px',
+                                                    height: '16px',
                                                     background: '#00D9FF',
                                                     borderRadius: '50%',
-                                                    transform: 'translateX(-50%)'
+                                                    transform: 'translateX(-50%)',
+                                                    border: '2px solid #fff',
+                                                    boxShadow: '0 0 12px rgba(0, 217, 255, 0.8)'
                                                 }} />
                                             </div>
-                                            <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Intuitive</span>
                                         </div>
-                                        {profile?.neural_spectrum?.direction && (
-                                            <div style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
-                                                Direction: {profile.neural_spectrum.direction}
-                                            </div>
-                                        )}
+                                        {/* State + Percentage + Intensity */}
+                                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+                                            <span style={{
+                                                fontSize: '0.85rem',
+                                                fontWeight: '600',
+                                                color: profile?.neural_spectrum?.placement === 'parasympathetic' ? '#005CFF' :
+                                                       profile?.neural_spectrum?.placement === 'sympathetic' ? '#AD00FF' : '#00A8FF'
+                                            }}>
+                                                {(profile?.neural_spectrum?.placement || 'Hybrid').charAt(0).toUpperCase() + (profile?.neural_spectrum?.placement || 'hybrid').slice(1)}
+                                            </span>
+                                            <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+                                                ({Math.round((profile?.neural_spectrum?.value ?? 0.5) * 100)}%)
+                                            </span>
+                                            {profile?.neural_spectrum?.intensity && (
+                                                <span style={{
+                                                    fontSize: '0.7rem',
+                                                    padding: '0.15rem 0.4rem',
+                                                    background: 'rgba(0, 217, 255, 0.15)',
+                                                    borderRadius: '4px',
+                                                    textTransform: 'uppercase'
+                                                }}>
+                                                    {profile.neural_spectrum.intensity}
+                                                </span>
+                                            )}
+                                        </div>
                                     </ModuleCard>
 
                                     {/* Row 2: Tonal Identity, Rhythmic DNA, Sound Palette */}
@@ -6115,11 +6145,12 @@ What were you trying to express when you created this piece?`;
                     ];
                 }
 
-                // Neural Spectrum
+                // Neural Spectrum™ - extract value, placement, intensity from characteristics
                 if (normalized.neural_spectrum?.characteristics) {
-                    const { placement, intensity } = normalized.neural_spectrum.characteristics;
-                    normalized.neural_spectrum.analytical = placement === 'sympathetic' ? 0.7 : 0.3;
-                    normalized.neural_spectrum.intuitive = placement === 'parasympathetic' ? 0.7 : 0.3;
+                    const { value, placement, intensity } = normalized.neural_spectrum.characteristics;
+                    normalized.neural_spectrum.value = value ?? 0.5;
+                    normalized.neural_spectrum.placement = placement ?? 'hybrid';
+                    normalized.neural_spectrum.intensity = intensity ?? 'medium';
                 }
 
                 return normalized;
@@ -6876,9 +6907,9 @@ What were you trying to express when you created this piece?`;
                                 </div>
                             </div>
 
-                            {/* Neural Spectrum - Full Width */}
+                            {/* Neural Spectrum™ - Full Width */}
                             <div className="card-glow rounded-xl p-8" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
-                                <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Neural Spectrum</p>
+                                <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Neural Spectrum™</p>
                                 <NeuralSpectrumBar data={neuralSpectrum} />
                             </div>
 
@@ -7031,9 +7062,10 @@ What were you trying to express when you created this piece?`;
         function NeuralSpectrumBar({ data }) {
             const vizRef = useRef(null);
 
-            // Extract position and direction from data object
-            const position = typeof data === 'object' ? (data.position ?? 0.5) : 0.5;
-            const direction = typeof data === 'object' ? (data.direction || 'neutral') : 'neutral';
+            // Extract value, placement, intensity from data object (v5 Neural Spectrum™)
+            const position = typeof data === 'object' ? (data.value ?? data.position ?? 0.5) : 0.5;
+            const placement = typeof data === 'object' ? (data.placement || 'hybrid') : 'hybrid';
+            const intensity = typeof data === 'object' ? (data.intensity || 'medium') : 'medium';
 
             useEffect(() => {
                 if (!vizRef.current) return;
@@ -7139,27 +7171,54 @@ What were you trying to express when you created this piece?`;
                 animate();
             }, [data, position]);
 
-            // Determine state label based on position
+            // Get state label - use placement from Engine or compute from position
             const getStateLabel = () => {
+                if (placement && placement !== 'hybrid') {
+                    return placement.charAt(0).toUpperCase() + placement.slice(1);
+                }
                 if (position < 0.33) return 'Parasympathetic';
                 if (position > 0.66) return 'Sympathetic';
                 return 'Hybrid';
             };
 
+            // Get color based on placement
+            const getStateColor = () => {
+                if (placement === 'parasympathetic' || position < 0.33) return '#005CFF';
+                if (placement === 'sympathetic' || position > 0.66) return '#AD00FF';
+                return '#00A8FF';
+            };
+
             return (
                 <div className="w-full">
                     <div ref={vizRef} className="w-full neural-glow mb-2"></div>
-                    <div className="flex justify-between items-center text-xs text-gray-500 px-2">
+                    {/* 3-Zone Labels */}
+                    <div className="flex justify-between items-center text-xs px-2 mb-1" style={{ opacity: 0.6 }}>
                         <span>Parasympathetic</span>
-                        <span className="text-primary font-semibold text-sm">
-                            {getStateLabel()} ({(position * 100).toFixed(0)}%)
-                        </span>
+                        <span>Hybrid</span>
                         <span>Sympathetic</span>
                     </div>
+                    {/* State + Percentage + Intensity */}
+                    <div className="flex justify-center items-center gap-2 text-sm">
+                        <span style={{ color: getStateColor(), fontWeight: 600 }}>
+                            {getStateLabel()}
+                        </span>
+                        <span style={{ opacity: 0.7 }}>
+                            ({(position * 100).toFixed(0)}%)
+                        </span>
+                        <span style={{
+                            fontSize: '0.7rem',
+                            padding: '0.15rem 0.4rem',
+                            background: 'rgba(0, 217, 255, 0.15)',
+                            borderRadius: '4px',
+                            textTransform: 'uppercase'
+                        }}>
+                            {intensity}
+                        </span>
+                    </div>
                     <div className="text-center text-xs text-gray-600 mt-1">
-                        {position < 0.33 && 'Calm, relaxed, slower waves'}
-                        {position >= 0.33 && position <= 0.66 && 'Balanced, medium energy'}
-                        {position > 0.66 && 'Aroused, alert, faster waves'}
+                        {(placement === 'parasympathetic' || position < 0.33) && 'Calm, relaxed, slower waves'}
+                        {(placement === 'hybrid' || (position >= 0.33 && position <= 0.66)) && 'Balanced, medium energy'}
+                        {(placement === 'sympathetic' || position > 0.66) && 'Aroused, alert, faster waves'}
                     </div>
                 </div>
             );
