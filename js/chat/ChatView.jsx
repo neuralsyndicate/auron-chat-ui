@@ -1,6 +1,19 @@
 // ============================================================
 // CHAT VIEW - Main Chat Interface with SSE Streaming
 // ============================================================
+
+/* React Hooks (UMD) */
+const {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useReducer,
+  useLayoutEffect,
+  useContext
+} = React;
+
 function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessionId, setSyncing }) {
     const [messages, setMessages] = useState([
         { role: 'auron', content: "Hello. I'm Auron, your creative psychologist. Share what's on your mind — whether it's frustration, curiosity, or something you can't quite name yet. I'm listening." }

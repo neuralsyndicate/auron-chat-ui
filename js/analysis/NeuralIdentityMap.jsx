@@ -2,6 +2,19 @@
 // V5 EXPANDED SECTOR PANEL COMPONENT
 // Liquid glass wedge that expands from module node
 // ═══════════════════════════════════════════════════════════════════════════════
+
+/* React Hooks (UMD) */
+const {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useReducer,
+  useLayoutEffect,
+  useContext
+} = React;
+
 function ExpandedSectorPanel({ module, profile, cx, cy, isExpanded, sectorPath, onClose }) {
     if (!isExpanded || !module) return null;
 

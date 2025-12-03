@@ -2,6 +2,18 @@
 // REFLECTIONS VIEW - Past Conversations Gallery
 // ============================================================
 
+/* React Hooks (UMD) */
+const {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useReducer,
+  useLayoutEffect,
+  useContext
+} = React;
+
 // Reflections View - Horizontal scrolling card gallery
 function ReflectionsView({ user, setCurrentView, setLoadedSessionId }) {
     const [conversations, setConversations] = useState([]);

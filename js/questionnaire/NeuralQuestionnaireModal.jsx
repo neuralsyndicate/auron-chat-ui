@@ -1,6 +1,19 @@
 // ============================================================
 // NEURAL QUESTIONNAIRE MODAL - 6 Questions for Profile Synthesis
 // ============================================================
+
+/* React Hooks (UMD) */
+const {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useReducer,
+  useLayoutEffect,
+  useContext
+} = React;
+
 function NeuralQuestionnaireModal({ uploadId, dspComplete, onComplete, onClose }) {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [answers, setAnswers] = useState({

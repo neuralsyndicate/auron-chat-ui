@@ -1,6 +1,19 @@
 // ============================================================
 // TECHNICAL ANALYSIS PANEL - Neural Music Profile
 // ============================================================
+
+/* React Hooks (UMD) */
+const {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useReducer,
+  useLayoutEffect,
+  useContext
+} = React;
+
 function TechnicalAnalysisPanel({ components }) {
     const [expandedSections, setExpandedSections] = useState({
         sound_description: true,

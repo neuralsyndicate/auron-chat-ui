@@ -1,7 +1,17 @@
 // ===== SHARED UI COMPONENTS =====
 // LoadingScreen, ThinkingPanel, UserAvatarDropdown, Blueprint panels
 
-const { useState, useEffect, useRef } = React;
+/* React Hooks (UMD) */
+const {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useReducer,
+  useLayoutEffect,
+  useContext
+} = React;
 
 // Stage configurations with unique particle behaviors
 const UI_STAGE_CONFIG = {

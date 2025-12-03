@@ -2,6 +2,18 @@
 // CHAT COMPONENTS - Sources, Citations, Messages
 // ============================================================
 
+/* React Hooks (UMD) */
+const {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useReducer,
+  useLayoutEffect,
+  useContext
+} = React;
+
 // Blueprint Source Component - Simplified (no longer used inline, kept for compatibility)
 function BlueprintSourceCard({ source, index }) {
     const similarityPercent = Math.round((source.similarity || 0) * 100);

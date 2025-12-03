@@ -2,6 +2,18 @@
 // DASHBOARD - Main Application Root
 // ============================================================
 
+/* React Hooks (UMD) */
+const {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useReducer,
+  useLayoutEffect,
+  useContext
+} = React;
+
 function Dashboard() {
     const [user, setUser] = useState(null);
     const [currentView, setCurrentView] = useState('chat');

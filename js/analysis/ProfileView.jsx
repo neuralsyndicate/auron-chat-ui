@@ -2,6 +2,18 @@
 // PROFILE VIEW - Neural Music Profile with D3 Visualizations
 // ============================================================
 
+/* React Hooks (UMD) */
+const {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useReducer,
+  useLayoutEffect,
+  useContext
+} = React;
+
 function ProfileView({ user, isLocked, conversationCount }) {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
