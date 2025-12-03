@@ -6834,147 +6834,6 @@
             { key: 'inspirational_triggers', label: 'Inspirational Triggers', glyph: 'spark-inspire', angle: 327 }
         ];
 
-        // ============================================================
-        // DEMO MODE - Mock profile for UI preview without backend
-        // Access via ?demo=true URL parameter
-        // ============================================================
-        const DEMO_PROFILE = {
-            creative_identity: "A sonic architect weaving ancient mysticism with cutting-edge synthesis. Your sound exists in the liminal space between meditation and movement — grounded yet transcendent.",
-            profile: {
-                sound_description: {
-                    sonic_title: "Ancient Futurism",
-                    creator_tagline: "Veraxon × Genre Fusion",
-                    synthesis: "A fusion of primal rhythm and synthetic consciousness. Music that feels ancient yet forward-propelling — tribal drums meet crystalline synthesis in a hypnotic dance of old and new. This is the sound of civilizations dreaming of futures yet to come."
-                },
-                genre_fusion: {
-                    synthesis: "Your sonic signature defies singular classification, inhabiting the fertile intersection of electronic experimentation and world music traditions. The dominant electronic foundation (45%) provides structural framework, while ambient textures (25%) create spatial depth. Unexpected tribal and world music elements (20%) ground the futurism in ancient ritual, with hints of downtempo (10%) adding contemplative weight.",
-                    characteristics: {
-                        genres: ['Electronic', 'Ambient', 'World', 'Downtempo'],
-                        percentages: [45, 25, 20, 10],
-                        primary: 'Electronic',
-                        fusion_style: 'Organic-Digital Hybrid'
-                    }
-                },
-                neural_spectrum: {
-                    synthesis: "Operating in the hybrid neural zone — your frequencies stimulate both the analytical and intuitive mind simultaneously. The balanced spectrum creates music that can be both deeply felt and intellectually appreciated, engaging the full nervous system in sonic experience.",
-                    value: 0.52,
-                    placement: 'hybrid',
-                    characteristics: {
-                        low_end: 0.65,
-                        mid_presence: 0.72,
-                        high_clarity: 0.58,
-                        sub_weight: 0.70,
-                        air: 0.45
-                    }
-                },
-                sound_palette: {
-                    synthesis: "Your sonic palette balances organic warmth with digital precision. The electronic backbone (55%) provides movement and energy, while acoustic elements (30%) bring human touch and natural resonance. Digital artifacts (15%) add modern texture without overwhelming the organic core.",
-                    characteristics: {
-                        acoustic: 0.30,
-                        electronic: 0.55,
-                        digital: 0.15,
-                        warmth: 0.68,
-                        brightness: 0.52
-                    }
-                },
-                tonal_identity: {
-                    synthesis: "Rooted in D minor's introspective depth, your harmonic language speaks of contemplation and inner journeying. The Dorian mode inflections add unexpected brightness to the minor tonality — melancholy with hope, darkness with light. This tonal ambiguity creates emotional richness that rewards repeated listening.",
-                    characteristics: {
-                        key: 'D',
-                        mode: 'minor',
-                        modal_color: 'Dorian',
-                        brightness: 0.45,
-                        tension: 0.38,
-                        resolution: 0.72,
-                        harmonic_complexity: 0.55
-                    }
-                },
-                rhythmic_dna: {
-                    synthesis: "The rhythmic foundation pulses at 118 BPM — the sweet spot between meditation and movement. Polyrhythmic layers create hypnotic complexity while maintaining danceability. The groove feels both ancient and futuristic, as if tribal ceremonies had evolved into electronic rituals.",
-                    characteristics: {
-                        tempo_bpm: 118,
-                        time_signature: '4/4',
-                        groove_feel: 'Hypnotic',
-                        swing: 0.15,
-                        syncopation: 0.62,
-                        rhythmic_density: 0.58,
-                        pulse_stability: 0.85
-                    }
-                },
-                timbre_dna: {
-                    synthesis: "The textural signature reveals a masterful balance of warmth and edge. Rich, enveloping low-mids provide foundation, while crystalline highs add definition without harshness. The timbral stability allows subtle movements to shine — a solid canvas for expressive detail.",
-                    characteristics: {
-                        warmth: 0.72,
-                        brightness: 0.55,
-                        roughness: 0.28,
-                        stability: 0.78,
-                        density: 0.62,
-                        attack: 0.45,
-                        sustain: 0.70
-                    }
-                },
-                emotional_fingerprint: {
-                    synthesis: "Your emotional architecture centers on transcendence and introspection, with undercurrents of primal energy. The dominant feelings evoked are contemplative wonder and embodied presence — music that invites both stillness and movement, thinking and feeling simultaneously.",
-                    characteristics: {
-                        primary_emotion: 'Transcendence',
-                        secondary_emotion: 'Introspection',
-                        emotional_arc: 'Building Revelation',
-                        intensity: 0.68,
-                        valence: 0.58,
-                        energy: 0.55,
-                        emotions: {
-                            transcendence: 0.82,
-                            introspection: 0.75,
-                            energy: 0.55,
-                            melancholy: 0.35,
-                            joy: 0.48
-                        }
-                    }
-                },
-                processing_signature: {
-                    synthesis: "The production approach reveals sophisticated spatial design. Wide stereo imaging creates immersive soundscapes, while careful frequency sculpting maintains clarity across the spectrum. Dynamic range is preserved for emotional impact — this is mastered for deep listening, not just streaming.",
-                    characteristics: {
-                        mix_clarity: 0.78,
-                        stereo_width: 0.72,
-                        dynamic_range: 0.65,
-                        compression_style: 'Transparent',
-                        spatial_depth: 0.70,
-                        frequency_balance: 0.75
-                    }
-                },
-                sonic_architecture: {
-                    synthesis: "The structural design follows organic evolution rather than rigid formulae. Extended introductions establish atmosphere before the journey begins. Development sections layer and transform rather than simply add. The architecture rewards patience — this is music that unfolds rather than arrives.",
-                    characteristics: {
-                        structure_type: 'Evolutionary',
-                        intro_weight: 0.25,
-                        verse_weight: 0.30,
-                        chorus_weight: 0.20,
-                        bridge_weight: 0.15,
-                        outro_weight: 0.10,
-                        sections: ['Intro', 'Build', 'Peak', 'Breakdown', 'Climax', 'Outro'],
-                        transitions: 'Gradual'
-                    }
-                },
-                inspirational_triggers: {
-                    synthesis: "Drawing from global influences filtered through electronic sensibility. Echoes of Berlin techno's precision meet Middle Eastern modality and African polyrhythm. Contemporary influences include the organic electronics of Bonobo, the world-fusion of Nicola Cruz, and the hypnotic minimalism of Nils Frahm.",
-                    characteristics: {
-                        era_influences: ['Contemporary', 'Timeless'],
-                        geographic_influences: ['Berlin', 'Middle East', 'West Africa'],
-                        artist_echoes: ['Bonobo', 'Nicola Cruz', 'Nils Frahm'],
-                        production_era: '2020s',
-                        cultural_threads: ['Electronic', 'World Music', 'Minimalism']
-                    }
-                }
-            },
-            dsp_facts: {
-                duration: 342,
-                sample_rate: 44100,
-                channels: 2,
-                bitrate: 320,
-                format: 'mp3'
-            }
-        };
-
         // Color helper - Blue-based palette (NO PURPLE)
         function getPlacementColor(placement) {
             const colors = {
@@ -7967,23 +7826,6 @@ What were you trying to express when you created this piece?`;
                     content: userMessage
                 }]);
 
-                // Demo mode: provide mock response without API call
-                if (uploadId === 'demo-session') {
-                    setTimeout(() => {
-                        const demoResponses = [
-                            "This is demo mode — the UI preview is working! In the live version, I would analyze your question in context of this sonic profile and provide personalized insights.",
-                            "Demo mode active. Your message was received, but no backend processing occurs here. This lets you explore the Neural Identity Map visuals without running a full analysis.",
-                            "You're viewing the UI in demo mode. The radial map, glyphs, and visualizations are all functional — only the chat responses are mocked."
-                        ];
-                        setMessages(prev => [...prev, {
-                            role: 'auron',
-                            content: demoResponses[Math.floor(Math.random() * demoResponses.length)]
-                        }]);
-                        setSending(false);
-                    }, 800);
-                    return;
-                }
-
                 try {
                     const token = await getAuthToken();
                     const response = await fetch(
@@ -8135,26 +7977,9 @@ What were you trying to express when you created this piece?`;
                                 color: 'rgba(0, 217, 255, 0.8)',
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.15em',
-                                marginBottom: '0.25rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.75rem'
+                                marginBottom: '0.25rem'
                             }}>
                                 YOUR SONIC FINGERPRINT
-                                {uploadId === 'demo-session' && (
-                                    <span style={{
-                                        background: 'linear-gradient(135deg, #FF6B00, #FF9500)',
-                                        color: '#000',
-                                        padding: '0.15rem 0.5rem',
-                                        borderRadius: '3px',
-                                        fontSize: '0.6rem',
-                                        fontWeight: '700',
-                                        letterSpacing: '0.1em',
-                                        boxShadow: '0 0 15px rgba(255, 107, 0, 0.4)'
-                                    }}>
-                                        DEMO MODE
-                                    </span>
-                                )}
                             </div>
                             <h2 style={{
                                 fontSize: '1.5rem',
@@ -8248,23 +8073,6 @@ What were you trying to express when you created this piece?`;
 
             // Audio File URL (for playback in Neural Lab)
             const [audioFileUrl, setAudioFileUrl] = useState(null);
-
-            // Demo mode state
-            const [isDemoMode, setIsDemoMode] = useState(false);
-
-            // Check for demo mode on mount (?demo=true)
-            useEffect(() => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const demoParam = urlParams.get('demo');
-
-                if (demoParam === 'true') {
-                    console.log('🎛️ Demo Mode Activated - Loading mock profile');
-                    setIsDemoMode(true);
-                    setAudioSessionId('demo-session');
-                    setSynthesizedProfile(DEMO_PROFILE);
-                    // No audio URL in demo mode - player will be disabled
-                }
-            }, []);
 
             // Load past conversation from Reflections
             useEffect(() => {
