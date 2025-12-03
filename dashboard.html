@@ -92,6 +92,18 @@
             --blueprint-border: 1px solid rgba(0, 217, 255, 0.25);
             --section-label-color: rgba(0, 217, 255, 0.7);
             --micro-dot-color: rgba(0, 217, 255, 0.3);
+
+            /* V4 Premium Neon System */
+            --neon-inner: 0 0 10px rgba(0, 217, 255, 0.6);
+            --neon-outer: 0 0 30px rgba(0, 217, 255, 0.35);
+            --neon-bloom: 0 0 60px rgba(0, 217, 255, 0.15);
+            --neon-intense: 0 0 15px rgba(0, 217, 255, 0.8), 0 0 40px rgba(0, 217, 255, 0.4), 0 0 80px rgba(0, 217, 255, 0.2);
+
+            /* Glow Intensity Scale */
+            --glow-subtle: 0.12;
+            --glow-low: 0.18;
+            --glow-medium: 0.45;
+            --glow-bright: 0.85;
         }
 
         * {
@@ -568,6 +580,20 @@
             50% { opacity: 0.08; transform: translate(-50%, -50%) scale(1.02); }
         }
 
+        /* V4: Module selected state - dims background layers for focus */
+        .neural-identity-map.module-selected .neural-bg-ring {
+            opacity: 0.02;
+        }
+
+        .neural-identity-map.module-selected .neural-spectrum-arc:not(.active),
+        .neural-identity-map.module-selected .floating-constellation:not(.active),
+        .neural-identity-map.module-selected .emotional-compass:not(.active),
+        .neural-identity-map.module-selected .architecture-bar-ring:not(.active),
+        .neural-identity-map.module-selected .genre-segments:not(.active),
+        .neural-identity-map.module-selected .timbre-wave-ring:not(.active) {
+            opacity: 0.05;
+        }
+
         /* Main radial SVG container */
         .neural-radial-svg {
             width: 100%;
@@ -605,11 +631,42 @@
         .neural-emblem-svg {
             width: 100%;
             height: 100%;
+            filter: drop-shadow(var(--neon-outer));
+        }
+
+        /* V4: Rotating blueprint rings behind emblem */
+        .emblem-ring {
+            fill: none;
+            stroke: var(--neural-primary);
+            opacity: 0.12;
+        }
+
+        .emblem-ring-1 { animation: emblem-ring-rotate 90s linear infinite; }
+        .emblem-ring-2 { animation: emblem-ring-rotate 120s linear infinite reverse; }
+        .emblem-ring-3 { animation: emblem-ring-rotate 75s linear infinite; }
+
+        @keyframes emblem-ring-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* V4: Particle field */
+        .emblem-particle {
+            fill: var(--neural-primary);
+            opacity: 0.15;
+            animation: particle-drift 8s ease-in-out infinite;
+        }
+
+        @keyframes particle-drift {
+            0%, 100% { transform: translate(0, 0); opacity: 0.1; }
+            25% { transform: translate(3px, -2px); opacity: 0.2; }
+            50% { transform: translate(-2px, 3px); opacity: 0.15; }
+            75% { transform: translate(2px, 2px); opacity: 0.2; }
         }
 
         /* Emblem animations */
         @keyframes emblem-pulse {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
+            0%, 100% { transform: scale(1); opacity: 0.85; }
             50% { transform: scale(1.03); opacity: 1; }
         }
 
@@ -618,8 +675,16 @@
             to { transform: rotate(360deg); }
         }
 
+        /* V4: BPM pulse glow */
+        @keyframes bpm-glow-pulse {
+            0%, 100% { filter: drop-shadow(0 0 12px rgba(0,217,255,0.4)); }
+            50% { filter: drop-shadow(0 0 28px rgba(0,217,255,0.7)); }
+        }
+
         .emblem-core {
-            animation: emblem-pulse var(--pulse-duration, 2s) ease-in-out infinite;
+            animation:
+                emblem-pulse var(--pulse-duration, 2s) ease-in-out infinite,
+                bpm-glow-pulse var(--pulse-duration, 2s) ease-in-out infinite;
         }
 
         .emblem-shape {
@@ -627,26 +692,29 @@
             animation: emblem-rotate var(--rotate-duration, 60s) linear infinite;
         }
 
-        /* Center identity text */
+        /* Center identity text - V4 Typography */
         .neural-center-identity {
             text-align: center;
             margin-bottom: 0.75rem;
         }
 
         .neural-center-title {
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.15rem;
+            font-weight: 500;
             color: #fff;
-            margin: 0 0 0.25rem 0;
-            line-height: 1.3;
+            margin: 0 0 0.3rem 0;
+            line-height: 1.35;
+            letter-spacing: 0.02em;
+            text-shadow: 0 0 25px var(--neural-glow);
         }
 
         .neural-center-creator {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--neural-primary);
             font-family: 'JetBrains Mono', monospace;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.15em;
+            opacity: 0.85;
         }
 
         /* Center content area (morphs on module select) */
@@ -655,7 +723,13 @@
             max-height: 180px;
             overflow-y: auto;
             margin-bottom: 1rem;
-            transition: all 0.3s ease;
+            transition: opacity 0.15s ease, transform 0.2s ease;
+        }
+
+        /* V4: Crossfade transition state */
+        .neural-center-hub.transitioning .neural-center-content {
+            opacity: 0;
+            transform: translateY(-5px);
         }
 
         .neural-center-content::-webkit-scrollbar {
@@ -669,8 +743,9 @@
 
         .neural-center-synthesis {
             font-size: 0.85rem;
-            line-height: 1.7;
-            color: rgba(255,255,255,0.8);
+            line-height: 1.8;
+            letter-spacing: 0.01em;
+            color: rgba(255,255,255,0.75);
             text-align: center;
             padding: 0 0.5rem;
             margin: 0;
@@ -764,32 +839,45 @@
             text-align: right;
         }
 
-        /* ===== RADIAL NODES ===== */
+        /* ===== RADIAL NODES - V4 Enhanced ===== */
 
         .neural-node-group {
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* V4: Scale + glow on hover */
+        .neural-node-group:hover {
+            transform: scale(1.08);
         }
 
         .neural-node-group:hover .neural-node-circle {
-            filter: brightness(1.3);
+            filter: drop-shadow(var(--neon-inner));
         }
 
         .neural-node-circle {
             transition: all 0.3s ease;
         }
 
-        /* Node states */
+        /* V4: Node states with enhanced glow */
+        .neural-node-group.selected {
+            transform: scale(1.15);
+        }
+
         .neural-node-group.selected .neural-node-circle {
-            filter: url(#node-glow-filter);
+            filter: drop-shadow(0 0 20px rgba(0,217,255,0.6)) drop-shadow(0 0 40px rgba(0,217,255,0.3));
+        }
+
+        .neural-node-group.faded {
+            transform: scale(0.95);
         }
 
         .neural-node-group.faded .neural-node-circle {
-            opacity: 0.3;
+            opacity: 0.25;
         }
 
         .neural-node-group.faded .neural-node-label {
-            opacity: 0.4;
+            opacity: 0.3;
         }
 
         .neural-node-label {
@@ -806,10 +894,20 @@
             dominant-baseline: central;
         }
 
+        /* V4: Glyph inside node - enhanced */
+        .neural-node-glyph {
+            pointer-events: none;
+        }
+
+        .neural-node-glyph svg {
+            overflow: visible;
+            filter: drop-shadow(0 0 6px currentColor);
+        }
+
         /* Breathing glow animation for nodes */
         @keyframes node-breathe {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 0.8; }
+            0%, 100% { opacity: 0.55; }
+            50% { opacity: 0.75; }
         }
 
         .neural-node-circle {
@@ -823,26 +921,27 @@
 
         /* Radial ripple effect on click */
         @keyframes radial-ripple {
-            0% { r: 30; opacity: 0.5; }
-            100% { r: 0; opacity: 0; }
+            0% { r: 30; opacity: 0.6; }
+            100% { r: 60; opacity: 0; }
         }
 
         .ripple-effect {
             fill: var(--neural-primary);
-            animation: radial-ripple 0.6s ease-out forwards;
+            animation: radial-ripple 0.5s ease-out forwards;
         }
 
-        /* Connection lines */
+        /* Connection lines - V4 enhanced */
         .neural-connection {
             stroke: var(--neural-primary);
             stroke-width: 1;
-            opacity: 0.15;
-            transition: opacity 0.3s ease;
+            opacity: var(--glow-subtle);
+            transition: all 0.3s ease;
         }
 
         .neural-connection.active {
-            opacity: 0.5;
+            opacity: 0.45;
             stroke-width: 2;
+            filter: drop-shadow(0 0 8px var(--neural-glow));
         }
 
         /* ===== BACK BUTTON (when module selected) ===== */
@@ -1089,6 +1188,20 @@
             50% { opacity: 0.08; transform: translate(-50%, -50%) scale(1.02); }
         }
 
+        /* V4: Module selected state - dims background layers for focus */
+        .neural-identity-map.module-selected .neural-bg-ring {
+            opacity: 0.02;
+        }
+
+        .neural-identity-map.module-selected .neural-spectrum-arc:not(.active),
+        .neural-identity-map.module-selected .floating-constellation:not(.active),
+        .neural-identity-map.module-selected .emotional-compass:not(.active),
+        .neural-identity-map.module-selected .architecture-bar-ring:not(.active),
+        .neural-identity-map.module-selected .genre-segments:not(.active),
+        .neural-identity-map.module-selected .timbre-wave-ring:not(.active) {
+            opacity: 0.05;
+        }
+
         /* Main radial SVG container */
         .neural-radial-svg {
             width: 100%;
@@ -1126,11 +1239,42 @@
         .neural-emblem-svg {
             width: 100%;
             height: 100%;
+            filter: drop-shadow(var(--neon-outer));
+        }
+
+        /* V4: Rotating blueprint rings behind emblem */
+        .emblem-ring {
+            fill: none;
+            stroke: var(--neural-primary);
+            opacity: 0.12;
+        }
+
+        .emblem-ring-1 { animation: emblem-ring-rotate 90s linear infinite; }
+        .emblem-ring-2 { animation: emblem-ring-rotate 120s linear infinite reverse; }
+        .emblem-ring-3 { animation: emblem-ring-rotate 75s linear infinite; }
+
+        @keyframes emblem-ring-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* V4: Particle field */
+        .emblem-particle {
+            fill: var(--neural-primary);
+            opacity: 0.15;
+            animation: particle-drift 8s ease-in-out infinite;
+        }
+
+        @keyframes particle-drift {
+            0%, 100% { transform: translate(0, 0); opacity: 0.1; }
+            25% { transform: translate(3px, -2px); opacity: 0.2; }
+            50% { transform: translate(-2px, 3px); opacity: 0.15; }
+            75% { transform: translate(2px, 2px); opacity: 0.2; }
         }
 
         /* Emblem animations */
         @keyframes emblem-pulse {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
+            0%, 100% { transform: scale(1); opacity: 0.85; }
             50% { transform: scale(1.03); opacity: 1; }
         }
 
@@ -1139,8 +1283,16 @@
             to { transform: rotate(360deg); }
         }
 
+        /* V4: BPM pulse glow */
+        @keyframes bpm-glow-pulse {
+            0%, 100% { filter: drop-shadow(0 0 12px rgba(0,217,255,0.4)); }
+            50% { filter: drop-shadow(0 0 28px rgba(0,217,255,0.7)); }
+        }
+
         .emblem-core {
-            animation: emblem-pulse var(--pulse-duration, 2s) ease-in-out infinite;
+            animation:
+                emblem-pulse var(--pulse-duration, 2s) ease-in-out infinite,
+                bpm-glow-pulse var(--pulse-duration, 2s) ease-in-out infinite;
         }
 
         .emblem-shape {
@@ -1148,26 +1300,29 @@
             animation: emblem-rotate var(--rotate-duration, 60s) linear infinite;
         }
 
-        /* Center identity text */
+        /* Center identity text - V4 Typography */
         .neural-center-identity {
             text-align: center;
             margin-bottom: 0.75rem;
         }
 
         .neural-center-title {
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.15rem;
+            font-weight: 500;
             color: #fff;
-            margin: 0 0 0.25rem 0;
-            line-height: 1.3;
+            margin: 0 0 0.3rem 0;
+            line-height: 1.35;
+            letter-spacing: 0.02em;
+            text-shadow: 0 0 25px var(--neural-glow);
         }
 
         .neural-center-creator {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--neural-primary);
             font-family: 'JetBrains Mono', monospace;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.15em;
+            opacity: 0.85;
         }
 
         /* Center content area (morphs on module select) */
@@ -1176,7 +1331,13 @@
             max-height: 180px;
             overflow-y: auto;
             margin-bottom: 1rem;
-            transition: all 0.3s ease;
+            transition: opacity 0.15s ease, transform 0.2s ease;
+        }
+
+        /* V4: Crossfade transition state */
+        .neural-center-hub.transitioning .neural-center-content {
+            opacity: 0;
+            transform: translateY(-5px);
         }
 
         .neural-center-content::-webkit-scrollbar {
@@ -1190,8 +1351,9 @@
 
         .neural-center-synthesis {
             font-size: 0.85rem;
-            line-height: 1.7;
-            color: rgba(255,255,255,0.8);
+            line-height: 1.8;
+            letter-spacing: 0.01em;
+            color: rgba(255,255,255,0.75);
             text-align: center;
             padding: 0 0.5rem;
             margin: 0;
@@ -1328,12 +1490,14 @@
         }
 
         /* Glyph inside node */
+        /* V4: Enhanced with glow */
         .neural-node-glyph {
             pointer-events: none;
         }
 
         .neural-node-glyph svg {
             overflow: visible;
+            filter: drop-shadow(0 0 6px currentColor);
         }
 
         /* Breathing glow animation for nodes */
@@ -1378,20 +1542,22 @@
         /* ===== INTEGRATED VISUALIZATIONS ===== */
 
         /* Neural Spectrum Arc - wraps around top */
+        /* V4: Lower baseline opacity for subtler blueprint effect */
         .neural-spectrum-arc {
-            opacity: 0.2;
+            opacity: var(--glow-subtle);
             transition: opacity 0.4s ease;
         }
 
         .neural-spectrum-arc.active {
-            opacity: 0.9;
+            opacity: 0.85;
         }
 
         .spectrum-arc-path {
             fill: none;
             stroke: url(#spectrum-gradient);
-            stroke-width: 3;
+            stroke-width: 2; /* V4: Thinner for precision */
             stroke-linecap: round;
+            filter: drop-shadow(0 0 4px var(--neural-glow));
         }
 
         @keyframes spectrum-wave {
@@ -1405,24 +1571,26 @@
         }
 
         /* Floating Constellation - Sound Palette */
+        /* V4: Lower baseline for subtler ambient effect */
         .floating-constellation {
-            opacity: 0.15;
+            opacity: 0.1;
             transition: opacity 0.4s ease;
         }
 
         .floating-constellation.active {
-            opacity: 0.8;
+            opacity: 0.75;
         }
 
         .constellation-node {
             fill: var(--neural-primary);
             transition: all 0.3s ease;
+            filter: drop-shadow(0 0 3px var(--neural-glow));
         }
 
         .constellation-line {
             stroke: var(--neural-primary);
             stroke-width: 0.5;
-            opacity: 0.3;
+            opacity: 0.2; /* V4: Subtler connecting lines */
         }
 
         @keyframes constellation-drift {
@@ -1435,26 +1603,28 @@
         }
 
         /* Emotional Compass Ring */
+        /* V4: Lower baseline opacity */
         .emotional-compass {
-            opacity: 0.2;
+            opacity: var(--glow-subtle);
             transition: opacity 0.4s ease;
         }
 
         .emotional-compass.active {
-            opacity: 0.9;
+            opacity: 0.85;
         }
 
         .compass-segment {
             fill: none;
             stroke: var(--neural-primary);
-            stroke-width: 8;
-            opacity: 0.3;
+            stroke-width: 6; /* V4: Thinner for precision */
+            opacity: 0.25;
             transition: all 0.3s ease;
+            filter: drop-shadow(0 0 4px var(--neural-glow));
         }
 
         .compass-segment.active {
-            opacity: 0.8;
-            stroke-width: 12;
+            opacity: 0.75;
+            stroke-width: 10;
         }
 
         .compass-label {
@@ -1470,18 +1640,20 @@
         }
 
         /* Sonic Architecture Bar Ring */
+        /* V4: Lower baseline opacity */
         .architecture-bar-ring {
-            opacity: 0.15;
+            opacity: 0.1;
             transition: opacity 0.4s ease;
         }
 
         .architecture-bar-ring.active {
-            opacity: 0.85;
+            opacity: 0.8;
         }
 
         .arch-bar {
             fill: url(#bar-gradient);
             transition: all 0.3s ease;
+            filter: drop-shadow(0 0 3px var(--neural-glow));
         }
 
         @keyframes bar-pulse {
@@ -1495,34 +1667,37 @@
         }
 
         /* Genre Fusion Outer Ring */
+        /* V4: Lower baseline opacity */
         .genre-segments {
-            opacity: 0.2;
+            opacity: var(--glow-subtle);
             transition: opacity 0.4s ease;
         }
 
         .genre-segments.active {
-            opacity: 0.8;
+            opacity: 0.75;
         }
 
         .genre-segment {
             fill: none;
-            stroke-width: 4;
+            stroke-width: 3; /* V4: Thinner for precision */
             transition: all 0.3s ease;
+            filter: drop-shadow(0 0 4px currentColor);
         }
 
         .genre-segment.active {
-            stroke-width: 8;
-            filter: url(#node-glow-filter);
+            stroke-width: 6;
+            filter: drop-shadow(0 0 8px currentColor);
         }
 
         /* Timbre DNA Wave Ring */
+        /* V4: Lower baseline opacity */
         .timbre-wave-ring {
-            opacity: 0.15;
+            opacity: 0.1;
             transition: opacity 0.4s ease;
         }
 
         .timbre-wave-ring.active {
-            opacity: 0.8;
+            opacity: 0.75;
         }
 
         .timbre-wave-path {
@@ -1695,18 +1870,20 @@
             }
 
             /* Mobile Tab Navigation */
+            /* V4: Enhanced mobile tab nav */
             .mobile-tab-nav {
                 position: fixed;
                 bottom: 0;
                 left: 0;
                 right: 0;
-                height: 64px;
+                height: 72px; /* V4: Larger touch targets */
                 background: rgba(10, 10, 31, 0.95);
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
                 border-top: 1px solid var(--neural-border);
                 display: flex;
                 z-index: 100;
+                padding-bottom: env(safe-area-inset-bottom, 0); /* iOS safe area */
             }
 
             .mobile-tab {
@@ -1715,16 +1892,17 @@
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                gap: 4px;
+                gap: 6px; /* V4: Better spacing */
+                min-height: 56px; /* V4: Larger touch target */
                 color: rgba(255, 255, 255, 0.4);
-                font-size: 0.6rem;
+                font-size: 0.65rem;
                 text-transform: uppercase;
                 letter-spacing: 0.1em;
                 font-family: 'JetBrains Mono', monospace;
                 border: none;
                 background: none;
                 cursor: pointer;
-                transition: all 0.2s ease;
+                transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); /* V4: Bounce transition */
             }
 
             .mobile-tab:hover {
@@ -1733,56 +1911,69 @@
 
             .mobile-tab.active {
                 color: var(--neural-primary);
+                transform: scale(1.05);
+            }
+
+            /* V4: Active tab glow */
+            .mobile-tab.active .mobile-tab-icon {
+                text-shadow: 0 0 15px var(--neural-glow);
             }
 
             .mobile-tab-icon {
-                font-size: 1.25rem;
+                font-size: 1.4rem; /* V4: Larger icons */
+                transition: text-shadow 0.3s ease;
             }
 
-            /* Mobile Details List */
+            /* Mobile Details List - V4 Enhanced */
             .mobile-details-list {
-                padding: 1rem;
+                padding: 1.25rem; /* V4: More breathing room */
+                padding-bottom: calc(80px + env(safe-area-inset-bottom, 0)); /* Account for tab nav */
             }
 
             .mobile-module-item {
-                padding: 1rem;
-                margin-bottom: 0.75rem;
+                padding: 1.25rem; /* V4: Larger touch target */
+                margin-bottom: 1rem;
                 background: rgba(0, 217, 255, 0.03);
                 border: 1px solid var(--neural-border);
-                border-radius: 8px;
+                border-radius: 10px; /* V4: Softer corners */
                 cursor: pointer;
-                transition: all 0.2s ease;
+                transition: all 0.25s ease;
             }
 
             .mobile-module-item:hover,
             .mobile-module-item.active {
                 border-color: var(--neural-primary);
                 background: rgba(0, 217, 255, 0.08);
+                box-shadow: 0 0 20px rgba(0, 217, 255, 0.15); /* V4: Glow on active */
             }
 
             .mobile-module-header {
                 display: flex;
                 align-items: center;
-                gap: 0.75rem;
-                margin-bottom: 0.5rem;
+                gap: 1rem; /* V4: More space */
+                margin-bottom: 0.75rem;
             }
 
             .mobile-module-glyph {
-                width: 28px;
-                height: 28px;
+                width: 32px; /* V4: Larger glyph */
+                height: 32px;
                 color: var(--neural-primary);
             }
 
+            .mobile-module-glyph svg {
+                filter: drop-shadow(0 0 6px currentColor); /* V4: Glyph glow */
+            }
+
             .mobile-module-title {
-                font-size: 0.9rem;
+                font-size: 0.95rem;
                 font-weight: 500;
                 color: #fff;
             }
 
             .mobile-module-synthesis {
-                font-size: 0.75rem;
+                font-size: 0.8rem;
                 color: rgba(255, 255, 255, 0.6);
-                line-height: 1.5;
+                line-height: 1.6; /* V4: Better readability */
             }
 
             .mobile-module-detail {
@@ -6950,10 +7141,27 @@
         };
 
         // Neural Emblem - Procedural SVG with BPM pulse and rotation
+        // V4: Added rotating blueprint rings and particle field
         function NeuralEmblem({ profile, placement, pulseDuration, rotateDuration }) {
             const c = getPlacementColors(placement);
             const stability = profile?.timbre_dna?.characteristics?.stability ?? 0.5;
             const sides = Math.floor(stability * 3) + 5; // 5-8 sides
+
+            // V4: Generate particle positions (memoized via useMemo)
+            const particles = React.useMemo(() => {
+                const pts = [];
+                for (let i = 0; i < 15; i++) {
+                    const angle = (i / 15) * Math.PI * 2 + Math.random() * 0.5;
+                    const radius = 30 + Math.random() * 35;
+                    pts.push({
+                        x: 70 + Math.cos(angle) * radius,
+                        y: 70 + Math.sin(angle) * radius,
+                        size: 1 + Math.random() * 1.5,
+                        delay: i * 0.4
+                    });
+                }
+                return pts;
+            }, []);
 
             return (
                 <svg
@@ -6977,6 +7185,26 @@
                             </feMerge>
                         </filter>
                     </defs>
+
+                    {/* V4: Rotating blueprint rings behind emblem */}
+                    <circle className="emblem-ring emblem-ring-1" cx="70" cy="70" r="55" fill="none" stroke={c.primary} strokeWidth="0.5" strokeDasharray="4 8" />
+                    <circle className="emblem-ring emblem-ring-2" cx="70" cy="70" r="62" fill="none" stroke={c.primary} strokeWidth="0.5" strokeDasharray="2 12" />
+                    <circle className="emblem-ring emblem-ring-3" cx="70" cy="70" r="48" fill="none" stroke={c.primary} strokeWidth="0.5" strokeDasharray="6 6" />
+
+                    {/* V4: Particle field */}
+                    <g className="emblem-particles">
+                        {particles.map((p, i) => (
+                            <circle
+                                key={`particle-${i}`}
+                                className="emblem-particle"
+                                cx={p.x}
+                                cy={p.y}
+                                r={p.size}
+                                style={{ animationDelay: `${p.delay}s` }}
+                            />
+                        ))}
+                    </g>
+
                     <circle cx="70" cy="70" r="65" fill="none" stroke={c.primary} strokeWidth="1" opacity="0.3" />
                     <polygon
                         className="emblem-shape"
@@ -7366,7 +7594,7 @@
 
             // Desktop: Full radial layout
             return (
-                <div className="neural-identity-map">
+                <div className={`neural-identity-map ${selectedModule ? 'module-selected' : ''}`}>
                     {/* Background ambient rings */}
                     <div className="neural-bg-rings">
                         {[1, 2, 3, 4, 5].map(i => (<div key={`ring-${i}`} className="neural-bg-ring" style={{ width: `${200 + i * 150}px`, height: `${200 + i * 150}px`, animationDelay: `${i * 0.5}s` }} />))}
@@ -7451,9 +7679,9 @@
                             return (
                                 <g key={mod.key} className={`neural-node-group ${isSelected ? 'selected' : ''} ${isFaded ? 'faded' : ''}`} onClick={() => handleModuleClick(mod.key, x, y)} style={{ cursor: 'pointer' }}>
                                     <circle className="neural-node-circle" cx={x} cy={y} r={nodeRadius} fill={hasData ? baseColor : 'rgba(255,255,255,0.1)'} stroke={isSelected ? '#fff' : baseColor} strokeWidth={isSelected ? 2 : 1} />
-                                    <foreignObject x={x - 12} y={y - 12} width="24" height="24" className="neural-node-glyph">
+                                    <foreignObject x={x - 14} y={y - 14} width="28" height="28" className="neural-node-glyph">
                                         <div xmlns="http://www.w3.org/1999/xhtml" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                                            <NeuralGlyph type={mod.glyph} size={20} />
+                                            <NeuralGlyph type={mod.glyph} size={24} />
                                         </div>
                                     </foreignObject>
                                     <text className="neural-node-label" x={x} y={y + nodeRadius + 14}>{mod.label}</text>
