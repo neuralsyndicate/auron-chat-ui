@@ -181,43 +181,55 @@ function NeuralGlyph({ type, size = 40, color = 'var(--neural-primary)', classNa
     );
 }
 
-// Helper to generate polygon points for emblem
-const generateEmblemPoints = (cx, cy, radius, sides) => {
-    const points = [];
-    for (let i = 0; i < sides * 2; i++) {
-        const angle = (i / (sides * 2)) * Math.PI * 2 - Math.PI / 2;
-        const r = i % 2 === 0 ? radius : radius * 0.55;
-        points.push(`${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`);
-    }
-    return points.join(' ');
-};
+// ============================================================
+// V6 ORGANIC NEURAL CORE EMBLEM
+// Replaces polygon star with organic tendrils, liquid glass, bloom
+// ============================================================
 
-// Neural Emblem - Procedural SVG with BPM pulse and rotation
-// V4: Added rotating blueprint rings and particle field
+// Neural Emblem V6 - Organic neural core with tendrils and bloom
 function NeuralEmblem({ profile, placement, pulseDuration, rotateDuration }) {
     const c = getPlacementColors(placement);
-    const stability = profile?.timbre_dna?.characteristics?.stability ?? 0.5;
-    const sides = Math.floor(stability * 3) + 5; // 5-8 sides
 
-    // V4: Generate particle positions (memoized via useMemo)
+    // Generate 10 soft organic tendrils using bezier curves (seeded for consistency)
+    const tendrils = React.useMemo(() => {
+        const count = 10;
+        // Use seeded random for consistent tendril positions per render
+        const seed = (profile?.sound_description?.synthesis?.length || 42) % 100;
+        const seededRandom = (i) => {
+            const x = Math.sin(seed + i * 9999) * 10000;
+            return x - Math.floor(x);
+        };
+        return Array.from({ length: count }, (_, i) => {
+            const angle = (i / count) * Math.PI * 2;
+            const length = 20 + seededRandom(i) * 18;
+            const curve = 6 + seededRandom(i + 100) * 8;
+            const curveDir = seededRandom(i + 200) > 0.5 ? 1 : -1;
+            return { angle, length, curve, curveDir, delay: i * 0.15 };
+        });
+    }, [profile]);
+
+    // Micro-particles drifting inside the core (seeded)
     const particles = React.useMemo(() => {
-        const pts = [];
-        for (let i = 0; i < 15; i++) {
-            const angle = (i / 15) * Math.PI * 2 + Math.random() * 0.5;
-            const radius = 30 + Math.random() * 35;
-            pts.push({
-                x: 70 + Math.cos(angle) * radius,
-                y: 70 + Math.sin(angle) * radius,
-                size: 1 + Math.random() * 1.5,
-                delay: i * 0.4
-            });
-        }
-        return pts;
-    }, []);
+        const seed = (profile?.neural_spectrum?.value || 0.5) * 100;
+        const seededRandom = (i) => {
+            const x = Math.sin(seed + i * 1234) * 10000;
+            return x - Math.floor(x);
+        };
+        return Array.from({ length: 18 }, (_, i) => {
+            const angle = seededRandom(i) * Math.PI * 2;
+            const r = 8 + seededRandom(i + 50) * 22;
+            return {
+                x: 70 + r * Math.cos(angle),
+                y: 70 + r * Math.sin(angle),
+                size: 0.8 + seededRandom(i + 100) * 1.5,
+                delay: i * 0.25
+            };
+        });
+    }, [profile]);
 
     return (
         <svg
-            className="neural-emblem-svg"
+            className="neural-emblem-v6"
             viewBox="0 0 140 140"
             style={{
                 '--pulse-duration': `${pulseDuration}s`,
@@ -225,53 +237,127 @@ function NeuralEmblem({ profile, placement, pulseDuration, rotateDuration }) {
             }}
         >
             <defs>
-                <radialGradient id={`emblem-grad-${placement}`} cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor={c.secondary} stopOpacity="0.6" />
-                    <stop offset="100%" stopColor={c.primary} stopOpacity="0.2" />
+                {/* V6: Liquid glass refraction gradient */}
+                <radialGradient id={`neural-core-glass-${placement}`} cx="40%" cy="35%" r="65%">
+                    <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
+                    <stop offset="35%" stopColor={c.primary} stopOpacity="0.25" />
+                    <stop offset="70%" stopColor={c.secondary} stopOpacity="0.15" />
+                    <stop offset="100%" stopColor={c.primary} stopOpacity="0.05" />
                 </radialGradient>
-                <filter id="emblem-glow-filter">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
+
+                {/* V6: Strong bloom filter */}
+                <filter id={`neural-bloom-${placement}`} x="-60%" y="-60%" width="220%" height="220%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="10" result="blur" />
+                    <feFlood floodColor={c.primary} floodOpacity="0.5" result="color" />
+                    <feComposite in="color" in2="blur" operator="in" result="glow" />
+                    <feMerge>
+                        <feMergeNode in="glow" />
+                        <feMergeNode in="glow" />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+
+                {/* V6: Inner core glow */}
+                <filter id={`inner-glow-${placement}`} x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
                     <feMerge>
                         <feMergeNode in="blur" />
                         <feMergeNode in="SourceGraphic" />
                     </feMerge>
                 </filter>
+
+                {/* V6: Tendril gradient */}
+                <linearGradient id={`tendril-grad-${placement}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor={c.primary} stopOpacity="0.7" />
+                    <stop offset="100%" stopColor={c.secondary} stopOpacity="0.2" />
+                </linearGradient>
             </defs>
 
-            {/* V4: Rotating blueprint rings behind emblem */}
-            <circle className="emblem-ring emblem-ring-1" cx="70" cy="70" r="55" fill="none" stroke={c.primary} strokeWidth="0.5" strokeDasharray="4 8" />
-            <circle className="emblem-ring emblem-ring-2" cx="70" cy="70" r="62" fill="none" stroke={c.primary} strokeWidth="0.5" strokeDasharray="2 12" />
-            <circle className="emblem-ring emblem-ring-3" cx="70" cy="70" r="48" fill="none" stroke={c.primary} strokeWidth="0.5" strokeDasharray="6 6" />
+            {/* V6: Outer refractive ring with bloom */}
+            <circle
+                className="neural-outer-ring"
+                cx="70" cy="70" r="64"
+                fill="none"
+                stroke={c.primary}
+                strokeWidth="1.5"
+                strokeOpacity="0.3"
+                filter={`url(#neural-bloom-${placement})`}
+            />
 
-            {/* V4: Particle field */}
-            <g className="emblem-particles">
+            {/* V6: Secondary outer ring (thin) */}
+            <circle
+                cx="70" cy="70" r="58"
+                fill="none"
+                stroke={c.secondary}
+                strokeWidth="0.5"
+                strokeOpacity="0.15"
+            />
+
+            {/* V6: Soft organic tendrils (bezier curves, NOT polygon) */}
+            <g className="neural-tendrils">
+                {tendrils.map((t, i) => {
+                    const centerX = 70, centerY = 70;
+                    const startR = 32;
+                    const endR = startR + t.length;
+                    const startX = centerX + startR * Math.cos(t.angle);
+                    const startY = centerY + startR * Math.sin(t.angle);
+                    const endX = centerX + endR * Math.cos(t.angle);
+                    const endY = centerY + endR * Math.sin(t.angle);
+                    // Control point perpendicular to tendril direction for organic curve
+                    const perpAngle = t.angle + (Math.PI / 2) * t.curveDir;
+                    const ctrlR = (startR + endR) / 2;
+                    const ctrlX = centerX + ctrlR * Math.cos(t.angle) + t.curve * Math.cos(perpAngle);
+                    const ctrlY = centerY + ctrlR * Math.sin(t.angle) + t.curve * Math.sin(perpAngle);
+
+                    return (
+                        <path
+                            key={`tendril-${i}`}
+                            className="neural-tendril"
+                            d={`M${startX},${startY} Q${ctrlX},${ctrlY} ${endX},${endY}`}
+                            stroke={`url(#tendril-grad-${placement})`}
+                            strokeWidth="2.5"
+                            fill="none"
+                            strokeLinecap="round"
+                            style={{ animationDelay: `${t.delay}s` }}
+                        />
+                    );
+                })}
+            </g>
+
+            {/* V6: Glass nucleus core with liquid refraction */}
+            <circle
+                className="neural-glass-core"
+                cx="70" cy="70" r="32"
+                fill={`url(#neural-core-glass-${placement})`}
+                stroke={c.primary}
+                strokeWidth="1"
+                strokeOpacity="0.4"
+                filter={`url(#neural-bloom-${placement})`}
+            />
+
+            {/* V6: Micro-particles drifting inside the core */}
+            <g className="neural-micro-particles">
                 {particles.map((p, i) => (
                     <circle
                         key={`particle-${i}`}
-                        className="emblem-particle"
+                        className="micro-particle"
                         cx={p.x}
                         cy={p.y}
                         r={p.size}
+                        fill={c.primary}
+                        opacity={0.4 + (p.size / 2.3) * 0.3}
                         style={{ animationDelay: `${p.delay}s` }}
                     />
                 ))}
             </g>
 
-            <circle cx="70" cy="70" r="65" fill="none" stroke={c.primary} strokeWidth="1" opacity="0.3" />
-            <polygon
-                className="emblem-shape"
-                points={generateEmblemPoints(70, 70, 45, sides)}
-                fill={`url(#emblem-grad-${placement})`}
-                stroke={c.secondary}
-                strokeWidth="1.5"
-                opacity="0.8"
-                filter="url(#emblem-glow-filter)"
-            />
+            {/* V6: Inner pulsing center with strong glow */}
             <circle
-                className="emblem-core"
-                cx="70" cy="70" r="18"
+                className="neural-inner-pulse"
+                cx="70" cy="70" r="10"
                 fill={c.primary}
-                opacity="0.7"
+                opacity="0.9"
+                filter={`url(#inner-glow-${placement})`}
             />
         </svg>
     );

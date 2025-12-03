@@ -2,19 +2,19 @@
    NEURAL IDENTITY MAP v2/v3 - Unified Radial
    ======================================== */
 
-/* Container: Fullscreen centered radial */
+/* Container: Fullscreen centered radial - V6 EXPANDED */
 .neural-identity-map {
     position: relative;
     width: 100%;
     height: 100%;
-    min-height: calc(100vh - 80px);
+    min-height: 85vh;
     display: flex;
     align-items: center;
     justify-content: center;
     background: radial-gradient(
         ellipse at center,
-        rgba(0, 102, 255, 0.08) 0%,
-        rgba(0, 0, 0, 0.98) 70%
+        rgba(0, 102, 255, 0.06) 0%,
+        rgba(0, 0, 0, 0.99) 65%
     );
     overflow: hidden;
     contain: layout style;
@@ -59,12 +59,12 @@
     opacity: 0.05;
 }
 
-/* Main radial SVG container */
+/* Main radial SVG container - V6 EXPANDED */
 .neural-radial-svg {
     width: 100%;
     height: 100%;
-    max-width: 900px;
-    max-height: 900px;
+    max-width: min(950px, 92vw);
+    max-height: 88vh;
     contain: layout paint;
 }
 
@@ -156,6 +156,111 @@
 .emblem-shape {
     transform-origin: center;
     animation: emblem-rotate var(--rotate-duration, 60s) linear infinite;
+}
+
+/* ========================================
+   V6 ORGANIC NEURAL EMBLEM STYLES
+   ======================================== */
+
+.neural-emblem-v6 {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 30px rgba(0, 217, 255, 0.35));
+}
+
+/* V6: Outer refractive ring */
+.neural-outer-ring {
+    animation: outer-ring-breathe 4s ease-in-out infinite;
+}
+
+@keyframes outer-ring-breathe {
+    0%, 100% { stroke-opacity: 0.25; }
+    50% { stroke-opacity: 0.45; }
+}
+
+/* V6: Organic tendril animations */
+.neural-tendril {
+    animation: tendril-breathe 3s ease-in-out infinite;
+    transform-origin: center;
+}
+
+@keyframes tendril-breathe {
+    0%, 100% {
+        stroke-opacity: 0.5;
+        transform: scale(1);
+    }
+    50% {
+        stroke-opacity: 0.8;
+        transform: scale(1.03);
+    }
+}
+
+/* V6: Micro-particle drift inside core */
+.micro-particle {
+    animation: micro-particle-orbit 6s ease-in-out infinite;
+    transform-origin: center;
+}
+
+@keyframes micro-particle-orbit {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.35;
+    }
+    25% {
+        transform: translate(2px, -3px) scale(1.1);
+        opacity: 0.55;
+    }
+    50% {
+        transform: translate(-1px, 2px) scale(0.9);
+        opacity: 0.45;
+    }
+    75% {
+        transform: translate(3px, 1px) scale(1.05);
+        opacity: 0.5;
+    }
+}
+
+/* V6: Inner pulsing center with bloom */
+.neural-inner-pulse {
+    animation: inner-core-pulse var(--pulse-duration, 2s) ease-in-out infinite;
+    transform-origin: center;
+}
+
+@keyframes inner-core-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}
+
+/* V6: Glass core subtle breathing */
+.neural-glass-core {
+    animation: glass-core-breathe 5s ease-in-out infinite;
+}
+
+@keyframes glass-core-breathe {
+    0%, 100% {
+        stroke-opacity: 0.35;
+        transform: scale(1);
+    }
+    50% {
+        stroke-opacity: 0.55;
+        transform: scale(1.02);
+    }
+}
+
+/* V6: Tendril stagger effect */
+.neural-tendrils .neural-tendril:nth-child(odd) {
+    animation-duration: 3.5s;
+}
+
+.neural-tendrils .neural-tendril:nth-child(even) {
+    animation-duration: 2.8s;
+    animation-direction: reverse;
 }
 
 /* Center identity text - V4 Typography */
@@ -808,6 +913,288 @@
     border-radius: inherit;
 }
 
+/* ================================================
+   V6 ENHANCED LIQUID GLASS SYSTEM
+   Premium caustic and multi-layer refraction
+   ================================================ */
+
+/* V6: Premium Liquid Glass Surface */
+.liquid-glass-v6 {
+    position: relative;
+    background: rgba(10, 10, 31, 0.3);
+    backdrop-filter: blur(18px) saturate(1.3) brightness(1.05);
+    -webkit-backdrop-filter: blur(18px) saturate(1.3) brightness(1.05);
+    border: 1px solid rgba(0, 217, 255, 0.18);
+    border-radius: 16px;
+    isolation: isolate;
+    transition: all 0.35s var(--spring-curve);
+}
+
+/* V6: Caustic shimmer layer */
+.liquid-glass-v6::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+        radial-gradient(
+            ellipse at 30% 20%,
+            rgba(255, 255, 255, 0.15) 0%,
+            transparent 40%
+        ),
+        radial-gradient(
+            ellipse at 70% 80%,
+            rgba(0, 217, 255, 0.08) 0%,
+            transparent 35%
+        );
+    pointer-events: none;
+    z-index: 1;
+    animation: caustic-shimmer 6s ease-in-out infinite;
+}
+
+@keyframes caustic-shimmer {
+    0%, 100% {
+        opacity: 0.7;
+        transform: translateX(0) translateY(0);
+    }
+    33% {
+        opacity: 0.9;
+        transform: translateX(2px) translateY(-1px);
+    }
+    66% {
+        opacity: 0.75;
+        transform: translateX(-1px) translateY(2px);
+    }
+}
+
+/* V6: Edge bloom with Fresnel effect */
+.liquid-glass-v6::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: transparent;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+        0 0 45px rgba(0, 217, 255, 0.12),
+        0 0 25px rgba(0, 217, 255, 0.08);
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.6;
+    transition: opacity 0.35s var(--spring-curve);
+}
+
+.liquid-glass-v6:hover::after {
+    opacity: 1;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+        0 0 60px rgba(0, 217, 255, 0.2),
+        0 0 35px rgba(0, 217, 255, 0.12);
+}
+
+/* V6: Node with enhanced bloom */
+.liquid-glass-node.v6-enhanced .node-glass-surface {
+    fill: rgba(10, 10, 31, 0.35);
+    stroke: rgba(0, 217, 255, 0.2);
+    stroke-width: 1.5;
+}
+
+.liquid-glass-node.v6-enhanced:hover .node-glass-surface {
+    fill: rgba(0, 217, 255, 0.12);
+    stroke: rgba(0, 217, 255, 0.4);
+    filter: drop-shadow(0 0 25px rgba(0, 217, 255, 0.4)) drop-shadow(0 0 45px rgba(0, 217, 255, 0.15));
+}
+
+.liquid-glass-node.v6-enhanced.selected .node-glass-surface {
+    fill: rgba(0, 217, 255, 0.18);
+    stroke: var(--neural-primary);
+    stroke-width: 2;
+    filter:
+        drop-shadow(0 0 15px rgba(0, 217, 255, 0.6))
+        drop-shadow(0 0 35px rgba(0, 217, 255, 0.35))
+        drop-shadow(0 0 60px rgba(0, 217, 255, 0.15));
+}
+
+/* V6: Sector panel with caustic effect */
+.sector-panel.v6 .liquid-glass-sector {
+    filter: url(#liquid-glass-v6);
+}
+
+.sector-panel.v6.expanded .liquid-glass-sector {
+    fill: rgba(10, 10, 31, 0.45);
+    stroke: rgba(0, 217, 255, 0.3);
+    filter:
+        url(#v6-caustic)
+        drop-shadow(0 0 40px rgba(0, 217, 255, 0.25));
+}
+
+/* V6: Neural Field Line - Center to expanded module connection */
+.neural-field-line {
+    stroke-dasharray: 8 4;
+    stroke-linecap: round;
+    animation: field-line-pulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(0, 217, 255, 0.5));
+}
+
+@keyframes field-line-pulse {
+    0%, 100% {
+        stroke-opacity: 0.4;
+        stroke-dashoffset: 0;
+    }
+    50% {
+        stroke-opacity: 0.8;
+        stroke-dashoffset: 12;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   V6 INTERACTION ENHANCEMENTS
+═══════════════════════════════════════════════════════════════ */
+
+/* V6: Liquid Glass Ripple on Hover */
+.neural-node-group {
+    position: relative;
+}
+
+.neural-node-group::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 217, 255, 0.3) 0%, transparent 70%);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+
+.neural-node-group:hover::after {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 1;
+    animation: glass-ripple 0.6s ease-out forwards;
+}
+
+@keyframes glass-ripple {
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.6; }
+    100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+/* V6: Magnetic Pull Effect on Selection */
+.neural-node-group.selected {
+    animation: magnetic-settle 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes magnetic-settle {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.15) translateY(-5px); }
+    70% { transform: scale(1.05) translateY(-2px); }
+    100% { transform: scale(1.1) translateY(-3px); }
+}
+
+/* V6: Enhanced Node Hover - Lift + Glow */
+.neural-node-circle {
+    transition:
+        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+        filter 0.3s ease,
+        fill 0.3s ease;
+}
+
+.neural-node-group:hover .neural-node-circle {
+    transform: scale(1.08) translateY(-2px);
+    filter: drop-shadow(0 8px 20px rgba(0, 217, 255, 0.4));
+}
+
+/* V6: Node Label Hover Enhancement */
+.neural-node-label {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.neural-node-group:hover .neural-node-label {
+    opacity: 1 !important;
+    transform: translateY(-3px);
+}
+
+/* V6: Neural Particle Drift - More Organic */
+@keyframes neural-particle-drift {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.3; }
+    15% { transform: translate(3px, -2px) rotate(5deg); opacity: 0.5; }
+    35% { transform: translate(-2px, 4px) rotate(-3deg); opacity: 0.4; }
+    55% { transform: translate(4px, 1px) rotate(7deg); opacity: 0.6; }
+    75% { transform: translate(-3px, -3px) rotate(-5deg); opacity: 0.4; }
+    90% { transform: translate(1px, 2px) rotate(2deg); opacity: 0.5; }
+}
+
+.micro-particle,
+.sector-particle {
+    animation: neural-particle-drift 8s ease-in-out infinite;
+}
+
+/* V6: Sector Panel Hover - Subtle Lift */
+.sector-panel {
+    transition:
+        transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.3s ease;
+}
+
+.sector-panel:hover:not(.expanded) {
+    transform: scale(1.02);
+}
+
+/* V6: Connection Lines - Subtle Pulse on Hover */
+.neural-connection {
+    transition: stroke-opacity 0.3s ease, stroke-width 0.3s ease;
+}
+
+.neural-node-group:hover ~ .neural-connection,
+.neural-connection.active {
+    stroke-opacity: 0.6;
+    stroke-width: 2;
+}
+
+/* V6: Emblem Interaction - Gentle Pulse */
+.neural-emblem-v6:hover {
+    animation: emblem-pulse 0.6s ease-out;
+}
+
+@keyframes emblem-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* V6: Center Hub - Interactive Glow */
+.neural-center-hub {
+    transition: filter 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.neural-center-hub:hover {
+    filter: drop-shadow(0 0 30px rgba(0, 217, 255, 0.5));
+    transform: translate(-50%, -50%) scale(1.02);
+}
+
+/* V6: Button Interactions */
+.neural-back-btn {
+    transition:
+        background 0.3s ease,
+        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.3s ease;
+}
+
+.neural-back-btn:hover {
+    background: rgba(0, 217, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 217, 255, 0.3);
+}
+
+.neural-back-btn:active {
+    transform: translateY(0);
+}
+
 /* Parallax Layer Groups */
 .parallax-bg,
 .parallax-mid,
@@ -848,6 +1235,96 @@
 .connection-layer,
 .sector-layer {
     contain: layout;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   V6 PERFORMANCE OPTIMIZATIONS
+═══════════════════════════════════════════════════════════════ */
+
+/* V6: Strict containment for heavy elements */
+.neural-node-group {
+    contain: layout style;
+}
+
+.sector-panel {
+    contain: layout paint;
+}
+
+.neural-emblem-v6 {
+    contain: layout paint style;
+}
+
+/* V6: Will-change hints for animated elements */
+.neural-tendril,
+.micro-particle,
+.neural-inner-pulse {
+    will-change: transform, opacity;
+}
+
+.neural-node-circle,
+.neural-connection {
+    will-change: transform, filter;
+}
+
+.neural-bg-ring {
+    will-change: opacity, transform;
+}
+
+/* V6: Reduce repaints with isolation */
+.liquid-glass-node,
+.liquid-glass-sector {
+    isolation: isolate;
+}
+
+/* V6: Animation frame hints */
+.sector-particle,
+.floating-constellation,
+.neural-spectrum-arc {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* V6: Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .neural-tendril,
+    .micro-particle,
+    .neural-inner-pulse,
+    .sector-particle,
+    .neural-bg-ring,
+    .pulse-dots-group {
+        animation: none !important;
+    }
+
+    .neural-node-group:hover::after {
+        animation: none !important;
+    }
+
+    .parallax-bg,
+    .parallax-mid,
+    .parallax-fg {
+        transform: none !important;
+        transition: none !important;
+    }
+}
+
+/* V6: High performance mode - disable expensive effects */
+@media (max-width: 768px), (hover: none) {
+    .liquid-glass-v6::before,
+    .liquid-glass-v6::after {
+        display: none;
+    }
+
+    .neural-node-group::after {
+        display: none;
+    }
+}
+
+/* V6: Compositor-only animations (transform/opacity) */
+.neural-node-group,
+.sector-panel,
+.neural-center-hub,
+.neural-back-btn {
+    transform: translateZ(0);
 }
 
 /* ===== MOBILE 3-TAB LAYOUT ===== */

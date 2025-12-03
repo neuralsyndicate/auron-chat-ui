@@ -23,40 +23,66 @@ function ExpandedSectorPanel({ module, profile, cx, cy, isExpanded, sectorPath, 
     const endAngle = (module.angle + 16.35 - 90) * Math.PI / 180;
     const midAngle = (module.angle - 90) * Math.PI / 180;
 
+    // V6: Calculate node position for field line
+    const nodeRadius = 360; // Match the updated layout radius
+    const nodeX = cx + nodeRadius * Math.cos(midAngle);
+    const nodeY = cy + nodeRadius * Math.sin(midAngle);
+
+    // V6: Field line control point for curved connection
+    const fieldControlRadius = nodeRadius * 0.6;
+    const fieldControlAngle = midAngle + 0.15;
+    const fieldControlX = cx + fieldControlRadius * Math.cos(fieldControlAngle);
+    const fieldControlY = cy + fieldControlRadius * Math.sin(fieldControlAngle);
+
     // Particle positions along sector arc
     const particles = React.useMemo(() =>
         Array(12).fill(0).map((_, i) => {
             const t = i / 11;
             const angle = startAngle + (endAngle - startAngle) * t;
-            const baseRadius = 280 + Math.random() * 60;
+            const baseRadius = 320 + Math.random() * 70;
             return {
                 x: cx + baseRadius * Math.cos(angle),
                 y: cy + baseRadius * Math.sin(angle),
                 delay: i * 0.04,
-                driftX: (Math.random() - 0.5) * 40,
-                driftY: (Math.random() - 0.5) * 40,
-                scale: 0.5 + Math.random() * 0.5
+                driftX: (Math.random() - 0.5) * 45,
+                driftY: (Math.random() - 0.5) * 45,
+                scale: 0.5 + Math.random() * 0.6
             };
         })
     , [startAngle, endAngle, cx, cy]);
 
-    // Content position (centered in expanded sector)
-    const contentRadius = 270;
+    // V6: Content position - further from center for better spacing
+    const contentRadius = 310;
     const contentX = cx + contentRadius * Math.cos(midAngle);
     const contentY = cy + contentRadius * Math.sin(midAngle);
 
     return (
-        <g className="sector-panel expanded">
+        <g className="sector-panel expanded v6">
+            {/* V6: Neural field line connecting center to module */}
+            <path
+                className="neural-field-line"
+                d={`M${cx},${cy} Q${fieldControlX},${fieldControlY} ${nodeX},${nodeY}`}
+                fill="none"
+                stroke="url(#field-line-gradient)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                filter="url(#edge-bloom-filter)"
+                style={{
+                    opacity: 0.6,
+                    transition: 'opacity 0.3s ease'
+                }}
+            />
+
             {/* Glass sector background */}
             <path
                 className="liquid-glass-sector"
                 d={sectorPath}
                 fill="url(#sector-glass-gradient)"
-                stroke="rgba(0,217,255,0.25)"
+                stroke="rgba(0,217,255,0.28)"
                 strokeWidth="1.5"
-                filter="url(#liquid-glass-filter)"
+                filter="url(#liquid-glass-v6)"
                 style={{
-                    transition: 'all 0.5s cubic-bezier(0.25, 0.84, 0.42, 1)'
+                    transition: 'all 0.45s cubic-bezier(0.25, 0.84, 0.42, 1)'
                 }}
             />
 
@@ -65,18 +91,18 @@ function ExpandedSectorPanel({ module, profile, cx, cy, isExpanded, sectorPath, 
                 className="sector-specular"
                 d={sectorPath}
                 fill="url(#sector-specular-gradient)"
-                opacity="0.25"
+                opacity="0.3"
                 style={{ pointerEvents: 'none' }}
             />
 
-            {/* Edge glow */}
+            {/* Edge glow - stronger for V6 */}
             <path
                 className="sector-edge-glow"
                 d={sectorPath}
                 fill="none"
-                stroke="rgba(0,217,255,0.4)"
-                strokeWidth="2"
-                filter="url(#edge-bloom-filter)"
+                stroke="rgba(0,217,255,0.5)"
+                strokeWidth="2.5"
+                filter="url(#v6-bloom)"
                 style={{ pointerEvents: 'none' }}
             />
 
@@ -87,13 +113,13 @@ function ExpandedSectorPanel({ module, profile, cx, cy, isExpanded, sectorPath, 
                     className="sector-particle"
                     cx={p.x}
                     cy={p.y}
-                    r={2 * p.scale}
+                    r={2.5 * p.scale}
                     fill="var(--neural-primary)"
                     style={{
                         '--drift-x': `${p.driftX}px`,
                         '--drift-y': `${p.driftY}px`,
                         animationDelay: `${p.delay}s`,
-                        opacity: 0.7
+                        opacity: 0.75
                     }}
                 />
             ))}
@@ -101,28 +127,29 @@ function ExpandedSectorPanel({ module, profile, cx, cy, isExpanded, sectorPath, 
             {/* Module label in sector */}
             <text
                 className="sector-label"
-                x={cx + 200 * Math.cos(midAngle)}
-                y={cy + 200 * Math.sin(midAngle)}
+                x={cx + 220 * Math.cos(midAngle)}
+                y={cy + 220 * Math.sin(midAngle)}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fill="var(--neural-primary)"
-                fontSize="12"
+                fontSize="13"
                 fontWeight="500"
-                letterSpacing="0.1em"
+                letterSpacing="0.12em"
                 style={{
                     textTransform: 'uppercase',
-                    opacity: 0.9
+                    opacity: 0.95,
+                    filter: 'drop-shadow(0 0 8px rgba(0,217,255,0.4))'
                 }}
             >
                 {module.label}
             </text>
 
-            {/* V5 Sector Visualization - Blueprint micro-viz */}
+            {/* V6: Sector Visualization - Larger size */}
             <foreignObject
-                x={contentX - 60}
-                y={contentY - 70}
-                width="120"
-                height="120"
+                x={contentX - 65}
+                y={contentY - 75}
+                width="130"
+                height="130"
                 style={{ overflow: 'visible' }}
             >
                 <div
@@ -139,44 +166,47 @@ function ExpandedSectorPanel({ module, profile, cx, cy, isExpanded, sectorPath, 
                 </div>
             </foreignObject>
 
-            {/* Synthesis text below visualization */}
+            {/* V6: Synthesis text - improved overflow handling */}
             {moduleData?.synthesis && (
                 <foreignObject
-                    x={contentX - 80}
-                    y={contentY + 40}
-                    width="160"
-                    height="60"
-                    style={{ overflow: 'visible' }}
+                    x={contentX - 90}
+                    y={contentY + 50}
+                    width="180"
+                    height="75"
+                    style={{ overflow: 'hidden' }}
                 >
                     <div
                         xmlns="http://www.w3.org/1999/xhtml"
                         style={{
-                            color: 'rgba(255,255,255,0.6)',
-                            fontSize: '8px',
-                            lineHeight: '1.3',
+                            color: 'rgba(255,255,255,0.7)',
+                            fontSize: '9px',
+                            lineHeight: '1.35',
                             textAlign: 'center',
-                            padding: '4px',
+                            padding: '6px',
+                            maxHeight: '75px',
                             overflow: 'hidden',
+                            textOverflow: 'ellipsis',
                             display: '-webkit-box',
-                            WebkitLineClamp: 3,
+                            WebkitLineClamp: 4,
                             WebkitBoxOrient: 'vertical'
                         }}
                     >
-                        {moduleData.synthesis.slice(0, 120)}
-                        {moduleData.synthesis.length > 120 ? '...' : ''}
+                        {moduleData.synthesis.slice(0, 160)}
+                        {moduleData.synthesis.length > 160 ? '...' : ''}
                     </div>
                 </foreignObject>
             )}
 
-            {/* Close hint */}
+            {/* V6: Close hint - updated position */}
             <text
                 className="sector-close-hint"
-                x={cx + 380 * Math.cos(midAngle)}
-                y={cy + 380 * Math.sin(midAngle)}
+                x={cx + 420 * Math.cos(midAngle)}
+                y={cy + 420 * Math.sin(midAngle)}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                fill="rgba(255,255,255,0.3)"
-                fontSize="8"
+                fill="rgba(255,255,255,0.35)"
+                fontSize="9"
+                letterSpacing="0.05em"
                 style={{ cursor: 'pointer' }}
                 onClick={onClose}
             >
@@ -648,8 +678,8 @@ function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sendi
         };
     };
 
-    // SVG layout constants
-    const cx = 450, cy = 450, radius = 320;
+    // V6: SVG layout constants - EXPANDED for better spacing
+    const cx = 475, cy = 475, radius = 360;
 
     // Generate spectrum arc path
     const generateSpectrumArc = () => {
@@ -772,9 +802,9 @@ function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sendi
                 </div>
             </div>
 
-            {/* Map Tab - Scaled Radial */}
+            {/* V6: Map Tab - Scaled Radial with expanded viewBox */}
             <div className={`mobile-panel ${mobileTab === 'map' ? 'active' : ''}`}>
-                <svg viewBox="0 0 900 900" style={{ width: '100%', maxHeight: '60vh' }}>
+                <svg viewBox="0 0 950 950" style={{ width: '100%', maxHeight: '65vh' }}>
                     <defs>
                         <linearGradient id="spectrum-gradient-mobile" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" stopColor="#0066FF" />
@@ -898,14 +928,14 @@ function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sendi
             <div
                 className="neural-bg-rings parallax-bg"
                 style={{
-                    transform: `translate(${parallaxOffset.x * 2}px, ${parallaxOffset.y * 2}px)`
+                    transform: `translate(${parallaxOffset.x * 3}px, ${parallaxOffset.y * 3}px)`
                 }}
             >
                 {[1, 2, 3, 4, 5].map(i => (<div key={`ring-${i}`} className="neural-bg-ring" style={{ width: `${200 + i * 150}px`, height: `${200 + i * 150}px`, animationDelay: `${i * 0.5}s` }} />))}
             </div>
 
-            {/* Main radial SVG with integrated visualizations */}
-            <svg className="neural-radial-svg" viewBox="0 0 900 900" style={{ position: 'relative', zIndex: 1 }}>
+            {/* V6: Main radial SVG with expanded viewBox for larger layout */}
+            <svg className="neural-radial-svg" viewBox="0 0 950 950" style={{ position: 'relative', zIndex: 1 }}>
                 <defs>
                     <filter id="node-glow-filter" x="-50%" y="-50%" width="200%" height="200%">
                         <feGaussianBlur stdDeviation="6" result="blur" />
@@ -1019,7 +1049,99 @@ function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sendi
                     </filter>
 
                     {/* ═══════════════════════════════════════════════════════════════
-                        V5 GRADIENT DEFINITIONS
+                        V6 ENHANCED LIQUID GLASS FILTERS
+                        Multi-layer refraction with caustic effects
+                    ═══════════════════════════════════════════════════════════════ */}
+
+                    {/* V6: Premium Liquid Glass - Multi-layer turbulence */}
+                    <filter id="liquid-glass-v6" x="-25%" y="-25%" width="150%" height="150%">
+                        {/* First turbulence layer - broad distortion */}
+                        <feTurbulence
+                            type="fractalNoise"
+                            baseFrequency="0.004"
+                            numOctaves="3"
+                            seed="77"
+                            result="noise1"
+                        />
+                        <feGaussianBlur in="noise1" stdDeviation="1.5" result="blur1"/>
+                        <feDisplacementMap
+                            in="SourceGraphic"
+                            in2="blur1"
+                            scale="45"
+                            xChannelSelector="R"
+                            yChannelSelector="G"
+                            result="displaced1"
+                        />
+                        {/* Second turbulence layer - fine detail */}
+                        <feTurbulence
+                            type="fractalNoise"
+                            baseFrequency="0.012"
+                            numOctaves="2"
+                            seed="123"
+                            result="noise2"
+                        />
+                        <feGaussianBlur in="noise2" stdDeviation="0.8" result="blur2"/>
+                        <feDisplacementMap
+                            in="displaced1"
+                            in2="blur2"
+                            scale="20"
+                            xChannelSelector="R"
+                            yChannelSelector="G"
+                            result="displaced2"
+                        />
+                        {/* Specular highlight for glass depth */}
+                        <feSpecularLighting
+                            in="blur1"
+                            surfaceScale="3"
+                            specularConstant="0.6"
+                            specularExponent="25"
+                            result="specular"
+                        >
+                            <fePointLight x="475" y="200" z="350"/>
+                        </feSpecularLighting>
+                        <feComposite in="displaced2" in2="specular" operator="arithmetic" k1="0" k2="1" k3="0.15" k4="0"/>
+                    </filter>
+
+                    {/* V6: Intense Bloom Filter - Strong glow for selected elements */}
+                    <filter id="v6-bloom" x="-60%" y="-60%" width="220%" height="220%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="12" result="blur"/>
+                        <feFlood floodColor="#00D9FF" floodOpacity="0.55" result="color"/>
+                        <feComposite in="color" in2="blur" operator="in" result="glow1"/>
+                        <feGaussianBlur in="glow1" stdDeviation="6" result="glow2"/>
+                        <feMerge>
+                            <feMergeNode in="glow2"/>
+                            <feMergeNode in="glow1"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+
+                    {/* V6: Caustic Shimmer Filter - Animated glass refraction */}
+                    <filter id="v6-caustic" x="-30%" y="-30%" width="160%" height="160%">
+                        <feTurbulence
+                            type="turbulence"
+                            baseFrequency="0.008"
+                            numOctaves="3"
+                            seed="42"
+                            result="caustic"
+                        >
+                            <animate
+                                attributeName="seed"
+                                values="42;67;92;67;42"
+                                dur="5s"
+                                repeatCount="indefinite"
+                            />
+                        </feTurbulence>
+                        <feDisplacementMap
+                            in="SourceGraphic"
+                            in2="caustic"
+                            scale="35"
+                            xChannelSelector="R"
+                            yChannelSelector="B"
+                        />
+                    </filter>
+
+                    {/* ═══════════════════════════════════════════════════════════════
+                        V6 GRADIENT DEFINITIONS
                     ═══════════════════════════════════════════════════════════════ */}
 
                     {/* Sector Specular Gradient - Top-down highlight */}
@@ -1050,6 +1172,14 @@ function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sendi
                         <stop offset="100%" stopColor="rgba(10,10,31,0.3)"/>
                     </radialGradient>
 
+                    {/* Field Line Gradient - Neural connection from center to expanded module */}
+                    <linearGradient id="field-line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="rgba(0,217,255,0.1)"/>
+                        <stop offset="30%" stopColor="rgba(0,217,255,0.5)"/>
+                        <stop offset="70%" stopColor="rgba(0,217,255,0.5)"/>
+                        <stop offset="100%" stopColor="rgba(0,217,255,0.8)"/>
+                    </linearGradient>
+
                     {/* Chromatic Aberration Mask */}
                     <mask id="chromatic-mask">
                         <rect x="0" y="0" width="900" height="900" fill="white"/>
@@ -1061,7 +1191,7 @@ function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sendi
                 <g
                     className="parallax-bg visualization-layer"
                     style={{
-                        transform: `translate(${parallaxOffset.x * 2}px, ${parallaxOffset.y * 2}px)`,
+                        transform: `translate(${parallaxOffset.x * 3}px, ${parallaxOffset.y * 3}px)`,
                         transition: 'transform 0.1s ease-out'
                     }}
                 >
@@ -1109,7 +1239,7 @@ function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sendi
                 <g
                     className="parallax-mid connection-layer"
                     style={{
-                        transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
+                        transform: `translate(${parallaxOffset.x * 1.5}px, ${parallaxOffset.y * 1.5}px)`,
                         transition: 'transform 0.1s ease-out'
                     }}
                 >
@@ -1152,7 +1282,7 @@ function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sendi
                 <g
                     className="parallax-fg sector-layer"
                     style={{
-                        transform: `translate(${parallaxOffset.x * 0.5}px, ${parallaxOffset.y * 0.5}px)`,
+                        transform: `translate(${parallaxOffset.x * 0.75}px, ${parallaxOffset.y * 0.75}px)`,
                         transition: 'transform 0.1s ease-out'
                     }}
                 >
@@ -1174,7 +1304,7 @@ function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sendi
                 <g
                     className="parallax-mid"
                     style={{
-                        transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`
+                        transform: `translate(${parallaxOffset.x * 1.5}px, ${parallaxOffset.y * 1.5}px)`
                     }}
                 >
                     {NEURAL_MODULES.map((mod) => {
@@ -1184,7 +1314,8 @@ function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sendi
                         const isSelected = selectedModule === mod.key;
                         const isExpanded = expandedSector === mod.key;
                         const isDimmed = expandedSector && !isExpanded;
-                        const nodeRadius = isSelected ? 32 : 26;
+                        // V6: Larger nodes for better visibility
+                        const nodeRadius = isSelected ? 38 : 30;
 
                         return (
                             <g
@@ -1222,10 +1353,10 @@ function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sendi
                                     filter={isSelected ? 'url(#edge-bloom-filter)' : 'none'}
                                 />
 
-                                {/* Glyph */}
-                                <foreignObject x={x - 14} y={y - 14} width="28" height="28" className="neural-node-glyph">
+                                {/* V6: Larger glyph to match bigger nodes */}
+                                <foreignObject x={x - 16} y={y - 16} width="32" height="32" className="neural-node-glyph">
                                     <div xmlns="http://www.w3.org/1999/xhtml" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                                        <NeuralGlyph type={mod.glyph} size={24} />
+                                        <NeuralGlyph type={mod.glyph} size={28} />
                                     </div>
                                 </foreignObject>
 

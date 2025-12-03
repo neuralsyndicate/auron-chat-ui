@@ -75,17 +75,26 @@
     --micro-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
     --smooth-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-    /* Sector Expansion */
-    --sector-expand-duration: 0.5s;
-    --sector-expand-radius: 420px;
-    --sector-collapse-radius: 320px;
-    --sector-dim-opacity: 0.1;
-    --sector-inner-radius: 120px;
+    /* V6: Sector Expansion - Larger, more spacious */
+    --sector-expand-duration: 0.45s;
+    --sector-expand-radius: 480px;
+    --sector-collapse-radius: 360px;
+    --sector-dim-opacity: 0.08;
+    --sector-inner-radius: 140px;
 
-    /* Parallax Depths */
-    --parallax-bg-multiplier: 2;
-    --parallax-mid-multiplier: 1;
-    --parallax-fg-multiplier: 0.5;
+    /* V6: Node Sizing - Larger for better visibility */
+    --node-radius-base: 32px;
+    --node-radius-selected: 40px;
+    --ring-radius: 360px;
+
+    /* V6: Enhanced Color Palette */
+    --neural-accent-warm: #FF6B00;
+    --neural-accent-red: #FF4444;
+
+    /* V6: Parallax Depths - Stronger effect */
+    --parallax-bg-multiplier: 3;
+    --parallax-mid-multiplier: 1.5;
+    --parallax-fg-multiplier: 0.75;
 
     /* Micro-motion */
     --breathe-duration: 4s;
