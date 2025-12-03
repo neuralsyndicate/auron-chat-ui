@@ -83,6 +83,15 @@
             --neural-bg: #0A0A1F;
             --neural-surface: rgba(10, 10, 31, 0.95);
             --neural-border: rgba(0, 217, 255, 0.15);
+
+            /* Neural Identity Map v3 - Blueprint Aesthetic */
+            --blueprint-bg: #0A0A1F;
+            --blueprint-line: rgba(0, 217, 255, 0.15);
+            --blueprint-accent: rgba(0, 217, 255, 0.4);
+            --blueprint-glow: 0 0 20px rgba(0, 217, 255, 0.3), 0 0 40px rgba(0, 217, 255, 0.15);
+            --blueprint-border: 1px solid rgba(0, 217, 255, 0.25);
+            --section-label-color: rgba(0, 217, 255, 0.7);
+            --micro-dot-color: rgba(0, 217, 255, 0.3);
         }
 
         * {
@@ -1035,6 +1044,431 @@
             cursor: not-allowed;
         }
 
+        /* ========================================
+           NEURAL IDENTITY MAP v3 - Blueprint Layout
+           ======================================== */
+
+        /* Main container - Vertical scroll */
+        .neural-profile-container {
+            position: relative;
+            width: 100%;
+            min-height: calc(100vh - 80px);
+            background: var(--blueprint-bg);
+            background-image:
+                radial-gradient(ellipse at top, rgba(0, 102, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom, rgba(0, 217, 255, 0.04) 0%, transparent 50%);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 2rem;
+        }
+
+        /* Micro-dot network background */
+        .neural-micro-dots {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(circle at 2px 2px, var(--micro-dot-color) 1px, transparent 1px);
+            background-size: 48px 48px;
+            opacity: 0.25;
+            z-index: 0;
+        }
+
+        /* Profile content wrapper */
+        .neural-profile-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Profile header */
+        .neural-profile-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .neural-profile-title {
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--section-label-color);
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            margin-bottom: 0.5rem;
+        }
+
+        .neural-profile-subtitle {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-style: italic;
+        }
+
+        /* Section container with neon border frame */
+        .profile-section {
+            position: relative;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            background: rgba(10, 10, 31, 0.6);
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            box-shadow:
+                0 0 20px rgba(0, 217, 255, 0.1),
+                inset 0 0 30px rgba(0, 217, 255, 0.02);
+        }
+
+        /* Section label (top-left positioned) */
+        .section-label {
+            position: absolute;
+            top: -0.6rem;
+            left: 1rem;
+            background: var(--blueprint-bg);
+            padding: 0 0.75rem;
+            font-size: 0.6rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--section-label-color);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+
+        /* Glowing divider line */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                var(--blueprint-accent) 20%,
+                var(--blueprint-accent) 80%,
+                transparent 100%
+            );
+            margin: 1.5rem 0;
+            box-shadow: 0 0 10px var(--neural-glow);
+        }
+
+        /* ===== SONIC CORE SECTION ===== */
+        .sonic-core-section {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .sonic-core-emblem {
+            width: 160px;
+            height: 160px;
+        }
+
+        .sonic-core-info {
+            text-align: left;
+        }
+
+        .sonic-core-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #fff;
+            margin: 0 0 0.5rem 0;
+            text-shadow: 0 0 30px var(--neural-glow);
+            line-height: 1.3;
+        }
+
+        .sonic-core-synthesis {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.7;
+            max-width: 500px;
+            margin: 0;
+        }
+
+        .sonic-core-chart {
+            width: 100px;
+            height: 100px;
+        }
+
+        /* ===== NEURAL SPECTRUM SECTION ===== */
+        .neural-spectrum-section {
+            padding: 1rem 1.5rem;
+        }
+
+        .spectrum-waveform {
+            width: 100%;
+            height: 80px;
+        }
+
+        .spectrum-waveform path {
+            fill: none;
+        }
+
+        /* ===== TONAL DNA SECTION ===== */
+        .tonal-dna-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .tonal-subsection {
+            position: relative;
+            padding: 1rem;
+            border: 1px solid var(--blueprint-line);
+        }
+
+        .tonal-subsection-label {
+            position: absolute;
+            top: -0.5rem;
+            left: 0.75rem;
+            background: var(--blueprint-bg);
+            padding: 0 0.5rem;
+            font-size: 0.55rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--section-label-color);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        /* Tonal DNA quadrant grid */
+        .tonal-dna-quadrant {
+            width: 100%;
+        }
+
+        .quadrant-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .quadrant-cell {
+            aspect-ratio: 1.5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 217, 255, 0.03);
+            border: 1px solid var(--blueprint-line);
+            padding: 0.5rem;
+        }
+
+        .quadrant-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--neural-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .quadrant-label {
+            font-size: 0.55rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.25rem;
+        }
+
+        .key-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--neural-primary);
+        }
+
+        /* Palette constellation */
+        .palette-constellation {
+            width: 100%;
+            height: 100px;
+        }
+
+        /* Timbre DNA waves */
+        .timbre-dna-waves {
+            width: 100%;
+            height: 80px;
+        }
+
+        /* ===== EMOTIONAL SECTION ===== */
+        .emotional-orbit {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            position: relative;
+        }
+
+        .orbit-line {
+            position: absolute;
+            top: 50%;
+            left: 8%;
+            right: 8%;
+            height: 2px;
+            background: linear-gradient(90deg,
+                transparent,
+                var(--neural-primary) 20%,
+                var(--neural-primary) 80%,
+                transparent
+            );
+            transform: translateY(-50%);
+            opacity: 0.3;
+        }
+
+        .emotional-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            z-index: 1;
+        }
+
+        .emotional-node-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--neural-primary);
+            box-shadow: 0 0 15px var(--neural-glow);
+        }
+
+        .emotional-node-label {
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .emotional-node-value {
+            font-size: 0.55rem;
+            color: var(--neural-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ===== SONIC ARCHITECTURE SECTION ===== */
+        .sonic-architecture-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
+            height: 70px;
+            padding: 0.5rem 1rem;
+        }
+
+        .architecture-bar {
+            width: 8px;
+            min-height: 8px;
+            background: linear-gradient(to top, var(--neural-secondary), var(--neural-primary));
+            border-radius: 2px 2px 0 0;
+            box-shadow: 0 0 8px var(--neural-glow);
+        }
+
+        /* ===== MODULE CARDS GRID ===== */
+        .module-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .module-card {
+            position: relative;
+            background: rgba(10, 10, 31, 0.8);
+            border: 1px solid var(--blueprint-line);
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .module-card:hover {
+            border-color: var(--neural-primary);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .module-card.selected {
+            border-color: var(--neural-primary);
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        .module-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .neural-glyph {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .neural-glyph svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .module-card-title {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #fff;
+            margin: 0;
+        }
+
+        .module-card-synthesis {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.5;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Module detail panel */
+        .module-detail-panel {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--blueprint-line);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .module-characteristics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .module-char-item {
+            padding: 0.5rem;
+            background: rgba(0, 217, 255, 0.03);
+            border: 1px solid var(--blueprint-line);
+        }
+
+        .module-char-label {
+            font-size: 0.55rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.2rem;
+        }
+
+        .module-char-value {
+            font-size: 0.7rem;
+            color: var(--neural-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ===== PLAYER SECTION ===== */
+        .player-section {
+            padding: 1rem 1.5rem;
+        }
+
+        /* Genre Fusion Chart */
+        .genre-fusion-chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ===== MOBILE 3-TAB LAYOUT ===== */
+
+        .mobile-tab-nav {
+            display: none;
+        }
+
         /* ===== MOBILE LAYOUT ===== */
 
         @media (max-width: 768px) {
@@ -1102,10 +1536,148 @@
                 width: 48px;
                 height: 48px;
             }
+
+            /* ===== NEURAL MUSIC PROFILE v3 - MOBILE 3-TAB LAYOUT ===== */
+
+            .neural-profile-container {
+                padding: 1rem;
+                padding-bottom: 80px;
+            }
+
+            .neural-profile-header {
+                margin-bottom: 1rem;
+            }
+
+            .neural-profile-title {
+                font-size: 0.65rem;
+            }
+
+            .mobile-tab-nav {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 64px;
+                background: rgba(10, 10, 31, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border-top: 1px solid var(--blueprint-line);
+                display: flex;
+                z-index: 100;
+            }
+
+            .mobile-tab {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+                color: rgba(255, 255, 255, 0.4);
+                font-size: 0.6rem;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                font-family: 'JetBrains Mono', monospace;
+                border: none;
+                background: none;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .mobile-tab:hover {
+                color: rgba(255, 255, 255, 0.6);
+            }
+
+            .mobile-tab.active {
+                color: var(--neural-primary);
+            }
+
+            .mobile-tab-icon {
+                font-size: 1.25rem;
+            }
+
+            .mobile-panel {
+                display: none;
+            }
+
+            .mobile-panel.active {
+                display: block;
+            }
+
+            /* Mobile: Sonic Core */
+            .sonic-core-section {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .sonic-core-emblem {
+                margin: 0 auto;
+                width: 120px;
+                height: 120px;
+            }
+
+            .sonic-core-info {
+                text-align: center;
+            }
+
+            .sonic-core-title {
+                font-size: 1.1rem;
+            }
+
+            .sonic-core-synthesis {
+                font-size: 0.8rem;
+                max-width: 100%;
+            }
+
+            .sonic-core-chart {
+                margin: 0 auto;
+                width: 80px;
+                height: 80px;
+            }
+
+            /* Mobile: Tonal DNA */
+            .tonal-dna-section {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            /* Mobile: Emotional Orbit */
+            .emotional-orbit {
+                flex-wrap: wrap;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .orbit-line {
+                display: none;
+            }
+
+            .emotional-node {
+                width: calc(50% - 0.5rem);
+            }
+
+            /* Mobile: Module Cards */
+            .module-cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            /* Mobile: Chat position adjustment */
+            .neural-chat-overlay {
+                bottom: 5.5rem;
+            }
+
+            .neural-chat-fab {
+                bottom: 5.5rem;
+            }
         }
 
         @media (min-width: 769px) {
             .mobile-swipe-hint {
+                display: none;
+            }
+
+            .mobile-tab-nav {
                 display: none;
             }
         }
@@ -5784,22 +6356,145 @@
         }
 
         // ============================================================
-        // NEURAL IDENTITY MAP v2 - Unified Radial Components
+        // NEURAL IDENTITY MAP v3 - Neural Music Profile Blueprint
         // ============================================================
 
-        // 11 Modules with FULL labels (no shortcuts)
+        // 11 Geometric SVG Glyphs - Neon Blueprint Aesthetic
+        const NEURAL_GLYPHS = {
+            // 1. Sound Description - Sonic Fingerprint (concentric rings)
+            'sonic-fingerprint': `
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="17" stroke="currentColor" stroke-width="1.5" opacity="0.4"/>
+                    <circle cx="20" cy="20" r="12" stroke="currentColor" stroke-width="1.2" opacity="0.6"/>
+                    <circle cx="20" cy="20" r="7" stroke="currentColor" stroke-width="1" opacity="0.8"/>
+                    <circle cx="20" cy="20" r="3" fill="currentColor"/>
+                    <line x1="20" y1="3" x2="20" y2="8" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="20" y1="32" x2="20" y2="37" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+            `,
+            // 2. Genre Fusion - Overlapping Hexagons
+            'blend-merge': `
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="15,6 23,6 27,14 23,22 15,22 11,14" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.6"/>
+                    <polygon points="17,18 25,18 29,26 25,34 17,34 13,26" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.8"/>
+                    <line x1="19" y1="18" x2="21" y2="22" stroke="currentColor" stroke-width="1"/>
+                    <circle cx="20" cy="20" r="2" fill="currentColor"/>
+                </svg>
+            `,
+            // 3. Neural Spectrum - Frequency Wave
+            'frequency-wave': `
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="4" y="10" width="32" height="20" stroke="currentColor" stroke-width="1" fill="none" opacity="0.3"/>
+                    <path d="M6 20 Q10 12 14 20 T22 20 T30 20 T34 20" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <line x1="4" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.4"/>
+                    <circle cx="20" cy="20" r="1.5" fill="currentColor"/>
+                </svg>
+            `,
+            // 4. Sound Palette - Constellation Nodes
+            'harmonic-nodes': `
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="8" r="3" fill="currentColor"/>
+                    <circle cx="9" cy="18" r="2.5" fill="currentColor" opacity="0.8"/>
+                    <circle cx="31" cy="16" r="2" fill="currentColor" opacity="0.7"/>
+                    <circle cx="12" cy="32" r="2.5" fill="currentColor" opacity="0.8"/>
+                    <circle cx="28" cy="30" r="2" fill="currentColor" opacity="0.7"/>
+                    <line x1="20" y1="8" x2="9" y2="18" stroke="currentColor" stroke-width="0.75" opacity="0.5"/>
+                    <line x1="20" y1="8" x2="31" y2="16" stroke="currentColor" stroke-width="0.75" opacity="0.5"/>
+                    <line x1="9" y1="18" x2="12" y2="32" stroke="currentColor" stroke-width="0.75" opacity="0.5"/>
+                    <line x1="31" y1="16" x2="28" y2="30" stroke="currentColor" stroke-width="0.75" opacity="0.5"/>
+                    <line x1="12" y1="32" x2="28" y2="30" stroke="currentColor" stroke-width="0.75" opacity="0.5"/>
+                </svg>
+            `,
+            // 5. Tonal Identity - Musical Key Symbol
+            'key-scale': `
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="8" y1="12" x2="32" y2="12" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+                    <line x1="8" y1="18" x2="32" y2="18" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+                    <line x1="8" y1="24" x2="32" y2="24" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+                    <line x1="8" y1="30" x2="32" y2="30" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+                    <path d="M18 8 L18 34 M15 14 L21 10 M15 20 L21 16" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    <circle cx="26" cy="24" r="3" fill="currentColor" opacity="0.8"/>
+                </svg>
+            `,
+            // 6. Rhythmic DNA - Pulse/Heartbeat Pattern
+            'pulse-beat': `
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="17" stroke="currentColor" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.3"/>
+                    <path d="M4 20 L10 20 L13 8 L17 32 L21 12 L25 28 L28 20 L36 20" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+                </svg>
+            `,
+            // 7. Timbre DNA - Layered Texture Waves
+            'texture-wave': `
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 13 Q12 8 20 13 T36 13" stroke="currentColor" stroke-width="1" fill="none" opacity="0.5"/>
+                    <path d="M4 20 Q12 13 20 20 T36 20" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    <path d="M4 27 Q12 22 20 27 T36 27" stroke="currentColor" stroke-width="1" fill="none" opacity="0.5"/>
+                    <line x1="20" y1="6" x2="20" y2="34" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.4"/>
+                </svg>
+            `,
+            // 8. Emotional Fingerprint - Radial Compass
+            'emotional-map': `
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/>
+                    <circle cx="20" cy="20" r="10" stroke="currentColor" stroke-width="0.75" fill="none" opacity="0.6"/>
+                    <circle cx="20" cy="20" r="4" fill="currentColor"/>
+                    <line x1="20" y1="4" x2="20" y2="10" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="20" y1="30" x2="20" y2="36" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="4" y1="20" x2="10" y2="20" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="30" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="8.7" y1="8.7" x2="12.8" y2="12.8" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+                    <line x1="27.2" y1="27.2" x2="31.3" y2="31.3" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+                </svg>
+            `,
+            // 9. Mix Signature - Mixer Faders
+            'mix-process': `
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="10" y1="8" x2="10" y2="32" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+                    <rect x="7" y="12" width="6" height="5" fill="currentColor"/>
+                    <line x1="20" y1="8" x2="20" y2="32" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+                    <rect x="17" y="20" width="6" height="5" fill="currentColor"/>
+                    <line x1="30" y1="8" x2="30" y2="32" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+                    <rect x="27" y="15" width="6" height="5" fill="currentColor"/>
+                </svg>
+            `,
+            // 10. Sonic Architecture - Stacked Blocks
+            'structure-blocks': `
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="24" width="10" height="12" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    <rect x="20" y="16" width="10" height="20" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    <rect x="13" y="6" width="10" height="14" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    <line x1="4" y1="36" x2="36" y2="36" stroke="currentColor" stroke-width="1"/>
+                </svg>
+            `,
+            // 11. Inspirational Triggers - Starburst
+            'spark-inspire': `
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="5" fill="currentColor"/>
+                    <line x1="20" y1="4" x2="20" y2="12" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="20" y1="28" x2="20" y2="36" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="4" y1="20" x2="12" y2="20" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="28" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="8.7" y1="8.7" x2="14.3" y2="14.3" stroke="currentColor" stroke-width="1" opacity="0.7"/>
+                    <line x1="25.7" y1="25.7" x2="31.3" y2="31.3" stroke="currentColor" stroke-width="1" opacity="0.7"/>
+                    <line x1="31.3" y1="8.7" x2="25.7" y2="14.3" stroke="currentColor" stroke-width="1" opacity="0.7"/>
+                    <line x1="14.3" y1="25.7" x2="8.7" y2="31.3" stroke="currentColor" stroke-width="1" opacity="0.7"/>
+                </svg>
+            `
+        };
+
+        // 11 Modules with FULL labels and glyph references
         const NEURAL_MODULES = [
-            { key: 'sound_description', label: 'Sound Description', icon: '✧', angle: 0 },
-            { key: 'genre_fusion', label: 'Genre Fusion', icon: '◈', angle: 32.7 },
-            { key: 'neural_spectrum', label: 'Neural Spectrum', icon: '◎', angle: 65.4 },
-            { key: 'sound_palette', label: 'Sound Palette', icon: '◇', angle: 98.1 },
-            { key: 'tonal_identity', label: 'Tonal Identity', icon: '♮', angle: 130.8 },
-            { key: 'rhythmic_dna', label: 'Rhythmic DNA', icon: '◆', angle: 163.5 },
-            { key: 'timbre_dna', label: 'Timbre DNA', icon: '○', angle: 196.2 },
-            { key: 'emotional_fingerprint', label: 'Emotional Fingerprint', icon: '◐', angle: 228.9 },
-            { key: 'processing_signature', label: 'Mix Signature', icon: '▣', angle: 261.6 },
-            { key: 'sonic_architecture', label: 'Sonic Architecture', icon: '△', angle: 294.3 },
-            { key: 'inspirational_triggers', label: 'Inspirational Triggers', icon: '✦', angle: 327 }
+            { key: 'sound_description', label: 'Sound Description', glyph: 'sonic-fingerprint', angle: 0 },
+            { key: 'genre_fusion', label: 'Genre Fusion', glyph: 'blend-merge', angle: 32.7 },
+            { key: 'neural_spectrum', label: 'Neural Spectrum', glyph: 'frequency-wave', angle: 65.4 },
+            { key: 'sound_palette', label: 'Sound Palette', glyph: 'harmonic-nodes', angle: 98.1 },
+            { key: 'tonal_identity', label: 'Tonal Identity', glyph: 'key-scale', angle: 130.8 },
+            { key: 'rhythmic_dna', label: 'Rhythmic DNA', glyph: 'pulse-beat', angle: 163.5 },
+            { key: 'timbre_dna', label: 'Timbre DNA', glyph: 'texture-wave', angle: 196.2 },
+            { key: 'emotional_fingerprint', label: 'Emotional Fingerprint', glyph: 'emotional-map', angle: 228.9 },
+            { key: 'processing_signature', label: 'Mix Signature', glyph: 'mix-process', angle: 261.6 },
+            { key: 'sonic_architecture', label: 'Sonic Architecture', glyph: 'structure-blocks', angle: 294.3 },
+            { key: 'inspirational_triggers', label: 'Inspirational Triggers', glyph: 'spark-inspire', angle: 327 }
         ];
 
         // Color helper - Blue-based palette (NO PURPLE)
@@ -5819,6 +6514,282 @@
                 sympathetic: { primary: '#FF6B00', secondary: '#FF9500' }
             };
             return colorSets[placement] || colorSets.hybrid;
+        }
+
+        // ============================================================
+        // VISUALIZATION COMPONENTS - Neural Music Profile v3
+        // ============================================================
+
+        // NeuralGlyph - Renders SVG glyph by type with neon glow
+        function NeuralGlyph({ type, size = 40, color = 'var(--neural-primary)', className = '' }) {
+            const svgContent = NEURAL_GLYPHS[type] || NEURAL_GLYPHS['sonic-fingerprint'];
+            return (
+                <div
+                    className={`neural-glyph ${className}`}
+                    style={{
+                        width: size,
+                        height: size,
+                        color: color,
+                        filter: `drop-shadow(0 0 8px ${color})`
+                    }}
+                    dangerouslySetInnerHTML={{ __html: svgContent }}
+                />
+            );
+        }
+
+        // NeuralSpectrumViz - Data-driven waveform visualization
+        function NeuralSpectrumViz({ profile }) {
+            const spectrum = profile?.neural_spectrum;
+            const value = spectrum?.value ?? 0.5;
+            const placement = spectrum?.placement || 'hybrid';
+            const color = getPlacementColor(placement);
+
+            const points = React.useMemo(() => {
+                const width = 800;
+                const height = 80;
+                const segments = 100;
+                const amplitude = value * 30 + 10;
+                let path = `M0 ${height/2}`;
+                for (let i = 1; i <= segments; i++) {
+                    const x = (i / segments) * width;
+                    const y = height/2 + Math.sin(i * 0.3 + value * 2) * amplitude * Math.sin(i * 0.08);
+                    path += ` L${x.toFixed(1)} ${y.toFixed(1)}`;
+                }
+                return path;
+            }, [value]);
+
+            return (
+                <svg viewBox="0 0 800 80" className="spectrum-waveform" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="spectrum-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor={color} stopOpacity="0.2"/>
+                            <stop offset="50%" stopColor={color} stopOpacity="1"/>
+                            <stop offset="100%" stopColor={color} stopOpacity="0.2"/>
+                        </linearGradient>
+                        <filter id="spectrum-glow">
+                            <feGaussianBlur stdDeviation="2" result="blur"/>
+                            <feMerge>
+                                <feMergeNode in="blur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <line x1="0" y1="40" x2="800" y2="40" stroke={color} strokeWidth="0.5" opacity="0.2"/>
+                    <path d={points} stroke="url(#spectrum-grad)" strokeWidth="2.5" fill="none" filter="url(#spectrum-glow)"/>
+                </svg>
+            );
+        }
+
+        // SoundPaletteViz - Constellation node ring
+        function SoundPaletteViz({ profile }) {
+            const palette = profile?.sound_palette?.characteristics || {};
+            const harmonic = palette.harmonic_richness || 0.5;
+            const nodeCount = Math.floor(harmonic * 5) + 5;
+
+            const nodes = React.useMemo(() => {
+                const result = [];
+                for (let i = 0; i < nodeCount; i++) {
+                    const angle = (i / nodeCount) * Math.PI * 2 - Math.PI / 2;
+                    const radius = 35 + (Math.sin(i * 1.5) * 8);
+                    result.push({
+                        x: 50 + radius * Math.cos(angle),
+                        y: 50 + radius * Math.sin(angle),
+                        size: 2 + (Math.cos(i * 0.7) + 1) * 2
+                    });
+                }
+                return result;
+            }, [nodeCount]);
+
+            return (
+                <svg viewBox="0 0 100 100" className="palette-constellation">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--neural-primary)" strokeWidth="0.5" opacity="0.2" strokeDasharray="2 4"/>
+                    {nodes.map((node, i) =>
+                        nodes.slice(i + 1).filter((_, j) => j < 2).map((other, j) => (
+                            <line key={`conn-${i}-${j}`}
+                                x1={node.x} y1={node.y} x2={other.x} y2={other.y}
+                                stroke="var(--neural-primary)" strokeWidth="0.5" opacity="0.3"/>
+                        ))
+                    )}
+                    {nodes.map((node, i) => (
+                        <circle key={i} cx={node.x} cy={node.y} r={node.size}
+                            fill="var(--neural-primary)" opacity={0.5 + (i % 3) * 0.2}
+                            style={{ filter: 'drop-shadow(0 0 4px var(--neural-glow))' }}/>
+                    ))}
+                    <circle cx="50" cy="50" r="4" fill="var(--neural-secondary)"/>
+                </svg>
+            );
+        }
+
+        // TonalDNAViz - 2x2 Quadrant grid
+        function TonalDNAViz({ profile }) {
+            const tonal = profile?.tonal_identity?.characteristics || {};
+            const key = tonal.key || 'C';
+            const mode = tonal.mode || 'major';
+            const modulation = tonal.modulation_tendency || 0.5;
+
+            return (
+                <div className="tonal-dna-quadrant">
+                    <div className="quadrant-grid">
+                        <div className="quadrant-cell">
+                            <span className="quadrant-value">{key}</span>
+                            <span className="quadrant-label">Key</span>
+                        </div>
+                        <div className="quadrant-cell">
+                            <span className="quadrant-value">{mode}</span>
+                            <span className="quadrant-label">Mode</span>
+                        </div>
+                        <div className="quadrant-cell">
+                            <span className="quadrant-value">{(modulation * 100).toFixed(0)}%</span>
+                            <span className="quadrant-label">Modulation</span>
+                        </div>
+                        <div className="quadrant-cell">
+                            <div className="key-circle" style={{ background: `conic-gradient(var(--neural-primary) ${modulation * 360}deg, transparent 0deg)` }}/>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // EmotionalOrbitViz - Horizontal orbit with labeled nodes
+        function EmotionalOrbitViz({ profile }) {
+            const emotional = profile?.emotional_fingerprint?.characteristics || {};
+            const synthesis = profile?.emotional_fingerprint?.synthesis || '';
+
+            // Extract emotional dimensions from synthesis or use defaults
+            const nodes = [
+                { label: 'Energy', value: emotional.energy_level || 0.5 },
+                { label: 'Valence', value: emotional.valence || 0.5 },
+                { label: 'Tension', value: emotional.tension || 0.5 },
+                { label: 'Depth', value: emotional.emotional_depth || 0.5 }
+            ];
+
+            return (
+                <div className="emotional-orbit">
+                    <div className="orbit-line"/>
+                    {nodes.map((node, i) => (
+                        <div key={i} className="emotional-node">
+                            <div
+                                className="emotional-node-dot"
+                                style={{
+                                    transform: `scale(${0.7 + node.value * 0.6})`,
+                                    opacity: 0.5 + node.value * 0.5
+                                }}
+                            />
+                            <span className="emotional-node-label">{node.label}</span>
+                            <span className="emotional-node-value">{(node.value * 100).toFixed(0)}%</span>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        // SonicArchitectureViz - Vertical frequency bars
+        function SonicArchitectureViz({ profile }) {
+            const arch = profile?.sonic_architecture?.characteristics || {};
+            const density = arch.density || 0.5;
+            const complexity = arch.complexity || 0.5;
+            const layering = arch.layering || 0.5;
+
+            const bars = React.useMemo(() => {
+                const count = 24;
+                const result = [];
+                for (let i = 0; i < count; i++) {
+                    const base = Math.sin(i * 0.5) * 0.3 + 0.5;
+                    const variation = Math.cos(i * 0.3 + complexity * 3) * 0.2;
+                    result.push(Math.max(0.15, Math.min(1, base + variation + (density - 0.5) * 0.3)));
+                }
+                return result;
+            }, [density, complexity]);
+
+            return (
+                <div className="sonic-architecture-bars">
+                    {bars.map((height, i) => (
+                        <div
+                            key={i}
+                            className="architecture-bar"
+                            style={{
+                                height: `${height * 100}%`,
+                                opacity: 0.4 + height * 0.6
+                            }}
+                        />
+                    ))}
+                </div>
+            );
+        }
+
+        // GenreFusionViz - Segmented pie/radar chart
+        function GenreFusionViz({ profile }) {
+            const fusion = profile?.genre_fusion?.characteristics || {};
+            const genres = fusion.detected_genres || fusion.primary_genres || [];
+            const topGenres = Array.isArray(genres) ? genres.slice(0, 5) : [];
+
+            if (topGenres.length === 0) {
+                return (
+                    <svg viewBox="0 0 100 100" className="genre-fusion-chart">
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--neural-primary)" strokeWidth="1" opacity="0.3"/>
+                        <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" fill="var(--neural-primary)" fontSize="8" opacity="0.5">
+                            No Data
+                        </text>
+                    </svg>
+                );
+            }
+
+            let currentAngle = -90;
+            const angleStep = 360 / topGenres.length;
+
+            return (
+                <svg viewBox="0 0 100 100" className="genre-fusion-chart">
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="var(--neural-primary)" strokeWidth="0.5" opacity="0.2"/>
+                    {topGenres.map((genre, i) => {
+                        const startRad = currentAngle * Math.PI / 180;
+                        const endRad = (currentAngle + angleStep) * Math.PI / 180;
+                        const x1 = 50 + 38 * Math.cos(startRad);
+                        const y1 = 50 + 38 * Math.sin(startRad);
+                        const x2 = 50 + 38 * Math.cos(endRad);
+                        const y2 = 50 + 38 * Math.sin(endRad);
+                        const largeArc = angleStep > 180 ? 1 : 0;
+                        currentAngle += angleStep;
+
+                        return (
+                            <g key={i}>
+                                <path
+                                    d={`M50,50 L${x1},${y1} A38,38 0 ${largeArc},1 ${x2},${y2} Z`}
+                                    fill="var(--neural-primary)"
+                                    opacity={0.15 + (i * 0.12)}
+                                    stroke="var(--blueprint-bg)"
+                                    strokeWidth="1"
+                                />
+                            </g>
+                        );
+                    })}
+                    <circle cx="50" cy="50" r="15" fill="var(--blueprint-bg)"/>
+                    <circle cx="50" cy="50" r="15" fill="none" stroke="var(--neural-primary)" strokeWidth="0.5" opacity="0.5"/>
+                </svg>
+            );
+        }
+
+        // TimbreDNAViz - Layered wave visualization
+        function TimbreDNAViz({ profile }) {
+            const timbre = profile?.timbre_dna?.characteristics || {};
+            const brightness = timbre.brightness || 0.5;
+            const warmth = timbre.warmth || 0.5;
+            const texture = timbre.texture_complexity || 0.5;
+
+            return (
+                <svg viewBox="0 0 120 80" className="timbre-dna-waves">
+                    <defs>
+                        <linearGradient id="timbre-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="var(--neural-primary)" stopOpacity="0"/>
+                            <stop offset="50%" stopColor="var(--neural-primary)" stopOpacity="0.8"/>
+                            <stop offset="100%" stopColor="var(--neural-primary)" stopOpacity="0"/>
+                        </linearGradient>
+                    </defs>
+                    <path d={`M0 30 Q30 ${20 - brightness * 15} 60 30 T120 30`} fill="none" stroke="url(#timbre-grad)" strokeWidth="1" opacity="0.4"/>
+                    <path d={`M0 40 Q30 ${30 - warmth * 15} 60 40 T120 40`} fill="none" stroke="url(#timbre-grad)" strokeWidth="1.5"/>
+                    <path d={`M0 50 Q30 ${40 + texture * 15} 60 50 T120 50`} fill="none" stroke="url(#timbre-grad)" strokeWidth="1" opacity="0.4"/>
+                    <line x1="60" y1="15" x2="60" y2="65" stroke="var(--neural-primary)" strokeWidth="0.5" strokeDasharray="2 3" opacity="0.3"/>
+                </svg>
+            );
         }
 
         // Helper to generate polygon points for emblem
@@ -5938,225 +6909,334 @@
             );
         }
 
-        // Neural Identity Map - Unified Radial Component
+        // Neural Identity Map v3 - Neural Music Profile Blueprint
         function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sending, sendMessage, handleKeyPress }) {
             const [selectedModule, setSelectedModule] = useState(null);
             const [isPlaying, setIsPlaying] = useState(false);
             const [currentTime, setCurrentTime] = useState(0);
             const [duration, setDuration] = useState(0);
-            const [rippleOrigin, setRippleOrigin] = useState(null);
             const [showChat, setShowChat] = useState(false);
+            const [mobileTab, setMobileTab] = useState('track'); // track | map | details
+            const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 769);
             const audioRef = useRef(null);
             const messagesEndRef = useRef(null);
 
+            // Profile data extraction
             const placement = profile?.neural_spectrum?.placement || 'hybrid';
             const bpm = profile?.rhythmic_dna?.characteristics?.tempo_bpm || 120;
             const stability = profile?.timbre_dna?.characteristics?.stability || 0.5;
 
-            // Calculate animation durations from profile
-            const pulseDuration = (60 / bpm) * 2; // 2 beats per pulse
-            const rotateDuration = 30 + (stability * 60); // 30-90 seconds based on stability
+            // Animation durations from profile
+            const pulseDuration = (60 / bpm) * 2;
+            const rotateDuration = 30 + (stability * 60);
 
-            const baseColor = getPlacementColor(placement);
+            // Track info
+            const sonicTitle = profile?.sound_description?.characteristics?.sonic_title || 'Neural Profile';
+            const synthesis = profile?.sound_description?.synthesis || profile?.creative_identity_statement || '';
 
-            // Get current center content
-            const centerContent = React.useMemo(() => {
-                if (selectedModule) {
-                    const moduleData = profile?.[selectedModule];
-                    return {
-                        title: NEURAL_MODULES.find(m => m.key === selectedModule)?.label || selectedModule,
-                        synthesis: moduleData?.synthesis || '',
-                        characteristics: moduleData?.characteristics || {}
-                    };
-                }
-                return {
-                    title: profile?.sound_description?.characteristics?.sonic_title || 'Neural Profile',
-                    synthesis: profile?.sound_description?.synthesis || profile?.creative_identity_statement || '',
-                    characteristics: null
-                };
-            }, [selectedModule, profile]);
+            // Responsive detection
+            useEffect(() => {
+                const handleResize = () => setIsMobile(window.innerWidth < 769);
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
 
-            // Handle module click with ripple effect
-            const handleModuleClick = (moduleKey, x, y) => {
-                setRippleOrigin({ x, y });
-                setSelectedModule(moduleKey);
-                setTimeout(() => setRippleOrigin(null), 600);
-            };
-
-            const handleBackToCenter = () => {
-                setSelectedModule(null);
-            };
-
-            // Scroll chat to bottom
+            // Chat scroll
             useEffect(() => {
                 if (showChat) {
                     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
                 }
             }, [messages, showChat]);
 
-            const cx = 450, cy = 450, radius = 320;
+            // Module click handler
+            const handleModuleClick = (moduleKey) => {
+                setSelectedModule(moduleKey === selectedModule ? null : moduleKey);
+            };
+
+            // Get module data
+            const getModuleData = (key) => {
+                const data = profile?.[key];
+                return {
+                    synthesis: data?.synthesis || '',
+                    characteristics: data?.characteristics || {}
+                };
+            };
+
+            // Desktop Layout Component
+            const DesktopLayout = () => (
+                <div className="neural-profile-content">
+                    {/* Header */}
+                    <div className="neural-profile-header">
+                        <div className="neural-profile-title">Neural Music Profile</div>
+                        <div className="neural-profile-subtitle">Mapping the inner architecture of sound and mind</div>
+                    </div>
+
+                    {/* SONIC CORE Section */}
+                    <div className="profile-section">
+                        <span className="section-label">Sonic Core</span>
+                        <div className="sonic-core-section">
+                            <div className="sonic-core-emblem">
+                                <NeuralEmblem
+                                    profile={profile}
+                                    placement={placement}
+                                    pulseDuration={pulseDuration}
+                                    rotateDuration={rotateDuration}
+                                />
+                            </div>
+                            <div className="sonic-core-info">
+                                <h1 className="sonic-core-title">{sonicTitle}</h1>
+                                <p className="sonic-core-synthesis">{synthesis}</p>
+                            </div>
+                            <div className="sonic-core-chart">
+                                <GenreFusionViz profile={profile} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* NEURAL SPECTRUM Section */}
+                    <div className="profile-section neural-spectrum-section">
+                        <span className="section-label">Neural Spectrum</span>
+                        <NeuralSpectrumViz profile={profile} />
+                    </div>
+
+                    {/* TONAL DNA Section */}
+                    <div className="profile-section">
+                        <span className="section-label">Tonal DNA</span>
+                        <div className="tonal-dna-section">
+                            <div className="tonal-subsection">
+                                <span className="tonal-subsection-label">Sound Palette</span>
+                                <SoundPaletteViz profile={profile} />
+                            </div>
+                            <div className="tonal-subsection">
+                                <span className="tonal-subsection-label">Timbre DNA</span>
+                                <TimbreDNAViz profile={profile} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* EMOTIONAL Section */}
+                    <div className="profile-section">
+                        <span className="section-label">Emotional & Psychological</span>
+                        <EmotionalOrbitViz profile={profile} />
+                    </div>
+
+                    {/* SONIC ARCHITECTURE Section */}
+                    <div className="profile-section">
+                        <span className="section-label">Sonic Architecture</span>
+                        <SonicArchitectureViz profile={profile} />
+                    </div>
+
+                    {/* PLAYER Section */}
+                    <div className="profile-section player-section">
+                        <span className="section-label">Audio</span>
+                        <NeuralPlayerMini
+                            audioUrl={audioUrl}
+                            audioRef={audioRef}
+                            isPlaying={isPlaying}
+                            setIsPlaying={setIsPlaying}
+                            currentTime={currentTime}
+                            setCurrentTime={setCurrentTime}
+                            duration={duration}
+                            setDuration={setDuration}
+                        />
+                    </div>
+
+                    {/* MODULE CARDS Section */}
+                    <div className="profile-section">
+                        <span className="section-label">Analysis Modules</span>
+                        <div className="module-cards-grid">
+                            {NEURAL_MODULES.map((mod) => {
+                                const moduleData = getModuleData(mod.key);
+                                const isSelected = selectedModule === mod.key;
+
+                                return (
+                                    <div
+                                        key={mod.key}
+                                        className={`module-card ${isSelected ? 'selected' : ''}`}
+                                        onClick={() => handleModuleClick(mod.key)}
+                                    >
+                                        <div className="module-card-header">
+                                            <NeuralGlyph type={mod.glyph} size={32} />
+                                            <h3 className="module-card-title">{mod.label}</h3>
+                                        </div>
+                                        <p className="module-card-synthesis">{moduleData.synthesis || 'Analysis pending...'}</p>
+
+                                        {isSelected && moduleData.characteristics && Object.keys(moduleData.characteristics).length > 0 && (
+                                            <div className="module-detail-panel">
+                                                <div className="module-characteristics">
+                                                    {Object.entries(moduleData.characteristics).slice(0, 6).map(([key, value]) => (
+                                                        <div key={key} className="module-char-item">
+                                                            <div className="module-char-label">{key.replace(/_/g, ' ')}</div>
+                                                            <div className="module-char-value">
+                                                                {Array.isArray(value) ? value.slice(0, 2).join(', ') :
+                                                                    typeof value === 'number' ? value.toFixed(2) : String(value)}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+
+            // Mobile Layout Component
+            const MobileLayout = () => (
+                <>
+                    <div className="neural-profile-content">
+                        {/* Header */}
+                        <div className="neural-profile-header">
+                            <div className="neural-profile-title">Neural Music Profile</div>
+                        </div>
+
+                        {/* Track Tab - Core + Player */}
+                        <div className={`mobile-panel ${mobileTab === 'track' ? 'active' : ''}`}>
+                            <div className="profile-section">
+                                <span className="section-label">Sonic Core</span>
+                                <div className="sonic-core-section">
+                                    <div className="sonic-core-emblem">
+                                        <NeuralEmblem
+                                            profile={profile}
+                                            placement={placement}
+                                            pulseDuration={pulseDuration}
+                                            rotateDuration={rotateDuration}
+                                        />
+                                    </div>
+                                    <div className="sonic-core-info">
+                                        <h1 className="sonic-core-title">{sonicTitle}</h1>
+                                        <p className="sonic-core-synthesis">{synthesis}</p>
+                                    </div>
+                                    <div className="sonic-core-chart">
+                                        <GenreFusionViz profile={profile} />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="profile-section player-section">
+                                <span className="section-label">Audio</span>
+                                <NeuralPlayerMini
+                                    audioUrl={audioUrl}
+                                    audioRef={audioRef}
+                                    isPlaying={isPlaying}
+                                    setIsPlaying={setIsPlaying}
+                                    currentTime={currentTime}
+                                    setCurrentTime={setCurrentTime}
+                                    duration={duration}
+                                    setDuration={setDuration}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Map Tab - Visualizations */}
+                        <div className={`mobile-panel ${mobileTab === 'map' ? 'active' : ''}`}>
+                            <div className="profile-section neural-spectrum-section">
+                                <span className="section-label">Neural Spectrum</span>
+                                <NeuralSpectrumViz profile={profile} />
+                            </div>
+                            <div className="profile-section">
+                                <span className="section-label">Tonal DNA</span>
+                                <div className="tonal-dna-section">
+                                    <div className="tonal-subsection">
+                                        <span className="tonal-subsection-label">Sound Palette</span>
+                                        <SoundPaletteViz profile={profile} />
+                                    </div>
+                                    <div className="tonal-subsection">
+                                        <span className="tonal-subsection-label">Timbre DNA</span>
+                                        <TimbreDNAViz profile={profile} />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="profile-section">
+                                <span className="section-label">Emotional</span>
+                                <EmotionalOrbitViz profile={profile} />
+                            </div>
+                            <div className="profile-section">
+                                <span className="section-label">Architecture</span>
+                                <SonicArchitectureViz profile={profile} />
+                            </div>
+                        </div>
+
+                        {/* Details Tab - Module Cards */}
+                        <div className={`mobile-panel ${mobileTab === 'details' ? 'active' : ''}`}>
+                            <div className="profile-section">
+                                <span className="section-label">Analysis Modules</span>
+                                <div className="module-cards-grid">
+                                    {NEURAL_MODULES.map((mod) => {
+                                        const moduleData = getModuleData(mod.key);
+                                        const isSelected = selectedModule === mod.key;
+
+                                        return (
+                                            <div
+                                                key={mod.key}
+                                                className={`module-card ${isSelected ? 'selected' : ''}`}
+                                                onClick={() => handleModuleClick(mod.key)}
+                                            >
+                                                <div className="module-card-header">
+                                                    <NeuralGlyph type={mod.glyph} size={28} />
+                                                    <h3 className="module-card-title">{mod.label}</h3>
+                                                </div>
+                                                <p className="module-card-synthesis">{moduleData.synthesis || 'Analysis pending...'}</p>
+
+                                                {isSelected && moduleData.characteristics && Object.keys(moduleData.characteristics).length > 0 && (
+                                                    <div className="module-detail-panel">
+                                                        <div className="module-characteristics">
+                                                            {Object.entries(moduleData.characteristics).slice(0, 4).map(([key, value]) => (
+                                                                <div key={key} className="module-char-item">
+                                                                    <div className="module-char-label">{key.replace(/_/g, ' ')}</div>
+                                                                    <div className="module-char-value">
+                                                                        {Array.isArray(value) ? value.slice(0, 2).join(', ') :
+                                                                            typeof value === 'number' ? value.toFixed(2) : String(value)}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Mobile Tab Navigation */}
+                    <nav className="mobile-tab-nav">
+                        <button
+                            className={`mobile-tab ${mobileTab === 'track' ? 'active' : ''}`}
+                            onClick={() => setMobileTab('track')}
+                        >
+                            <span className="mobile-tab-icon">◎</span>
+                            <span>Track</span>
+                        </button>
+                        <button
+                            className={`mobile-tab ${mobileTab === 'map' ? 'active' : ''}`}
+                            onClick={() => setMobileTab('map')}
+                        >
+                            <span className="mobile-tab-icon">◈</span>
+                            <span>Map</span>
+                        </button>
+                        <button
+                            className={`mobile-tab ${mobileTab === 'details' ? 'active' : ''}`}
+                            onClick={() => setMobileTab('details')}
+                        >
+                            <span className="mobile-tab-icon">▣</span>
+                            <span>Details</span>
+                        </button>
+                    </nav>
+                </>
+            );
 
             return (
-                <div className="neural-identity-map">
-                    {/* Background ambient rings */}
-                    <div className="neural-bg-rings">
-                        {[1, 2, 3, 4, 5].map(i => (
-                            <div
-                                key={`ring-${i}`}
-                                className="neural-bg-ring"
-                                style={{
-                                    width: `${200 + i * 150}px`,
-                                    height: `${200 + i * 150}px`,
-                                    animationDelay: `${i * 0.5}s`
-                                }}
-                            />
-                        ))}
-                    </div>
+                <div className="neural-profile-container">
+                    {/* Micro-dot background */}
+                    <div className="neural-micro-dots" />
 
-                    {/* Main radial SVG */}
-                    <svg className="neural-radial-svg" viewBox="0 0 900 900" style={{ position: 'relative', zIndex: 1 }}>
-                        <defs>
-                            <filter id="node-glow-filter" x="-50%" y="-50%" width="200%" height="200%">
-                                <feGaussianBlur stdDeviation="6" result="blur" />
-                                <feMerge>
-                                    <feMergeNode in="blur" />
-                                    <feMergeNode in="SourceGraphic" />
-                                </feMerge>
-                            </filter>
-                        </defs>
-
-                        {/* Connection lines from center to each node */}
-                        {NEURAL_MODULES.map((mod) => {
-                            const x = cx + radius * Math.cos((mod.angle - 90) * Math.PI / 180);
-                            const y = cy + radius * Math.sin((mod.angle - 90) * Math.PI / 180);
-                            const isActive = selectedModule === mod.key;
-
-                            return (
-                                <line
-                                    key={`conn-${mod.key}`}
-                                    className={`neural-connection ${isActive ? 'active' : ''}`}
-                                    x1={cx} y1={cy} x2={x} y2={y}
-                                />
-                            );
-                        })}
-
-                        {/* Ring connecting all nodes */}
-                        <circle
-                            cx={cx} cy={cy} r={radius}
-                            fill="none"
-                            stroke={baseColor}
-                            strokeWidth="1"
-                            opacity="0.1"
-                            strokeDasharray="4 8"
-                        />
-
-                        {/* Module nodes */}
-                        {NEURAL_MODULES.map((mod) => {
-                            const x = cx + radius * Math.cos((mod.angle - 90) * Math.PI / 180);
-                            const y = cy + radius * Math.sin((mod.angle - 90) * Math.PI / 180);
-                            const hasData = !!profile?.[mod.key]?.synthesis;
-                            const isSelected = selectedModule === mod.key;
-                            const isFaded = selectedModule && !isSelected;
-                            const nodeRadius = isSelected ? 32 : 26;
-
-                            return (
-                                <g
-                                    key={mod.key}
-                                    className={`neural-node-group ${isSelected ? 'selected' : ''} ${isFaded ? 'faded' : ''}`}
-                                    onClick={() => handleModuleClick(mod.key, x, y)}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <circle
-                                        className="neural-node-circle"
-                                        cx={x} cy={y} r={nodeRadius}
-                                        fill={hasData ? baseColor : 'rgba(255,255,255,0.1)'}
-                                        stroke={isSelected ? '#fff' : baseColor}
-                                        strokeWidth={isSelected ? 2 : 1}
-                                    />
-                                    <text className="neural-node-icon" x={x} y={y} fill="#fff">
-                                        {mod.icon}
-                                    </text>
-                                    <text className="neural-node-label" x={x} y={y + nodeRadius + 14}>
-                                        {mod.label}
-                                    </text>
-                                </g>
-                            );
-                        })}
-
-                        {/* Ripple effect on click */}
-                        {rippleOrigin && (
-                            <circle
-                                className="ripple-effect"
-                                cx={rippleOrigin.x}
-                                cy={rippleOrigin.y}
-                                r="30"
-                            />
-                        )}
-                    </svg>
-
-                    {/* Center hub (HTML overlay) */}
-                    <div className={`neural-center-hub ${selectedModule ? 'module-active' : ''}`}>
-                        {/* Back button (when module selected) */}
-                        {selectedModule && (
-                            <button className="neural-back-btn" onClick={handleBackToCenter}>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M19 12H5M12 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                                Back to Profile
-                            </button>
-                        )}
-
-                        {/* Emblem */}
-                        <div className="neural-emblem">
-                            <NeuralEmblem
-                                profile={profile}
-                                placement={placement}
-                                pulseDuration={pulseDuration}
-                                rotateDuration={rotateDuration}
-                            />
-                        </div>
-
-                        {/* Identity */}
-                        <div className="neural-center-identity">
-                            <h2 className="neural-center-title">{centerContent.title}</h2>
-                            <div className="neural-center-creator">Neural Music Profile</div>
-                        </div>
-
-                        {/* Synthesis content */}
-                        <div className="neural-center-content">
-                            <p className="neural-center-synthesis">{centerContent.synthesis}</p>
-                            {centerContent.characteristics && Object.keys(centerContent.characteristics).length > 0 && (
-                                <div className="neural-center-characteristics">
-                                    {Object.entries(centerContent.characteristics).slice(0, 6).map(([key, value]) => (
-                                        <div key={key} className="neural-char-item">
-                                            <div className="neural-char-label">{key.replace(/_/g, ' ')}</div>
-                                            <div className="neural-char-value">
-                                                {Array.isArray(value) ? value.slice(0, 2).join(', ') :
-                                                    typeof value === 'number' ? value.toFixed(2) : String(value)}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Player (ALWAYS visible) */}
-                        <div className="neural-center-player">
-                            <NeuralPlayerMini
-                                audioUrl={audioUrl}
-                                audioRef={audioRef}
-                                isPlaying={isPlaying}
-                                setIsPlaying={setIsPlaying}
-                                currentTime={currentTime}
-                                setCurrentTime={setCurrentTime}
-                                duration={duration}
-                                setDuration={setDuration}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Mobile swipe hint */}
-                    <div className="mobile-swipe-hint">Tap a module to explore</div>
+                    {/* Responsive Layout */}
+                    {isMobile ? <MobileLayout /> : <DesktopLayout />}
 
                     {/* Floating chat button */}
                     <button
