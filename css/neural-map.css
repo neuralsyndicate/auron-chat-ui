@@ -1,0 +1,1069 @@
+/* ========================================
+   NEURAL IDENTITY MAP v2/v3 - Unified Radial
+   ======================================== */
+
+/* Container: Fullscreen centered radial */
+.neural-identity-map {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(0, 102, 255, 0.08) 0%,
+        rgba(0, 0, 0, 0.98) 70%
+    );
+    overflow: hidden;
+    contain: layout style;
+}
+
+/* Background ambient rings */
+.neural-bg-rings {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.neural-bg-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 1px solid var(--neural-primary);
+    opacity: 0.05;
+    animation: ring-breathe 4s ease-in-out infinite;
+    contain: strict;
+}
+
+@keyframes ring-breathe {
+    0%, 100% { opacity: 0.03; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.08; transform: translate(-50%, -50%) scale(1.02); }
+}
+
+/* V4: Module selected state - dims background layers for focus */
+.neural-identity-map.module-selected .neural-bg-ring {
+    opacity: 0.02;
+}
+
+.neural-identity-map.module-selected .neural-spectrum-arc:not(.active),
+.neural-identity-map.module-selected .floating-constellation:not(.active),
+.neural-identity-map.module-selected .emotional-compass:not(.active),
+.neural-identity-map.module-selected .architecture-bar-ring:not(.active),
+.neural-identity-map.module-selected .genre-segments:not(.active),
+.neural-identity-map.module-selected .timbre-wave-ring:not(.active) {
+    opacity: 0.05;
+}
+
+/* Main radial SVG container */
+.neural-radial-svg {
+    width: 100%;
+    height: 100%;
+    max-width: 900px;
+    max-height: 900px;
+    contain: layout paint;
+}
+
+/* Center hub area */
+.neural-center-hub {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neural-center-hub.module-active {
+    width: 380px;
+}
+
+/* Emblem in center */
+.neural-emblem {
+    width: 140px;
+    height: 140px;
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.neural-emblem-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(var(--neon-outer));
+}
+
+/* V4: Rotating blueprint rings behind emblem */
+.emblem-ring {
+    fill: none;
+    stroke: var(--neural-primary);
+    opacity: 0.12;
+}
+
+.emblem-ring-1 { animation: emblem-ring-rotate 90s linear infinite; }
+.emblem-ring-2 { animation: emblem-ring-rotate 120s linear infinite reverse; }
+.emblem-ring-3 { animation: emblem-ring-rotate 75s linear infinite; }
+
+@keyframes emblem-ring-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* V4: Particle field */
+.emblem-particle {
+    fill: var(--neural-primary);
+    opacity: 0.15;
+    animation: particle-drift 8s ease-in-out infinite;
+}
+
+@keyframes particle-drift {
+    0%, 100% { transform: translate(0, 0); opacity: 0.1; }
+    25% { transform: translate(3px, -2px); opacity: 0.2; }
+    50% { transform: translate(-2px, 3px); opacity: 0.15; }
+    75% { transform: translate(2px, 2px); opacity: 0.2; }
+}
+
+/* Emblem animations */
+@keyframes emblem-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50% { transform: scale(1.03); opacity: 1; }
+}
+
+@keyframes emblem-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* V4: BPM pulse glow */
+@keyframes bpm-glow-pulse {
+    0%, 100% { filter: drop-shadow(0 0 12px rgba(0,217,255,0.4)); }
+    50% { filter: drop-shadow(0 0 28px rgba(0,217,255,0.7)); }
+}
+
+.emblem-core {
+    animation:
+        emblem-pulse var(--pulse-duration, 2s) ease-in-out infinite,
+        bpm-glow-pulse var(--pulse-duration, 2s) ease-in-out infinite;
+}
+
+.emblem-shape {
+    transform-origin: center;
+    animation: emblem-rotate var(--rotate-duration, 60s) linear infinite;
+}
+
+/* Center identity text - V4 Typography */
+.neural-center-identity {
+    text-align: center;
+    margin-bottom: 0.75rem;
+}
+
+.neural-center-title {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: #fff;
+    margin: 0 0 0.3rem 0;
+    line-height: 1.35;
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 25px var(--neural-glow);
+}
+
+.neural-center-creator {
+    font-size: 0.7rem;
+    color: var(--neural-primary);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    opacity: 0.85;
+}
+
+/* Center content area (morphs on module select) */
+.neural-center-content {
+    width: 100%;
+    max-height: 180px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    transition: opacity 0.15s ease, transform 0.2s ease;
+}
+
+/* V4: Crossfade transition state */
+.neural-center-hub.transitioning .neural-center-content {
+    opacity: 0;
+    transform: translateY(-5px);
+}
+
+.neural-center-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.neural-center-content::-webkit-scrollbar-thumb {
+    background: var(--neural-primary);
+    border-radius: 2px;
+}
+
+.neural-center-synthesis {
+    font-size: 0.85rem;
+    line-height: 1.8;
+    letter-spacing: 0.01em;
+    color: rgba(255,255,255,0.75);
+    text-align: center;
+    padding: 0 0.5rem;
+    margin: 0;
+}
+
+/* Module characteristics in center */
+.neural-center-characteristics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+}
+
+.neural-char-item {
+    padding: 0.4rem;
+    background: rgba(0,217,255,0.05);
+    border-radius: 4px;
+    text-align: center;
+}
+
+.neural-char-label {
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+}
+
+.neural-char-value {
+    font-size: 0.75rem;
+    color: var(--neural-primary);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Player at bottom of center (ALWAYS visible) */
+.neural-center-player {
+    width: 100%;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--neural-border);
+}
+
+.neural-player-mini {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.neural-play-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0, 217, 255, 0.15);
+    border: 1px solid var(--neural-primary);
+    color: var(--neural-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.neural-play-btn:hover {
+    background: rgba(0, 217, 255, 0.25);
+    box-shadow: 0 0 20px var(--neural-glow);
+}
+
+.neural-progress-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.neural-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neural-secondary), var(--neural-primary));
+    transition: width 0.1s linear;
+}
+
+.neural-time {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    font-family: 'JetBrains Mono', monospace;
+    min-width: 70px;
+    text-align: right;
+}
+
+/* ===== RADIAL NODES - V4 Enhanced ===== */
+
+.neural-node-group {
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* V4: Scale + glow on hover */
+.neural-node-group:hover {
+    transform: scale(1.08);
+}
+
+.neural-node-group:hover .neural-node-circle {
+    filter: drop-shadow(var(--neon-inner));
+}
+
+.neural-node-circle {
+    transition: all 0.3s ease;
+    animation: node-breathe 3s ease-in-out infinite;
+}
+
+/* V4: Node states with enhanced glow */
+.neural-node-group.selected {
+    transform: scale(1.15);
+}
+
+.neural-node-group.selected .neural-node-circle {
+    filter: drop-shadow(0 0 20px rgba(0,217,255,0.6)) drop-shadow(0 0 40px rgba(0,217,255,0.3));
+    animation: none;
+    opacity: 1;
+}
+
+.neural-node-group.faded {
+    transform: scale(0.95);
+}
+
+.neural-node-group.faded .neural-node-circle {
+    opacity: 0.25;
+}
+
+.neural-node-group.faded .neural-node-label {
+    opacity: 0.3;
+}
+
+.neural-node-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    fill: rgba(255,255,255,0.7);
+    text-anchor: middle;
+    transition: opacity 0.3s ease;
+    contain: layout paint;
+}
+
+.neural-node-icon {
+    font-size: 14px;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+/* V4: Glyph inside node - enhanced */
+.neural-node-glyph {
+    pointer-events: none;
+}
+
+.neural-node-glyph svg {
+    overflow: visible;
+    filter: drop-shadow(0 0 6px currentColor);
+}
+
+/* Breathing glow animation for nodes */
+@keyframes node-breathe {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 0.75; }
+}
+
+/* Radial ripple effect on click */
+@keyframes radial-ripple {
+    0% { r: 30; opacity: 0.6; }
+    100% { r: 60; opacity: 0; }
+}
+
+.ripple-effect {
+    fill: var(--neural-primary);
+    animation: radial-ripple 0.5s ease-out forwards;
+}
+
+/* Connection lines - V4 enhanced */
+.neural-connection {
+    stroke: var(--neural-primary);
+    stroke-width: 1;
+    opacity: var(--glow-subtle);
+    transition: all 0.3s ease;
+}
+
+.neural-connection.active {
+    opacity: 0.45;
+    stroke-width: 2;
+    filter: drop-shadow(0 0 8px var(--neural-glow));
+}
+
+/* ===== BACK BUTTON (when module selected) ===== */
+
+.neural-back-btn {
+    position: absolute;
+    top: -3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.6);
+    border: 1px solid var(--neural-border);
+    color: var(--neural-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s ease;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.neural-back-btn:hover {
+    background: rgba(0,217,255,0.1);
+    border-color: var(--neural-primary);
+}
+
+.neural-back-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Glyph component styling */
+.neural-glyph {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.neural-glyph svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ===== INTEGRATED VISUALIZATIONS ===== */
+
+/* Neural Spectrum Arc - wraps around top */
+/* V4: Lower baseline opacity for subtler blueprint effect */
+.neural-spectrum-arc {
+    opacity: var(--glow-subtle);
+    transition: opacity 0.4s ease;
+}
+
+.neural-spectrum-arc.active {
+    opacity: 0.85;
+}
+
+.spectrum-arc-path {
+    fill: none;
+    stroke: url(#spectrum-gradient);
+    stroke-width: 2;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 4px var(--neural-glow));
+}
+
+@keyframes spectrum-wave {
+    0%, 100% { stroke-dashoffset: 0; }
+    50% { stroke-dashoffset: 20; }
+}
+
+.neural-spectrum-arc.active .spectrum-arc-path {
+    animation: spectrum-wave 2s ease-in-out infinite;
+    stroke-dasharray: 10 5;
+}
+
+/* Floating Constellation - Sound Palette */
+/* V4: Lower baseline for subtler ambient effect */
+.floating-constellation {
+    opacity: 0.1;
+    transition: opacity 0.4s ease;
+}
+
+.floating-constellation.active {
+    opacity: 0.75;
+}
+
+.constellation-node {
+    fill: var(--neural-primary);
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 3px var(--neural-glow));
+}
+
+.constellation-line {
+    stroke: var(--neural-primary);
+    stroke-width: 0.5;
+    opacity: 0.2;
+}
+
+@keyframes constellation-drift {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(2px, -2px); }
+}
+
+.floating-constellation.active .constellation-node {
+    animation: constellation-drift 4s ease-in-out infinite;
+}
+
+/* Emotional Compass Ring */
+/* V4: Lower baseline opacity */
+.emotional-compass {
+    opacity: var(--glow-subtle);
+    transition: opacity 0.4s ease;
+}
+
+.emotional-compass.active {
+    opacity: 0.85;
+}
+
+.compass-segment {
+    fill: none;
+    stroke: var(--neural-primary);
+    stroke-width: 6;
+    opacity: 0.25;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 4px var(--neural-glow));
+}
+
+.compass-segment.active {
+    opacity: 0.75;
+    stroke-width: 10;
+}
+
+.compass-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    fill: rgba(255,255,255,0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.emotional-compass.active .compass-label {
+    opacity: 1;
+}
+
+/* Sonic Architecture Bar Ring */
+/* V4: Lower baseline opacity */
+.architecture-bar-ring {
+    opacity: 0.1;
+    transition: opacity 0.4s ease;
+}
+
+.architecture-bar-ring.active {
+    opacity: 0.8;
+}
+
+.arch-bar {
+    fill: url(#bar-gradient);
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 3px var(--neural-glow));
+}
+
+@keyframes bar-pulse {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.1); }
+}
+
+.architecture-bar-ring.active .arch-bar {
+    animation: bar-pulse 1.5s ease-in-out infinite;
+    animation-delay: calc(var(--bar-index) * 0.1s);
+}
+
+/* Genre Fusion Outer Ring */
+/* V4: Lower baseline opacity */
+.genre-segments {
+    opacity: var(--glow-subtle);
+    transition: opacity 0.4s ease;
+}
+
+.genre-segments.active {
+    opacity: 0.75;
+}
+
+.genre-segment {
+    fill: none;
+    stroke-width: 3;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 4px currentColor);
+}
+
+.genre-segment.active {
+    stroke-width: 6;
+    filter: drop-shadow(0 0 8px currentColor);
+}
+
+/* Timbre DNA Wave Ring */
+/* V4: Lower baseline opacity */
+.timbre-wave-ring {
+    opacity: 0.1;
+    transition: opacity 0.4s ease;
+}
+
+.timbre-wave-ring.active {
+    opacity: 0.75;
+}
+
+.timbre-wave-path {
+    fill: none;
+    stroke: var(--neural-primary);
+    stroke-width: 1.5;
+    opacity: 0.5;
+}
+
+@keyframes timbre-flow {
+    0% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -50; }
+}
+
+.timbre-wave-ring.active .timbre-wave-path {
+    animation: timbre-flow 3s linear infinite;
+    stroke-dasharray: 8 4;
+}
+
+/* Rhythmic DNA Pulse Path */
+.rhythmic-pulse-ring {
+    opacity: 0.1;
+    transition: opacity 0.4s ease;
+}
+
+.rhythmic-pulse-ring.active {
+    opacity: 0.7;
+}
+
+.pulse-dot {
+    fill: var(--neural-primary);
+}
+
+@keyframes pulse-orbit {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.rhythmic-pulse-ring.active .pulse-dots-group {
+    animation: pulse-orbit var(--bpm-duration, 2s) linear infinite;
+    transform-origin: center;
+}
+
+/* ================================================
+   V5 LIQUID GLASS CLASSES & ANIMATIONS
+   Apple VisionOS-inspired glassmorphism
+   ================================================ */
+
+/* Base Liquid Glass Surface */
+.liquid-glass {
+    position: relative;
+    background: var(--liquid-glass-bg);
+    backdrop-filter: blur(var(--liquid-glass-blur));
+    -webkit-backdrop-filter: blur(var(--liquid-glass-blur));
+    border: 1px solid var(--liquid-glass-border);
+    border-radius: 16px;
+    isolation: isolate;
+    transition: all 0.3s var(--spring-curve);
+}
+
+/* Inner specular highlight */
+.liquid-glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 50%,
+        rgba(0, 0, 0, 0.05) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Edge bloom glow */
+.liquid-glass::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: transparent;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+        0 0 20px rgba(0, 217, 255, 0.1);
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s var(--spring-curve);
+}
+
+.liquid-glass:hover::after {
+    opacity: 1;
+}
+
+/* Liquid Glass Node (for radial modules) */
+.liquid-glass-node {
+    transition: all 0.3s var(--spring-curve);
+}
+
+.liquid-glass-node .node-glass-surface {
+    fill: var(--liquid-glass-bg);
+    stroke: var(--liquid-glass-border);
+    stroke-width: 1;
+    transition: all 0.3s var(--spring-curve);
+}
+
+.liquid-glass-node:hover .node-glass-surface {
+    fill: var(--liquid-glass-bg-hover);
+    stroke: var(--liquid-glass-border-hover);
+    filter: drop-shadow(0 0 15px rgba(0, 217, 255, 0.3));
+}
+
+.liquid-glass-node.selected .node-glass-surface {
+    fill: rgba(0, 217, 255, 0.15);
+    stroke: var(--neural-primary);
+    stroke-width: 2;
+    filter: drop-shadow(0 0 25px rgba(0, 217, 255, 0.5));
+}
+
+.liquid-glass-node.dimmed {
+    opacity: var(--sector-dim-opacity);
+    transform: scale(0.92);
+}
+
+/* Liquid Glass Sector Panel */
+.liquid-glass-sector {
+    fill: var(--liquid-glass-bg);
+    stroke: var(--liquid-glass-border);
+    stroke-width: 1;
+    transition: all var(--sector-expand-duration) var(--spring-curve);
+}
+
+.sector-panel {
+    opacity: 0;
+    transform-origin: center;
+    transition: all var(--sector-expand-duration) var(--spring-curve);
+}
+
+.sector-panel.expanded {
+    opacity: 1;
+}
+
+.sector-panel.expanded .liquid-glass-sector {
+    fill: rgba(10, 10, 31, 0.4);
+    stroke: rgba(0, 217, 255, 0.25);
+    filter: drop-shadow(0 0 30px rgba(0, 217, 255, 0.2));
+}
+
+.sector-specular {
+    fill: url(#sector-specular-gradient);
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+/* Sector Particle Trails */
+.sector-particle {
+    fill: var(--neural-primary);
+    opacity: 0;
+}
+
+.sector-panel.expanded .sector-particle {
+    animation: sector-particle-drift 0.8s var(--spring-curve) forwards;
+}
+
+@keyframes sector-particle-drift {
+    0% {
+        opacity: 0.6;
+        transform: translate(0, 0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--drift-x, 30px), var(--drift-y, 0)) scale(0.3);
+    }
+}
+
+/* Liquid Glass Center Hub */
+.liquid-glass-hub {
+    transition: transform 0.5s var(--bounce-curve);
+}
+
+.liquid-glass-hub.sector-expanded {
+    transform: translate(-50%, -50%) scale(0.85);
+}
+
+/* WebGL Canvas Layer */
+.liquid-glass-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: inherit;
+}
+
+/* Parallax Layer Groups */
+.parallax-bg,
+.parallax-mid,
+.parallax-fg {
+    transition: transform 0.1s linear;
+    will-change: transform;
+}
+
+/* Sector Visualization Container */
+.sector-viz-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.sector-viz {
+    contain: layout paint style;
+    will-change: transform, opacity;
+}
+
+/* GPU Acceleration Hints */
+.liquid-glass,
+.liquid-glass-node,
+.liquid-glass-sector,
+.sector-panel,
+.parallax-bg,
+.parallax-mid,
+.parallax-fg {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* V5 Performance: Layout containment */
+.visualization-layer,
+.connection-layer,
+.sector-layer {
+    contain: layout;
+}
+
+/* ===== MOBILE 3-TAB LAYOUT ===== */
+
+.mobile-tab-nav {
+    display: none;
+}
+
+.mobile-panel {
+    display: none;
+}
+
+.mobile-panel.active {
+    display: block;
+}
+
+/* ===== MOBILE LAYOUT ===== */
+
+@media (max-width: 768px) {
+    .neural-identity-map {
+        flex-direction: column;
+        padding: 1rem;
+        padding-bottom: 80px;
+        min-height: auto;
+    }
+
+    .neural-radial-svg {
+        max-width: 100%;
+        max-height: 50vh;
+    }
+
+    .neural-center-hub {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        width: 100%;
+        max-width: 320px;
+        margin-bottom: 1rem;
+        order: -1;
+    }
+
+    .neural-emblem {
+        width: 100px;
+        height: 100px;
+    }
+
+    .neural-center-title {
+        font-size: 1rem;
+    }
+
+    .neural-node-label {
+        font-size: 7px;
+    }
+
+    .neural-back-btn {
+        top: -2.5rem;
+        font-size: 0.7rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    /* Mobile swipe hint */
+    .mobile-swipe-hint {
+        display: block;
+        text-align: center;
+        color: rgba(255,255,255,0.4);
+        font-size: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    /* Mobile Tab Navigation */
+    /* V4: Enhanced mobile tab nav */
+    .mobile-tab-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 72px;
+        background: rgba(10, 10, 31, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid var(--neural-border);
+        display: flex;
+        z-index: 100;
+        padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    .mobile-tab {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 56px;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-family: 'JetBrains Mono', monospace;
+        border: none;
+        background: none;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .mobile-tab:hover {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .mobile-tab.active {
+        color: var(--neural-primary);
+        transform: scale(1.05);
+    }
+
+    /* V4: Active tab glow */
+    .mobile-tab.active .mobile-tab-icon {
+        text-shadow: 0 0 15px var(--neural-glow);
+    }
+
+    .mobile-tab-icon {
+        font-size: 1.4rem;
+        transition: text-shadow 0.3s ease;
+    }
+
+    /* Mobile Details List - V4 Enhanced */
+    .mobile-details-list {
+        padding: 1.25rem;
+        padding-bottom: calc(80px + env(safe-area-inset-bottom, 0));
+    }
+
+    .mobile-module-item {
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        background: rgba(0, 217, 255, 0.03);
+        border: 1px solid var(--neural-border);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+
+    .mobile-module-item:hover,
+    .mobile-module-item.active {
+        border-color: var(--neural-primary);
+        background: rgba(0, 217, 255, 0.08);
+        box-shadow: 0 0 20px rgba(0, 217, 255, 0.15);
+    }
+
+    .mobile-module-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .mobile-module-glyph {
+        width: 32px;
+        height: 32px;
+        color: var(--neural-primary);
+    }
+
+    .mobile-module-glyph svg {
+        filter: drop-shadow(0 0 6px currentColor);
+    }
+
+    .mobile-module-title {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #fff;
+    }
+
+    .mobile-module-synthesis {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.6;
+    }
+
+    .mobile-module-detail {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--neural-border);
+    }
+
+    .mobile-char-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .mobile-char-item {
+        padding: 0.5rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    .mobile-char-label {
+        font-size: 0.55rem;
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+        margin-bottom: 0.2rem;
+    }
+
+    .mobile-char-value {
+        font-size: 0.7rem;
+        color: var(--neural-primary);
+        font-family: 'JetBrains Mono', monospace;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-swipe-hint {
+        display: none;
+    }
+
+    .mobile-tab-nav {
+        display: none;
+    }
+}

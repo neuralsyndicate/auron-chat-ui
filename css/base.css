@@ -1,0 +1,399 @@
+/* Neural Syndicate - Cyberpunk Minimalist Design System */
+/* Dark Blue (#000DFF) + Pure Black - Professional/Futuristic */
+
+:root {
+    /* Core Colors - HEAVY Electric Blue (like 43.png) */
+    --ns-black: #000000;
+    --ns-navy: #0a0a0f;
+    --ns-blue-glow: #00D9FF;      /* Bright electric blue - MAIN */
+    --ns-blue-bright: #00BFFF;    /* Cyan glow */
+    --ns-blue-mid: #0099FF;       /* Medium blue */
+
+    /* Text */
+    --ns-white: #FFFFFF;
+    --ns-gray: #8899AA;
+    --ns-gray-dark: #556677;
+
+    /* Liquid Glass (Apple-style) */
+    --glass-bg: rgba(10, 10, 31, 0.4);
+    --glass-bg-strong: rgba(10, 10, 31, 0.75);
+    --glass-border: rgba(0, 13, 255, 0.12);
+    --glass-blur: blur(24px);
+
+    /* Glows - Dark Blue Only */
+    --glow-soft: 0 0 15px rgba(0, 13, 255, 0.3);
+    --glow-medium: 0 0 25px rgba(0, 13, 255, 0.5);
+    --glow-strong: 0 0 45px rgba(0, 13, 255, 0.7);
+
+    /* Neural Identity Map v2 */
+    --neural-primary: #00D9FF;
+    --neural-secondary: #0066FF;
+    --neural-glow: rgba(0, 217, 255, 0.4);
+    --neural-bg: #0A0A1F;
+    --neural-surface: rgba(10, 10, 31, 0.95);
+    --neural-border: rgba(0, 217, 255, 0.15);
+
+    /* Neural Identity Map v3 - Blueprint Aesthetic */
+    --blueprint-bg: #0A0A1F;
+    --blueprint-line: rgba(0, 217, 255, 0.15);
+    --blueprint-accent: rgba(0, 217, 255, 0.4);
+    --blueprint-glow: 0 0 20px rgba(0, 217, 255, 0.3), 0 0 40px rgba(0, 217, 255, 0.15);
+    --blueprint-border: 1px solid rgba(0, 217, 255, 0.25);
+    --section-label-color: rgba(0, 217, 255, 0.7);
+    --micro-dot-color: rgba(0, 217, 255, 0.3);
+
+    /* V4 Premium Neon System */
+    --neon-inner: 0 0 10px rgba(0, 217, 255, 0.6);
+    --neon-outer: 0 0 30px rgba(0, 217, 255, 0.35);
+    --neon-bloom: 0 0 60px rgba(0, 217, 255, 0.15);
+    --neon-intense: 0 0 15px rgba(0, 217, 255, 0.8), 0 0 40px rgba(0, 217, 255, 0.4), 0 0 80px rgba(0, 217, 255, 0.2);
+
+    /* Glow Intensity Scale */
+    --glow-subtle: 0.12;
+    --glow-low: 0.18;
+    --glow-medium: 0.45;
+    --glow-bright: 0.85;
+
+    /* ========================================
+       V5 LIQUID GLASS DESIGN SYSTEM
+       Apple VisionOS-inspired refraction UI
+       ======================================== */
+
+    /* Liquid Glass Core */
+    --liquid-glass-blur: 12px;
+    --liquid-glass-bg: rgba(10, 10, 31, 0.25);
+    --liquid-glass-bg-hover: rgba(10, 10, 31, 0.35);
+    --liquid-glass-border: rgba(255, 255, 255, 0.12);
+    --liquid-glass-border-hover: rgba(0, 217, 255, 0.35);
+    --liquid-glass-highlight: rgba(255, 255, 255, 0.5);
+    --liquid-glass-shadow: rgba(0, 0, 0, 0.4);
+    --liquid-refraction-scale: 70;
+
+    /* VisionOS Animation Curves */
+    --spring-curve: cubic-bezier(0.25, 0.84, 0.42, 1);
+    --bounce-curve: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --micro-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --smooth-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Sector Expansion */
+    --sector-expand-duration: 0.5s;
+    --sector-expand-radius: 420px;
+    --sector-collapse-radius: 320px;
+    --sector-dim-opacity: 0.1;
+    --sector-inner-radius: 120px;
+
+    /* Parallax Depths */
+    --parallax-bg-multiplier: 2;
+    --parallax-mid-multiplier: 1;
+    --parallax-fg-multiplier: 0.5;
+
+    /* Micro-motion */
+    --breathe-duration: 4s;
+    --shimmer-duration: 8s;
+    --drift-amplitude: 3px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: var(--ns-black);
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+    color: var(--ns-white);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Liquid Glass Effect (Apple-inspired) */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+        0 8px 32px 0 rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.03),
+        inset 0 0 20px 0 rgba(0, 13, 255, 0.02);
+}
+
+.glass-strong {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(0, 13, 255, 0.18);
+    box-shadow:
+        0 16px 48px 0 rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Glow Effects - Dark Blue ONLY */
+.glow {
+    text-shadow: var(--glow-soft);
+}
+
+.glow-strong {
+    text-shadow: var(--glow-medium);
+    filter: drop-shadow(0 0 12px rgba(0, 13, 255, 0.4));
+}
+
+.neural-glow {
+    box-shadow: var(--glow-soft);
+}
+
+.neural-border {
+    border: 1px solid rgba(0, 13, 255, 0.25);
+    box-shadow:
+        var(--glow-soft),
+        inset 0 0 15px rgba(0, 13, 255, 0.04);
+}
+
+/* ===== ANIMATIONS ===== */
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+.pulse-line {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.message {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading-dot {
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.loading-dot:nth-child(1) { animation-delay: -0.32s; }
+.loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% {
+        transform: scale(0);
+    }
+    40% {
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+}
+
+@keyframes blink {
+    0%, 49% {
+        opacity: 1;
+    }
+    50%, 100% {
+        opacity: 0;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Sci-Fi Shimmer Effects (Neural Music style) */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+    0%, 100% {
+        background-position: -200% center;
+    }
+    50% {
+        background-position: 200% center;
+    }
+}
+
+@keyframes glow-pulse {
+    0%, 100% {
+        box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+            0 24px 60px 0 rgba(0, 0, 0, 0.6),
+            0 0 60px 0 rgba(0, 13, 255, 0.15),
+            0 0 120px 0 rgba(0, 13, 255, 0.08);
+    }
+    50% {
+        box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+            0 24px 60px 0 rgba(0, 0, 0, 0.6),
+            0 0 80px 0 rgba(0, 13, 255, 0.25),
+            0 0 160px 0 rgba(0, 13, 255, 0.15);
+    }
+}
+
+@keyframes subtle-pulse {
+    0%, 100% {
+        box-shadow: 0 0 40px rgba(0, 191, 255, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.05);
+        border-color: rgba(0, 217, 255, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 50px rgba(0, 191, 255, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.08);
+        border-color: rgba(0, 217, 255, 0.4);
+    }
+}
+
+@keyframes gradient-shift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* V5 Micro-motion Keyframes */
+@keyframes glass-breathe {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.2));
+    }
+    50% {
+        transform: scale(1.02);
+        filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.35));
+    }
+}
+
+@keyframes edge-shimmer {
+    0%, 100% {
+        opacity: 0.3;
+        transform: translateX(-100%);
+    }
+    50% {
+        opacity: 0.6;
+        transform: translateX(100%);
+    }
+}
+
+@keyframes parallax-drift {
+    0%, 100% {
+        transform: translate(0, 0);
+    }
+    25% {
+        transform: translate(var(--drift-amplitude), calc(var(--drift-amplitude) * -0.5));
+    }
+    50% {
+        transform: translate(0, var(--drift-amplitude));
+    }
+    75% {
+        transform: translate(calc(var(--drift-amplitude) * -1), calc(var(--drift-amplitude) * 0.5));
+    }
+}
+
+@keyframes gentle-oscillate {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-2px) rotate(0.5deg);
+    }
+}
+
+@keyframes refraction-pulse {
+    0%, 100% {
+        --liquid-refraction-scale: 70;
+    }
+    50% {
+        --liquid-refraction-scale: 85;
+    }
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes bar-grow {
+    from { transform: scaleY(0); opacity: 0; }
+    to { transform: scaleY(1); opacity: 1; }
+}
+
+/* V5 Performance: Animation optimization */
+@media (prefers-reduced-motion: reduce) {
+    .parallax-bg,
+    .parallax-mid,
+    .parallax-fg {
+        transition: none !important;
+    }
+
+    .liquid-glass-canvas {
+        display: none;
+    }
+
+    .sector-particle {
+        animation: none !important;
+    }
+}
+
+/* Browser Fallback */
+@supports not (backdrop-filter: blur(12px)) {
+    .liquid-glass,
+    .liquid-glass-sector {
+        background: rgba(10, 10, 31, 0.85);
+    }
+}
