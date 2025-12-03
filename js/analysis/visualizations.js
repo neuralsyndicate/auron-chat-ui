@@ -1,152 +1,14 @@
 // ============================================================
-// NEURAL IDENTITY MAP v3 - Neural Music Profile Blueprint
-// Visualization Constants and Components
+// V6 NEURAL HELIX INTERFACE - Micro-Visualizations
+// Premium neon micro-visualizations for detail panel
 // ============================================================
 
-// 11 Geometric SVG Glyphs - Neon Blueprint Aesthetic
-const NEURAL_GLYPHS = {
-    // 1. Sound Description - Sonic Fingerprint (concentric rings)
-    'sonic-fingerprint': `
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="20" cy="20" r="17" stroke="currentColor" stroke-width="1.5" opacity="0.4"/>
-            <circle cx="20" cy="20" r="12" stroke="currentColor" stroke-width="1.2" opacity="0.6"/>
-            <circle cx="20" cy="20" r="7" stroke="currentColor" stroke-width="1" opacity="0.8"/>
-            <circle cx="20" cy="20" r="3" fill="currentColor"/>
-            <line x1="20" y1="3" x2="20" y2="8" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="20" y1="32" x2="20" y2="37" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
-    `,
-    // 2. Genre Fusion - Overlapping Hexagons
-    'blend-merge': `
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="15,6 23,6 27,14 23,22 15,22 11,14" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.6"/>
-            <polygon points="17,18 25,18 29,26 25,34 17,34 13,26" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.8"/>
-            <line x1="19" y1="18" x2="21" y2="22" stroke="currentColor" stroke-width="1"/>
-            <circle cx="20" cy="20" r="2" fill="currentColor"/>
-        </svg>
-    `,
-    // 3. Neural Spectrum - Frequency Wave
-    'frequency-wave': `
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="10" width="32" height="20" stroke="currentColor" stroke-width="1" fill="none" opacity="0.3"/>
-            <path d="M6 20 Q10 12 14 20 T22 20 T30 20 T34 20" stroke="currentColor" stroke-width="2" fill="none"/>
-            <line x1="4" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.4"/>
-            <circle cx="20" cy="20" r="1.5" fill="currentColor"/>
-        </svg>
-    `,
-    // 4. Sound Palette - Constellation Nodes
-    'harmonic-nodes': `
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="20" cy="8" r="3" fill="currentColor"/>
-            <circle cx="9" cy="18" r="2.5" fill="currentColor" opacity="0.8"/>
-            <circle cx="31" cy="16" r="2" fill="currentColor" opacity="0.7"/>
-            <circle cx="12" cy="32" r="2.5" fill="currentColor" opacity="0.8"/>
-            <circle cx="28" cy="30" r="2" fill="currentColor" opacity="0.7"/>
-            <line x1="20" y1="8" x2="9" y2="18" stroke="currentColor" stroke-width="0.75" opacity="0.5"/>
-            <line x1="20" y1="8" x2="31" y2="16" stroke="currentColor" stroke-width="0.75" opacity="0.5"/>
-            <line x1="9" y1="18" x2="12" y2="32" stroke="currentColor" stroke-width="0.75" opacity="0.5"/>
-            <line x1="31" y1="16" x2="28" y2="30" stroke="currentColor" stroke-width="0.75" opacity="0.5"/>
-            <line x1="12" y1="32" x2="28" y2="30" stroke="currentColor" stroke-width="0.75" opacity="0.5"/>
-        </svg>
-    `,
-    // 5. Tonal Identity - Musical Key Symbol
-    'key-scale': `
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="8" y1="12" x2="32" y2="12" stroke="currentColor" stroke-width="1" opacity="0.5"/>
-            <line x1="8" y1="18" x2="32" y2="18" stroke="currentColor" stroke-width="1" opacity="0.5"/>
-            <line x1="8" y1="24" x2="32" y2="24" stroke="currentColor" stroke-width="1" opacity="0.5"/>
-            <line x1="8" y1="30" x2="32" y2="30" stroke="currentColor" stroke-width="1" opacity="0.5"/>
-            <path d="M18 8 L18 34 M15 14 L21 10 M15 20 L21 16" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            <circle cx="26" cy="24" r="3" fill="currentColor" opacity="0.8"/>
-        </svg>
-    `,
-    // 6. Rhythmic DNA - Pulse/Heartbeat Pattern
-    'pulse-beat': `
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="20" cy="20" r="17" stroke="currentColor" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.3"/>
-            <path d="M4 20 L10 20 L13 8 L17 32 L21 12 L25 28 L28 20 L36 20" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
-        </svg>
-    `,
-    // 7. Timbre DNA - Layered Texture Waves
-    'texture-wave': `
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 13 Q12 8 20 13 T36 13" stroke="currentColor" stroke-width="1" fill="none" opacity="0.5"/>
-            <path d="M4 20 Q12 13 20 20 T36 20" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            <path d="M4 27 Q12 22 20 27 T36 27" stroke="currentColor" stroke-width="1" fill="none" opacity="0.5"/>
-            <line x1="20" y1="6" x2="20" y2="34" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.4"/>
-        </svg>
-    `,
-    // 8. Emotional Fingerprint - Radial Compass
-    'emotional-map': `
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/>
-            <circle cx="20" cy="20" r="10" stroke="currentColor" stroke-width="0.75" fill="none" opacity="0.6"/>
-            <circle cx="20" cy="20" r="4" fill="currentColor"/>
-            <line x1="20" y1="4" x2="20" y2="10" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="20" y1="30" x2="20" y2="36" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="4" y1="20" x2="10" y2="20" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="30" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="8.7" y1="8.7" x2="12.8" y2="12.8" stroke="currentColor" stroke-width="1" opacity="0.6"/>
-            <line x1="27.2" y1="27.2" x2="31.3" y2="31.3" stroke="currentColor" stroke-width="1" opacity="0.6"/>
-        </svg>
-    `,
-    // 9. Mix Signature - Mixer Faders
-    'mix-process': `
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="10" y1="8" x2="10" y2="32" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
-            <rect x="7" y="12" width="6" height="5" fill="currentColor"/>
-            <line x1="20" y1="8" x2="20" y2="32" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
-            <rect x="17" y="20" width="6" height="5" fill="currentColor"/>
-            <line x1="30" y1="8" x2="30" y2="32" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
-            <rect x="27" y="15" width="6" height="5" fill="currentColor"/>
-        </svg>
-    `,
-    // 10. Sonic Architecture - Stacked Blocks
-    'structure-blocks': `
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="6" y="24" width="10" height="12" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            <rect x="20" y="16" width="10" height="20" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            <rect x="13" y="6" width="10" height="14" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            <line x1="4" y1="36" x2="36" y2="36" stroke="currentColor" stroke-width="1"/>
-        </svg>
-    `,
-    // 11. Inspirational Triggers - Starburst
-    'spark-inspire': `
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="20" cy="20" r="5" fill="currentColor"/>
-            <line x1="20" y1="4" x2="20" y2="12" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="20" y1="28" x2="20" y2="36" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="4" y1="20" x2="12" y2="20" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="28" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="8.7" y1="8.7" x2="14.3" y2="14.3" stroke="currentColor" stroke-width="1" opacity="0.7"/>
-            <line x1="25.7" y1="25.7" x2="31.3" y2="31.3" stroke="currentColor" stroke-width="1" opacity="0.7"/>
-            <line x1="31.3" y1="8.7" x2="25.7" y2="14.3" stroke="currentColor" stroke-width="1" opacity="0.7"/>
-            <line x1="14.3" y1="25.7" x2="8.7" y2="31.3" stroke="currentColor" stroke-width="1" opacity="0.7"/>
-        </svg>
-    `
-};
-
-// 11 Modules with FULL labels and glyph references
-const NEURAL_MODULES = [
-    { key: 'sound_description', label: 'Sound Description', glyph: 'sonic-fingerprint', angle: 0 },
-    { key: 'genre_fusion', label: 'Genre Fusion', glyph: 'blend-merge', angle: 32.7 },
-    { key: 'neural_spectrum', label: 'Neural Spectrum', glyph: 'frequency-wave', angle: 65.4 },
-    { key: 'sound_palette', label: 'Sound Palette', glyph: 'harmonic-nodes', angle: 98.1 },
-    { key: 'tonal_identity', label: 'Tonal Identity', glyph: 'key-scale', angle: 130.8 },
-    { key: 'rhythmic_dna', label: 'Rhythmic DNA', glyph: 'pulse-beat', angle: 163.5 },
-    { key: 'timbre_dna', label: 'Timbre DNA', glyph: 'texture-wave', angle: 196.2 },
-    { key: 'emotional_fingerprint', label: 'Emotional Fingerprint', glyph: 'emotional-map', angle: 228.9 },
-    { key: 'processing_signature', label: 'Mix Signature', glyph: 'mix-process', angle: 261.6 },
-    { key: 'sonic_architecture', label: 'Sonic Architecture', glyph: 'structure-blocks', angle: 294.3 },
-    { key: 'inspirational_triggers', label: 'Inspirational Triggers', glyph: 'spark-inspire', angle: 327 }
-];
-
-// Color helper - Blue-based palette (NO PURPLE)
+// Color helpers - Blue-based palette
 function getPlacementColor(placement) {
     const colors = {
-        parasympathetic: '#0066FF',  // Deep blue
-        hybrid: '#00D9FF',           // Electric cyan (was purple)
-        sympathetic: '#FF6B00'       // Orange
+        parasympathetic: '#0066FF',
+        hybrid: '#00D9FF',
+        sympathetic: '#FF6B00'
     };
     return colors[placement] || colors.hybrid;
 }
@@ -161,310 +23,91 @@ function getPlacementColors(placement) {
 }
 
 // ============================================================
-// VISUALIZATION COMPONENTS - Neural Music Profile v3
+// V6 MICRO-VISUALIZATIONS - Premium neon aesthetic
 // ============================================================
 
-// NeuralGlyph - Renders SVG glyph by type with neon glow
-function NeuralGlyph({ type, size = 40, color = 'var(--neural-primary)', className = '' }) {
-    const svgContent = NEURAL_GLYPHS[type] || NEURAL_GLYPHS['sonic-fingerprint'];
-    return (
-        <div
-            className={`neural-glyph ${className}`}
-            style={{
-                width: size,
-                height: size,
-                color: color,
-                filter: `drop-shadow(0 0 8px ${color})`
-            }}
-            dangerouslySetInnerHTML={{ __html: svgContent }}
-        />
-    );
-}
-
-// ============================================================
-// V6 ORGANIC NEURAL CORE EMBLEM
-// Replaces polygon star with organic tendrils, liquid glass, bloom
-// ============================================================
-
-// Neural Emblem V6 - Organic neural core with tendrils and bloom
-function NeuralEmblem({ profile, placement, pulseDuration, rotateDuration }) {
-    const c = getPlacementColors(placement);
-
-    // Generate 10 soft organic tendrils using bezier curves (seeded for consistency)
-    const tendrils = React.useMemo(() => {
-        const count = 10;
-        // Use seeded random for consistent tendril positions per render
-        const seed = (profile?.sound_description?.synthesis?.length || 42) % 100;
-        const seededRandom = (i) => {
-            const x = Math.sin(seed + i * 9999) * 10000;
-            return x - Math.floor(x);
-        };
-        return Array.from({ length: count }, (_, i) => {
-            const angle = (i / count) * Math.PI * 2;
-            const length = 20 + seededRandom(i) * 18;
-            const curve = 6 + seededRandom(i + 100) * 8;
-            const curveDir = seededRandom(i + 200) > 0.5 ? 1 : -1;
-            return { angle, length, curve, curveDir, delay: i * 0.15 };
-        });
-    }, [profile]);
-
-    // Micro-particles drifting inside the core (seeded)
-    const particles = React.useMemo(() => {
-        const seed = (profile?.neural_spectrum?.value || 0.5) * 100;
-        const seededRandom = (i) => {
-            const x = Math.sin(seed + i * 1234) * 10000;
-            return x - Math.floor(x);
-        };
-        return Array.from({ length: 18 }, (_, i) => {
-            const angle = seededRandom(i) * Math.PI * 2;
-            const r = 8 + seededRandom(i + 50) * 22;
-            return {
-                x: 70 + r * Math.cos(angle),
-                y: 70 + r * Math.sin(angle),
-                size: 0.8 + seededRandom(i + 100) * 1.5,
-                delay: i * 0.25
-            };
-        });
-    }, [profile]);
-
-    return (
-        <svg
-            className="neural-emblem-v6"
-            viewBox="0 0 140 140"
-            style={{
-                '--pulse-duration': `${pulseDuration}s`,
-                '--rotate-duration': `${rotateDuration}s`
-            }}
-        >
-            <defs>
-                {/* V6: Liquid glass refraction gradient */}
-                <radialGradient id={`neural-core-glass-${placement}`} cx="40%" cy="35%" r="65%">
-                    <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
-                    <stop offset="35%" stopColor={c.primary} stopOpacity="0.25" />
-                    <stop offset="70%" stopColor={c.secondary} stopOpacity="0.15" />
-                    <stop offset="100%" stopColor={c.primary} stopOpacity="0.05" />
-                </radialGradient>
-
-                {/* V6: Strong bloom filter */}
-                <filter id={`neural-bloom-${placement}`} x="-60%" y="-60%" width="220%" height="220%">
-                    <feGaussianBlur in="SourceAlpha" stdDeviation="10" result="blur" />
-                    <feFlood floodColor={c.primary} floodOpacity="0.5" result="color" />
-                    <feComposite in="color" in2="blur" operator="in" result="glow" />
-                    <feMerge>
-                        <feMergeNode in="glow" />
-                        <feMergeNode in="glow" />
-                        <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                </filter>
-
-                {/* V6: Inner core glow */}
-                <filter id={`inner-glow-${placement}`} x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
-                    <feMerge>
-                        <feMergeNode in="blur" />
-                        <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                </filter>
-
-                {/* V6: Tendril gradient */}
-                <linearGradient id={`tendril-grad-${placement}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor={c.primary} stopOpacity="0.7" />
-                    <stop offset="100%" stopColor={c.secondary} stopOpacity="0.2" />
-                </linearGradient>
-            </defs>
-
-            {/* V6: Outer refractive ring with bloom */}
-            <circle
-                className="neural-outer-ring"
-                cx="70" cy="70" r="64"
-                fill="none"
-                stroke={c.primary}
-                strokeWidth="1.5"
-                strokeOpacity="0.3"
-                filter={`url(#neural-bloom-${placement})`}
-            />
-
-            {/* V6: Secondary outer ring (thin) */}
-            <circle
-                cx="70" cy="70" r="58"
-                fill="none"
-                stroke={c.secondary}
-                strokeWidth="0.5"
-                strokeOpacity="0.15"
-            />
-
-            {/* V6: Soft organic tendrils (bezier curves, NOT polygon) */}
-            <g className="neural-tendrils">
-                {tendrils.map((t, i) => {
-                    const centerX = 70, centerY = 70;
-                    const startR = 32;
-                    const endR = startR + t.length;
-                    const startX = centerX + startR * Math.cos(t.angle);
-                    const startY = centerY + startR * Math.sin(t.angle);
-                    const endX = centerX + endR * Math.cos(t.angle);
-                    const endY = centerY + endR * Math.sin(t.angle);
-                    // Control point perpendicular to tendril direction for organic curve
-                    const perpAngle = t.angle + (Math.PI / 2) * t.curveDir;
-                    const ctrlR = (startR + endR) / 2;
-                    const ctrlX = centerX + ctrlR * Math.cos(t.angle) + t.curve * Math.cos(perpAngle);
-                    const ctrlY = centerY + ctrlR * Math.sin(t.angle) + t.curve * Math.sin(perpAngle);
-
-                    return (
-                        <path
-                            key={`tendril-${i}`}
-                            className="neural-tendril"
-                            d={`M${startX},${startY} Q${ctrlX},${ctrlY} ${endX},${endY}`}
-                            stroke={`url(#tendril-grad-${placement})`}
-                            strokeWidth="2.5"
-                            fill="none"
-                            strokeLinecap="round"
-                            style={{ animationDelay: `${t.delay}s` }}
-                        />
-                    );
-                })}
-            </g>
-
-            {/* V6: Glass nucleus core with liquid refraction */}
-            <circle
-                className="neural-glass-core"
-                cx="70" cy="70" r="32"
-                fill={`url(#neural-core-glass-${placement})`}
-                stroke={c.primary}
-                strokeWidth="1"
-                strokeOpacity="0.4"
-                filter={`url(#neural-bloom-${placement})`}
-            />
-
-            {/* V6: Micro-particles drifting inside the core */}
-            <g className="neural-micro-particles">
-                {particles.map((p, i) => (
-                    <circle
-                        key={`particle-${i}`}
-                        className="micro-particle"
-                        cx={p.x}
-                        cy={p.y}
-                        r={p.size}
-                        fill={c.primary}
-                        opacity={0.4 + (p.size / 2.3) * 0.3}
-                        style={{ animationDelay: `${p.delay}s` }}
-                    />
-                ))}
-            </g>
-
-            {/* V6: Inner pulsing center with strong glow */}
-            <circle
-                className="neural-inner-pulse"
-                cx="70" cy="70" r="10"
-                fill={c.primary}
-                opacity="0.9"
-                filter={`url(#inner-glow-${placement})`}
-            />
-        </svg>
-    );
-}
-
-// Neural Player Mini - Compact player for center hub
-function NeuralPlayerMini({ audioUrl, audioRef, isPlaying, setIsPlaying, currentTime, setCurrentTime, duration, setDuration }) {
-    useEffect(() => {
-        if (audioUrl && audioRef.current) {
-            audioRef.current.volume = 0.25;
-        }
-    }, [audioUrl]);
-
-    const togglePlay = () => {
-        if (!audioRef.current) return;
-        if (isPlaying) {
-            audioRef.current.pause();
-        } else {
-            audioRef.current.play();
-        }
-        setIsPlaying(!isPlaying);
-    };
-
-    const handleProgressClick = (e) => {
-        if (!audioRef.current || !duration) return;
-        const rect = e.currentTarget.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        audioRef.current.currentTime = percent * duration;
-    };
-
-    const formatTime = (t) => {
-        const mins = Math.floor(t / 60);
-        const secs = Math.floor(t % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    if (!audioUrl) return null;
-
-    return (
-        <div className="neural-player-mini">
-            <audio
-                ref={audioRef}
-                src={audioUrl}
-                onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
-                onLoadedMetadata={(e) => setDuration(e.target.duration)}
-                onEnded={() => setIsPlaying(false)}
-            />
-            <button className="neural-play-btn" onClick={togglePlay}>
-                {isPlaying ? '⏸' : '▶'}
-            </button>
-            <div className="neural-progress-bar" onClick={handleProgressClick}>
-                <div
-                    className="neural-progress-fill"
-                    style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-                />
-            </div>
-            <span className="neural-time">
-                {formatTime(currentTime)} / {formatTime(duration)}
-            </span>
-        </div>
-    );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// V5 SECTOR VISUALIZATIONS - Blueprint aesthetic micro-visualizations
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// Sound Description: Concentric ripple field
-function SoundDescriptionViz({ profile, size = 120 }) {
+// Sound Description: Pulse burst rings with bloom
+function SoundDescriptionMicro({ data, size = 160 }) {
     const cx = size / 2, cy = size / 2;
-    const rings = 5;
+    const rings = 4;
+
     return (
-        <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz sound-description-viz">
+        <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz sound-description-micro">
+            <defs>
+                <filter id="pulse-bloom" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="4" result="blur" />
+                    <feFlood floodColor="#00D9FF" floodOpacity="0.5" />
+                    <feComposite operator="in" in2="blur" />
+                    <feMerge>
+                        <feMergeNode />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
             {Array.from({ length: rings }).map((_, i) => (
                 <circle
                     key={i}
                     cx={cx}
                     cy={cy}
-                    r={10 + i * 15}
+                    r={20 + i * 20}
                     fill="none"
-                    stroke="var(--neural-primary)"
-                    strokeWidth="1"
-                    opacity={0.15 + (rings - i) * 0.1}
+                    stroke="#00D9FF"
+                    strokeWidth="1.5"
+                    opacity={0.8 - i * 0.15}
+                    filter="url(#pulse-bloom)"
                     style={{
-                        animation: `pulse ${2 + i * 0.3}s ease-in-out infinite`,
-                        animationDelay: `${i * 0.2}s`
+                        animation: `pulse-ring ${2 + i * 0.4}s ease-out infinite`,
+                        animationDelay: `${i * 0.25}s`,
+                        transformOrigin: `${cx}px ${cy}px`
                     }}
                 />
             ))}
-            <circle cx={cx} cy={cy} r="4" fill="var(--neural-primary)" opacity="0.8" />
+            <circle
+                cx={cx}
+                cy={cy}
+                r="10"
+                fill="#00D9FF"
+                filter="url(#pulse-bloom)"
+            />
         </svg>
     );
 }
 
-// Genre Fusion: Segment ring with colored arcs
-function GenreFusionViz({ profile, size = 120 }) {
+// Genre Fusion: Neon donut wheel
+function GenreFusionMicro({ data, size = 160 }) {
     const cx = size / 2, cy = size / 2;
-    const genres = profile?.genre_fusion?.characteristics?.genre_proportions || {};
-    const genreList = Object.entries(genres).slice(0, 4);
-    const colors = ['#00D9FF', '#0066FF', '#FF6B00', '#00FF88'];
-    const r = 35;
+    const genres = Array.isArray(data) ? data.slice(0, 5) : [];
+    const colors = ['#00D9FF', '#0066FF', '#00FF88', '#FF6B00', '#FF4488'];
+    const r = 55;
+    const strokeWidth = 14;
+
+    if (genres.length === 0) {
+        return (
+            <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz genre-fusion-micro">
+                <circle cx={cx} cy={cy} r={r} fill="none" stroke="#00D9FF" strokeWidth="1" opacity="0.3" />
+            </svg>
+        );
+    }
+
+    let accumulated = 0;
+    const total = genres.reduce((sum, g) => sum + (g.weight || 0.2), 0);
 
     return (
-        <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz genre-fusion-viz">
-            {genreList.map(([genre, value], i) => {
-                const startAngle = (i / genreList.length) * 360 - 90;
-                const endAngle = ((i + 1) / genreList.length) * 360 - 90;
+        <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz genre-fusion-micro">
+            <defs>
+                <filter id="genre-glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="3" />
+                    <feMerge>
+                        <feMergeNode />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+            {genres.map((genre, i) => {
+                const weight = genre.weight || 0.2;
+                const startAngle = (accumulated / total) * 360 - 90;
+                accumulated += weight;
+                const endAngle = (accumulated / total) * 360 - 90;
                 const start = startAngle * Math.PI / 180;
                 const end = endAngle * Math.PI / 180;
                 const x1 = cx + r * Math.cos(start);
@@ -472,19 +115,19 @@ function GenreFusionViz({ profile, size = 120 }) {
                 const x2 = cx + r * Math.cos(end);
                 const y2 = cy + r * Math.sin(end);
                 const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+                const color = colors[i % colors.length];
 
                 return (
                     <path
-                        key={genre}
+                        key={i}
                         d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`}
                         fill="none"
-                        stroke={colors[i % colors.length]}
-                        strokeWidth="8"
+                        stroke={color}
+                        strokeWidth={strokeWidth}
                         strokeLinecap="round"
-                        opacity={0.4 + (value || 0.2) * 0.5}
-                        style={{
-                            filter: 'drop-shadow(0 0 4px ' + colors[i % colors.length] + '40)'
-                        }}
+                        opacity={0.7 + weight * 0.3}
+                        filter="url(#genre-glow)"
+                        style={{ filter: `drop-shadow(0 0 8px ${color})` }}
                     />
                 );
             })}
@@ -492,234 +135,90 @@ function GenreFusionViz({ profile, size = 120 }) {
     );
 }
 
-// Neural Spectrum: Waveform arc
-function NeuralSpectrumViz({ profile, size = 120 }) {
-    const specValue = profile?.neural_spectrum?.value ?? 0.5;
-    const points = [];
+// Neural Spectrum: Blue-White-Orange gradient bar
+function NeuralSpectrumMicro({ data, size = 160 }) {
+    const specValue = data?.value ?? 0.5;
+    const placement = data?.placement || 'hybrid';
     const cx = size / 2, cy = size / 2;
-    const r = 35;
-
-    for (let i = 0; i <= 40; i++) {
-        const t = i / 40;
-        const angle = -140 + t * 100; // -140 to -40 degrees
-        const rad = (angle - 90) * Math.PI / 180;
-        const wave = Math.sin(t * Math.PI * 4) * (10 + specValue * 15);
-        const x = cx + (r + wave) * Math.cos(rad);
-        const y = cy + (r + wave) * Math.sin(rad);
-        points.push(`${i === 0 ? 'M' : 'L'}${x},${y}`);
-    }
+    const barWidth = size * 0.75;
+    const barHeight = 12;
+    const markerPos = specValue * barWidth;
 
     return (
-        <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz neural-spectrum-viz">
-            <path
-                d={points.join(' ')}
-                fill="none"
-                stroke="url(#spectrum-gradient)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                style={{ filter: 'drop-shadow(0 0 6px rgba(0,217,255,0.5))' }}
+        <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz neural-spectrum-micro">
+            <defs>
+                <linearGradient id="spectrum-bar-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#0066FF" />
+                    <stop offset="50%" stopColor="#FFFFFF" />
+                    <stop offset="100%" stopColor="#FF6B00" />
+                </linearGradient>
+                <filter id="marker-glow" x="-100%" y="-100%" width="300%" height="300%">
+                    <feGaussianBlur stdDeviation="4" />
+                    <feMerge>
+                        <feMergeNode />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+            {/* Track */}
+            <rect
+                x={(size - barWidth) / 2}
+                y={cy - barHeight / 2}
+                width={barWidth}
+                height={barHeight}
+                rx={barHeight / 2}
+                fill="url(#spectrum-bar-grad)"
+                opacity="0.4"
             />
-        </svg>
-    );
-}
-
-// Rhythmic DNA: Timing pulses
-function RhythmicDNAViz({ profile, size = 120 }) {
-    const bpm = profile?.rhythmic_dna?.characteristics?.tempo_bpm || 120;
-    const bpmDuration = 60 / bpm;
-    const cx = size / 2, cy = size / 2;
-    const r = 30;
-
-    return (
-        <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz rhythmic-dna-viz">
-            <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--neural-primary)" strokeWidth="1" opacity="0.2" strokeDasharray="3 5" />
-            <g style={{ animation: `rotate ${bpmDuration * 4}s linear infinite` }}>
-                {[0, 90, 180, 270].map((angle, i) => {
-                    const rad = (angle - 90) * Math.PI / 180;
-                    return (
-                        <circle
-                            key={i}
-                            cx={cx + r * Math.cos(rad)}
-                            cy={cy + r * Math.sin(rad)}
-                            r="4"
-                            fill="var(--neural-primary)"
-                            style={{
-                                animation: `pulse ${bpmDuration}s ease-in-out infinite`,
-                                animationDelay: `${i * bpmDuration / 4}s`
-                            }}
-                        />
-                    );
-                })}
-            </g>
-        </svg>
-    );
-}
-
-// Timbre DNA: Wave stacks
-function TimbreDNAViz({ profile, size = 120 }) {
-    const chars = profile?.timbre_dna?.characteristics || {};
-    const warmth = chars.warmth ?? 0.5;
-    const brightness = chars.brightness ?? 0.5;
-    const texture = chars.texture_complexity ?? 0.5;
-    const cx = size / 2;
-
-    return (
-        <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz timbre-dna-viz">
-            {/* Warmth wave */}
-            <path
-                d={`M10 50 Q${cx} ${50 - warmth * 20} ${size - 10} 50`}
-                fill="none"
-                stroke="#FF6B00"
-                strokeWidth="1.5"
-                opacity="0.6"
+            {/* Marker */}
+            <circle
+                cx={(size - barWidth) / 2 + markerPos}
+                cy={cy}
+                r="10"
+                fill={getPlacementColor(placement)}
+                filter="url(#marker-glow)"
+                style={{ filter: `drop-shadow(0 0 12px ${getPlacementColor(placement)})` }}
             />
-            {/* Brightness wave */}
-            <path
-                d={`M10 60 Q${cx} ${60 - brightness * 25} ${size - 10} 60`}
-                fill="none"
-                stroke="#00D9FF"
-                strokeWidth="1.5"
-                opacity="0.7"
-            />
-            {/* Texture wave */}
-            <path
-                d={`M10 70 Q${cx} ${70 - texture * 20} ${size - 10} 70`}
-                fill="none"
-                stroke="#00FF88"
-                strokeWidth="1.5"
-                opacity="0.5"
-            />
+            {/* Labels */}
+            <text x={(size - barWidth) / 2} y={cy + 30} fill="#0066FF" fontSize="10" opacity="0.7">Calm</text>
+            <text x={(size + barWidth) / 2} y={cy + 30} fill="#FF6B00" fontSize="10" textAnchor="end" opacity="0.7">Energy</text>
         </svg>
     );
 }
 
-// Emotional Fingerprint: Compass wheel
-function EmotionalFingerprintViz({ profile, size = 120 }) {
-    const chars = profile?.emotional_fingerprint?.characteristics || {};
-    const energy = chars.energy ?? 0.5;
-    const valence = chars.valence ?? 0.5;
-    const tension = chars.tension ?? 0.5;
-    const depth = chars.depth ?? 0.5;
+// Sound Palette: Orbital constellation dots
+function SoundPaletteMicro({ data, size = 160 }) {
     const cx = size / 2, cy = size / 2;
-    const maxR = 40;
-
-    const arms = [
-        { label: 'E', value: energy, angle: 0 },
-        { label: 'V', value: valence, angle: 90 },
-        { label: 'T', value: tension, angle: 180 },
-        { label: 'D', value: depth, angle: 270 }
-    ];
-
-    return (
-        <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz emotional-fingerprint-viz">
-            {arms.map(arm => {
-                const rad = (arm.angle - 90) * Math.PI / 180;
-                const r = 10 + arm.value * maxR;
-                return (
-                    <g key={arm.label}>
-                        <line
-                            x1={cx}
-                            y1={cy}
-                            x2={cx + r * Math.cos(rad)}
-                            y2={cy + r * Math.sin(rad)}
-                            stroke="var(--neural-primary)"
-                            strokeWidth="2"
-                            opacity="0.6"
-                        />
-                        <circle
-                            cx={cx + r * Math.cos(rad)}
-                            cy={cy + r * Math.sin(rad)}
-                            r="3"
-                            fill="var(--neural-primary)"
-                        />
-                    </g>
-                );
-            })}
-            <circle cx={cx} cy={cy} r="4" fill="var(--neural-secondary)" opacity="0.8" />
-        </svg>
-    );
-}
-
-// Sonic Architecture: Vertical bars
-function SonicArchitectureViz({ profile, size = 120 }) {
-    const sections = ['intro', 'verse', 'chorus', 'bridge', 'outro'];
-    const barWidth = 12;
-    const gap = 6;
-    const totalWidth = sections.length * barWidth + (sections.length - 1) * gap;
-    const startX = (size - totalWidth) / 2;
-
-    return (
-        <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz sonic-architecture-viz">
-            {sections.map((section, i) => {
-                const height = 20 + Math.random() * 40;
-                return (
-                    <rect
-                        key={section}
-                        x={startX + i * (barWidth + gap)}
-                        y={size / 2 + 20 - height}
-                        width={barWidth}
-                        height={height}
-                        fill="url(#bar-gradient)"
-                        opacity="0.7"
-                        rx="2"
-                        style={{
-                            animation: `bar-grow 1.5s ease-out ${i * 0.1}s`
-                        }}
-                    />
-                );
-            })}
-        </svg>
-    );
-}
-
-// Inspirational Triggers: Spark bursts
-function InspirationalTriggersViz({ profile, size = 120 }) {
-    const cx = size / 2, cy = size / 2;
-    const particles = Array.from({ length: 12 }).map((_, i) => ({
-        angle: (i / 12) * 360,
-        r: 15 + Math.random() * 25,
-        delay: Math.random() * 2,
-        size: 1 + Math.random() * 2
-    }));
-
-    return (
-        <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz inspirational-triggers-viz">
-            {particles.map((p, i) => {
-                const rad = (p.angle - 90) * Math.PI / 180;
-                return (
-                    <circle
-                        key={i}
-                        cx={cx + p.r * Math.cos(rad)}
-                        cy={cy + p.r * Math.sin(rad)}
-                        r={p.size}
-                        fill="var(--neural-primary)"
-                        style={{
-                            animation: `twinkle 1.5s ease-in-out infinite`,
-                            animationDelay: `${p.delay}s`
-                        }}
-                    />
-                );
-            })}
-        </svg>
-    );
-}
-
-// Sound Palette: Constellation
-function SoundPaletteViz({ profile, size = 120 }) {
-    const richness = profile?.sound_palette?.characteristics?.harmonic_richness ?? 0.5;
-    const nodeCount = Math.floor(4 + richness * 4);
-    const cx = size / 2, cy = size / 2;
+    const richness = data?.characteristics?.harmonic_richness ?? 0.5;
+    const nodeCount = Math.floor(5 + richness * 5);
 
     const nodes = React.useMemo(() =>
-        Array.from({ length: nodeCount }).map((_, i) => ({
-            x: cx + (15 + Math.random() * 30) * Math.cos((i / nodeCount) * Math.PI * 2),
-            y: cy + (15 + Math.random() * 30) * Math.sin((i / nodeCount) * Math.PI * 2),
-            size: 2 + Math.random() * 3
-        }))
+        Array.from({ length: nodeCount }).map((_, i) => {
+            const angle = (i / nodeCount) * Math.PI * 2;
+            const r = 25 + Math.sin(i * 2.5) * 15 + Math.random() * 10;
+            return {
+                x: cx + r * Math.cos(angle),
+                y: cy + r * Math.sin(angle),
+                size: 3 + Math.random() * 4,
+                delay: i * 0.2
+            };
+        })
     , [nodeCount, cx, cy]);
 
     return (
-        <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz sound-palette-viz">
+        <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz sound-palette-micro">
+            <defs>
+                <filter id="orbit-glow">
+                    <feGaussianBlur stdDeviation="2" />
+                    <feMerge>
+                        <feMergeNode />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+            {/* Orbital path */}
+            <circle cx={cx} cy={cy} r="35" fill="none" stroke="#00D9FF" strokeWidth="0.5" opacity="0.2" strokeDasharray="4 4" />
+            {/* Connection lines */}
             {nodes.slice(0, -1).map((node, i) => (
                 <line
                     key={`line-${i}`}
@@ -727,85 +226,507 @@ function SoundPaletteViz({ profile, size = 120 }) {
                     y1={node.y}
                     x2={nodes[i + 1].x}
                     y2={nodes[i + 1].y}
-                    stroke="var(--neural-primary)"
+                    stroke="#00D9FF"
                     strokeWidth="0.5"
-                    opacity="0.3"
+                    opacity="0.25"
                 />
             ))}
+            {/* Nodes */}
             {nodes.map((node, i) => (
                 <circle
                     key={`node-${i}`}
                     cx={node.x}
                     cy={node.y}
                     r={node.size}
-                    fill="var(--neural-primary)"
-                    opacity="0.7"
+                    fill="#00D9FF"
+                    filter="url(#orbit-glow)"
+                    style={{
+                        animation: `twinkle 2s ease-in-out infinite`,
+                        animationDelay: `${node.delay}s`
+                    }}
                 />
             ))}
         </svg>
     );
 }
 
-// Tonal Identity: Quadrant display
-function TonalIdentityViz({ profile, size = 120 }) {
-    const chars = profile?.tonal_identity?.characteristics || {};
-    const key = chars.key || 'C';
-    const mode = chars.mode || 'Major';
+// Tonal DNA: 2D quadrant with position marker
+function TonalDNAMicro({ data, size = 160 }) {
     const cx = size / 2, cy = size / 2;
+    const darkBright = data?.dark_bright ?? 0.5;
+    const minimalMaximal = data?.minimal_maximal ?? 0.5;
+    const quadSize = 100;
+
+    // Map values to quadrant position
+    const markerX = cx - quadSize / 2 + darkBright * quadSize;
+    const markerY = cy + quadSize / 2 - minimalMaximal * quadSize;
 
     return (
-        <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz tonal-identity-viz">
-            <rect x={cx - 30} y={cy - 20} width="60" height="40" fill="none" stroke="var(--neural-primary)" strokeWidth="1" opacity="0.3" rx="4" />
-            <line x1={cx} y1={cy - 20} x2={cx} y2={cy + 20} stroke="var(--neural-primary)" strokeWidth="0.5" opacity="0.3" />
-            <line x1={cx - 30} y1={cy} x2={cx + 30} y2={cy} stroke="var(--neural-primary)" strokeWidth="0.5" opacity="0.3" />
-            <text x={cx - 15} y={cy - 5} fill="var(--neural-primary)" fontSize="10" textAnchor="middle" opacity="0.8">{key}</text>
-            <text x={cx + 15} y={cy + 12} fill="var(--neural-secondary)" fontSize="8" textAnchor="middle" opacity="0.6">{mode}</text>
-        </svg>
-    );
-}
-
-// Processing Signature: Stereo bars
-function ProcessingSignatureViz({ profile, size = 120 }) {
-    const chars = profile?.processing_signature?.characteristics || {};
-    const width = chars.stereo_width ?? 0.5;
-    const range = chars.dynamic_range ?? 0.5;
-    const cx = size / 2, cy = size / 2;
-    const barWidth = width * 60;
-
-    return (
-        <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz processing-signature-viz">
-            {/* Stereo width bars */}
-            <rect x={cx - barWidth / 2} y={cy - 5} width={barWidth} height="10" fill="var(--neural-primary)" opacity="0.5" rx="2" />
-            {/* Dynamic range arc */}
-            <path
-                d={`M ${cx - 25} ${cy + 20} Q ${cx} ${cy + 20 - range * 20} ${cx + 25} ${cy + 20}`}
+        <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz tonal-dna-micro">
+            <defs>
+                <filter id="quad-glow">
+                    <feGaussianBlur stdDeviation="3" />
+                    <feMerge>
+                        <feMergeNode />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+            {/* Quadrant grid */}
+            <rect
+                x={cx - quadSize / 2}
+                y={cy - quadSize / 2}
+                width={quadSize}
+                height={quadSize}
                 fill="none"
-                stroke="var(--neural-secondary)"
-                strokeWidth="2"
-                opacity="0.6"
+                stroke="#00D9FF"
+                strokeWidth="1"
+                opacity="0.2"
+            />
+            {/* Cross lines */}
+            <line x1={cx} y1={cy - quadSize / 2} x2={cx} y2={cy + quadSize / 2} stroke="#00D9FF" strokeWidth="0.5" opacity="0.3" />
+            <line x1={cx - quadSize / 2} y1={cy} x2={cx + quadSize / 2} y2={cy} stroke="#00D9FF" strokeWidth="0.5" opacity="0.3" />
+            {/* Labels */}
+            <text x={cx - quadSize / 2 - 5} y={cy} fill="#00D9FF" fontSize="8" textAnchor="end" opacity="0.6">Dark</text>
+            <text x={cx + quadSize / 2 + 5} y={cy} fill="#00D9FF" fontSize="8" opacity="0.6">Bright</text>
+            <text x={cx} y={cy - quadSize / 2 - 5} fill="#00D9FF" fontSize="8" textAnchor="middle" opacity="0.6">Maximal</text>
+            <text x={cx} y={cy + quadSize / 2 + 12} fill="#00D9FF" fontSize="8" textAnchor="middle" opacity="0.6">Minimal</text>
+            {/* Position marker */}
+            <circle
+                cx={markerX}
+                cy={markerY}
+                r="8"
+                fill="#00D9FF"
+                filter="url(#quad-glow)"
+                style={{ filter: 'drop-shadow(0 0 10px #00D9FF)' }}
             />
         </svg>
     );
 }
 
-// Visualization router component
-function SectorVisualization({ moduleKey, profile }) {
+// Rhythmic DNA: Circular arc with pulse points
+function RhythmicDNAMicro({ data, size = 160 }) {
+    const cx = size / 2, cy = size / 2;
+    const bpm = data?.characteristics?.tempo_bpm || 120;
+    const r = 50;
+    const pulseCount = 8;
+
+    return (
+        <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz rhythmic-dna-micro">
+            <defs>
+                <filter id="rhythm-glow">
+                    <feGaussianBlur stdDeviation="2" />
+                    <feMerge>
+                        <feMergeNode />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+            {/* Outer arc */}
+            <circle cx={cx} cy={cy} r={r} fill="none" stroke="#00D9FF" strokeWidth="2" opacity="0.3" />
+            {/* Inner arc */}
+            <circle cx={cx} cy={cy} r={r - 15} fill="none" stroke="#0066FF" strokeWidth="1" opacity="0.2" strokeDasharray="4 8" />
+            {/* Pulse points */}
+            {Array.from({ length: pulseCount }).map((_, i) => {
+                const angle = (i / pulseCount) * Math.PI * 2 - Math.PI / 2;
+                const px = cx + r * Math.cos(angle);
+                const py = cy + r * Math.sin(angle);
+                const pulseDelay = (60 / bpm) * (i / pulseCount);
+
+                return (
+                    <circle
+                        key={i}
+                        cx={px}
+                        cy={py}
+                        r="5"
+                        fill="#00D9FF"
+                        filter="url(#rhythm-glow)"
+                        style={{
+                            animation: `pulse 0.5s ease-in-out infinite`,
+                            animationDelay: `${pulseDelay}s`
+                        }}
+                    />
+                );
+            })}
+            {/* BPM text */}
+            <text x={cx} y={cy + 5} fill="#00D9FF" fontSize="14" fontWeight="600" textAnchor="middle">{bpm}</text>
+            <text x={cx} y={cy + 18} fill="#00D9FF" fontSize="8" textAnchor="middle" opacity="0.6">BPM</text>
+        </svg>
+    );
+}
+
+// Timbre DNA: Layered wave forms
+function TimbreDNAMicro({ data, size = 160 }) {
+    const chars = data?.characteristics || {};
+    const warmth = chars.warmth ?? 0.5;
+    const brightness = chars.brightness ?? 0.5;
+    const stability = chars.stability ?? 0.5;
+    const cx = size / 2;
+
+    const generateWave = (yBase, amplitude, frequency, phase = 0) => {
+        let path = '';
+        for (let x = 20; x <= size - 20; x += 2) {
+            const t = (x - 20) / (size - 40);
+            const y = yBase + Math.sin(t * Math.PI * frequency + phase) * amplitude;
+            path += x === 20 ? `M${x},${y}` : ` L${x},${y}`;
+        }
+        return path;
+    };
+
+    return (
+        <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz timbre-dna-micro">
+            <defs>
+                <filter id="wave-glow">
+                    <feGaussianBlur stdDeviation="2" />
+                    <feMerge>
+                        <feMergeNode />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+            {/* Warmth wave (orange) */}
+            <path
+                d={generateWave(50, 8 + warmth * 12, 3, 0)}
+                fill="none"
+                stroke="#FF6B00"
+                strokeWidth="2"
+                opacity="0.7"
+                filter="url(#wave-glow)"
+            />
+            {/* Brightness wave (cyan) */}
+            <path
+                d={generateWave(80, 8 + brightness * 15, 4, Math.PI / 3)}
+                fill="none"
+                stroke="#00D9FF"
+                strokeWidth="2"
+                opacity="0.8"
+                filter="url(#wave-glow)"
+            />
+            {/* Stability wave (blue) */}
+            <path
+                d={generateWave(110, 5 + stability * 10, 2, Math.PI / 2)}
+                fill="none"
+                stroke="#0066FF"
+                strokeWidth="1.5"
+                opacity="0.6"
+                filter="url(#wave-glow)"
+            />
+        </svg>
+    );
+}
+
+// Emotional Fingerprint: Blue/Orange polar field
+function EmotionalFingerprintMicro({ data, size = 160 }) {
+    const cx = size / 2, cy = size / 2;
+    const nodes = data?.nodes || [];
+    const maxR = 55;
+
+    // Default emotional axes if no nodes
+    const defaultAxes = [
+        { label: 'Joy', angle: 0, value: 0.6, color: '#00D9FF' },
+        { label: 'Energy', angle: 60, value: 0.5, color: '#FF6B00' },
+        { label: 'Tension', angle: 120, value: 0.4, color: '#FF4488' },
+        { label: 'Melancholy', angle: 180, value: 0.3, color: '#0066FF' },
+        { label: 'Calm', angle: 240, value: 0.5, color: '#00FF88' },
+        { label: 'Wonder', angle: 300, value: 0.4, color: '#00D9FF' }
+    ];
+
+    const axes = nodes.length > 0
+        ? nodes.slice(0, 6).map((n, i) => ({
+            label: n.label || n.emotion || `E${i}`,
+            angle: (i / Math.min(nodes.length, 6)) * 360,
+            value: n.intensity || n.value || 0.5,
+            color: i % 2 === 0 ? '#00D9FF' : '#FF6B00'
+        }))
+        : defaultAxes;
+
+    // Generate shape path
+    const shapePath = axes.map((axis, i) => {
+        const rad = (axis.angle - 90) * Math.PI / 180;
+        const r = 15 + axis.value * maxR;
+        const x = cx + r * Math.cos(rad);
+        const y = cy + r * Math.sin(rad);
+        return i === 0 ? `M${x},${y}` : `L${x},${y}`;
+    }).join(' ') + ' Z';
+
+    return (
+        <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz emotional-fingerprint-micro">
+            <defs>
+                <filter id="emotion-glow">
+                    <feGaussianBlur stdDeviation="3" />
+                    <feMerge>
+                        <feMergeNode />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+                <radialGradient id="emotion-fill" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#00D9FF" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#0066FF" stopOpacity="0.1" />
+                </radialGradient>
+            </defs>
+            {/* Grid circles */}
+            <circle cx={cx} cy={cy} r={maxR} fill="none" stroke="#00D9FF" strokeWidth="0.5" opacity="0.2" />
+            <circle cx={cx} cy={cy} r={maxR * 0.66} fill="none" stroke="#00D9FF" strokeWidth="0.5" opacity="0.15" />
+            <circle cx={cx} cy={cy} r={maxR * 0.33} fill="none" stroke="#00D9FF" strokeWidth="0.5" opacity="0.1" />
+            {/* Axis lines */}
+            {axes.map((axis, i) => {
+                const rad = (axis.angle - 90) * Math.PI / 180;
+                return (
+                    <line
+                        key={`axis-${i}`}
+                        x1={cx}
+                        y1={cy}
+                        x2={cx + maxR * Math.cos(rad)}
+                        y2={cy + maxR * Math.sin(rad)}
+                        stroke="#00D9FF"
+                        strokeWidth="0.5"
+                        opacity="0.2"
+                    />
+                );
+            })}
+            {/* Shape fill */}
+            <path d={shapePath} fill="url(#emotion-fill)" stroke="#00D9FF" strokeWidth="1.5" filter="url(#emotion-glow)" />
+            {/* Node dots */}
+            {axes.map((axis, i) => {
+                const rad = (axis.angle - 90) * Math.PI / 180;
+                const r = 15 + axis.value * maxR;
+                return (
+                    <circle
+                        key={`dot-${i}`}
+                        cx={cx + r * Math.cos(rad)}
+                        cy={cy + r * Math.sin(rad)}
+                        r="4"
+                        fill={axis.color}
+                        filter="url(#emotion-glow)"
+                    />
+                );
+            })}
+        </svg>
+    );
+}
+
+// Processing Signature: Brainwave EQ pattern
+function ProcessingSignatureMicro({ data, size = 160 }) {
+    const techniques = Array.isArray(data) ? data : [];
+    const cx = size / 2;
+
+    // Generate EQ-style brainwave
+    const generateEQ = () => {
+        let path = '';
+        const points = 30;
+        for (let i = 0; i <= points; i++) {
+            const x = 20 + (i / points) * (size - 40);
+            const baseline = size / 2;
+            const amplitude = 15 + Math.random() * 20;
+            const y = baseline + Math.sin(i * 0.8) * amplitude * (0.5 + Math.random() * 0.5);
+            path += i === 0 ? `M${x},${y}` : ` L${x},${y}`;
+        }
+        return path;
+    };
+
+    const eqPath = React.useMemo(() => generateEQ(), []);
+
+    return (
+        <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz processing-signature-micro">
+            <defs>
+                <filter id="eq-glow">
+                    <feGaussianBlur stdDeviation="2" />
+                    <feMerge>
+                        <feMergeNode />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+                <linearGradient id="eq-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#0066FF" />
+                    <stop offset="50%" stopColor="#00D9FF" />
+                    <stop offset="100%" stopColor="#00FF88" />
+                </linearGradient>
+            </defs>
+            {/* Baseline */}
+            <line x1="20" y1={size / 2} x2={size - 20} y2={size / 2} stroke="#00D9FF" strokeWidth="0.5" opacity="0.2" />
+            {/* EQ wave */}
+            <path
+                d={eqPath}
+                fill="none"
+                stroke="url(#eq-gradient)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                filter="url(#eq-glow)"
+            />
+            {/* Technique count */}
+            {techniques.length > 0 && (
+                <g>
+                    <text x={cx} y={size - 20} fill="#00D9FF" fontSize="10" textAnchor="middle" opacity="0.7">
+                        {techniques.length} techniques
+                    </text>
+                </g>
+            )}
+        </svg>
+    );
+}
+
+// Sonic Architecture: Vertical frequency bars
+function SonicArchitectureMicro({ data, size = 160 }) {
+    const layering = data?.layering_approach || 'balanced';
+    const tension = data?.tension_release || 0.5;
+    const barCount = 12;
+    const barWidth = 8;
+    const gap = 4;
+    const totalWidth = barCount * barWidth + (barCount - 1) * gap;
+    const startX = (size - totalWidth) / 2;
+    const maxHeight = 80;
+
+    const bars = React.useMemo(() =>
+        Array.from({ length: barCount }).map((_, i) => {
+            // Create a frequency-like distribution
+            const center = barCount / 2;
+            const dist = Math.abs(i - center) / center;
+            const baseHeight = (1 - dist * 0.6) * maxHeight;
+            const variation = Math.random() * 15;
+            return baseHeight + variation;
+        })
+    , []);
+
+    return (
+        <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz sonic-architecture-micro">
+            <defs>
+                <linearGradient id="bar-gradient-v6" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stopColor="#0066FF" stopOpacity="0.4" />
+                    <stop offset="50%" stopColor="#00D9FF" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="#00EAFF" stopOpacity="1" />
+                </linearGradient>
+                <filter id="bar-glow">
+                    <feGaussianBlur stdDeviation="2" />
+                    <feMerge>
+                        <feMergeNode />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+            {bars.map((height, i) => (
+                <rect
+                    key={i}
+                    x={startX + i * (barWidth + gap)}
+                    y={size / 2 + 20 - height}
+                    width={barWidth}
+                    height={height}
+                    fill="url(#bar-gradient-v6)"
+                    rx="2"
+                    filter="url(#bar-glow)"
+                    style={{
+                        animation: `bar-grow 0.8s ease-out forwards`,
+                        animationDelay: `${i * 0.05}s`,
+                        transformOrigin: `${startX + i * (barWidth + gap) + barWidth / 2}px ${size / 2 + 20}px`
+                    }}
+                />
+            ))}
+            {/* Baseline */}
+            <line x1={startX - 5} y1={size / 2 + 20} x2={startX + totalWidth + 5} y2={size / 2 + 20} stroke="#00D9FF" strokeWidth="1" opacity="0.3" />
+        </svg>
+    );
+}
+
+// Inspirational Triggers: Radial hub with spokes
+function InspirationalTriggersMicro({ data, size = 160 }) {
+    const cx = size / 2, cy = size / 2;
+    const sources = data?.sources || [];
+    const spokeCount = Math.max(6, Math.min(12, sources.length || 8));
+
+    const spokes = React.useMemo(() =>
+        Array.from({ length: spokeCount }).map((_, i) => ({
+            angle: (i / spokeCount) * 360,
+            length: 25 + Math.random() * 25,
+            delay: i * 0.1,
+            size: 2 + Math.random() * 3
+        }))
+    , [spokeCount]);
+
+    return (
+        <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz inspirational-triggers-micro">
+            <defs>
+                <filter id="spark-glow">
+                    <feGaussianBlur stdDeviation="3" />
+                    <feMerge>
+                        <feMergeNode />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+                <radialGradient id="hub-gradient" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#00D9FF" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="#0066FF" stopOpacity="0.2" />
+                </radialGradient>
+            </defs>
+            {/* Central hub */}
+            <circle cx={cx} cy={cy} r="12" fill="url(#hub-gradient)" filter="url(#spark-glow)" />
+            {/* Spokes */}
+            {spokes.map((spoke, i) => {
+                const rad = (spoke.angle - 90) * Math.PI / 180;
+                const x1 = cx + 15 * Math.cos(rad);
+                const y1 = cy + 15 * Math.sin(rad);
+                const x2 = cx + (15 + spoke.length) * Math.cos(rad);
+                const y2 = cy + (15 + spoke.length) * Math.sin(rad);
+
+                return (
+                    <g key={i}>
+                        <line
+                            x1={x1}
+                            y1={y1}
+                            x2={x2}
+                            y2={y2}
+                            stroke="#00D9FF"
+                            strokeWidth="1"
+                            opacity="0.4"
+                        />
+                        <circle
+                            cx={x2}
+                            cy={y2}
+                            r={spoke.size}
+                            fill="#00D9FF"
+                            filter="url(#spark-glow)"
+                            style={{
+                                animation: `twinkle 1.5s ease-in-out infinite`,
+                                animationDelay: `${spoke.delay}s`
+                            }}
+                        />
+                    </g>
+                );
+            })}
+        </svg>
+    );
+}
+
+// ============================================================
+// MICRO-VISUALIZATION ROUTER - V6 Interface
+// ============================================================
+
+function MicroVisualization({ moduleKey, data }) {
     const vizMap = {
-        'sound_description': SoundDescriptionViz,
-        'genre_fusion': GenreFusionViz,
-        'neural_spectrum': NeuralSpectrumViz,
-        'sound_palette': SoundPaletteViz,
-        'tonal_identity': TonalIdentityViz,
-        'rhythmic_dna': RhythmicDNAViz,
-        'timbre_dna': TimbreDNAViz,
-        'emotional_fingerprint': EmotionalFingerprintViz,
-        'processing_signature': ProcessingSignatureViz,
-        'sonic_architecture': SonicArchitectureViz,
-        'inspirational_triggers': InspirationalTriggersViz
+        'sound_description': SoundDescriptionMicro,
+        'genre_fusion': GenreFusionMicro,
+        'neural_spectrum': NeuralSpectrumMicro,
+        'sound_palette': SoundPaletteMicro,
+        'tonal_identity': TonalDNAMicro,
+        'rhythmic_dna': RhythmicDNAMicro,
+        'timbre_dna': TimbreDNAMicro,
+        'emotional_fingerprint': EmotionalFingerprintMicro,
+        'processing_signature': ProcessingSignatureMicro,
+        'sonic_architecture': SonicArchitectureMicro,
+        'inspirational_triggers': InspirationalTriggersMicro
     };
 
     const Component = vizMap[moduleKey];
     if (!Component) return null;
 
-    return <Component profile={profile} size={100} />;
+    return (
+        <div className="micro-visualization-container">
+            <Component data={data} size={160} />
+        </div>
+    );
+}
+
+// ============================================================
+// LEGACY COMPATIBILITY - SectorVisualization alias
+// ============================================================
+function SectorVisualization({ moduleKey, profile }) {
+    return <MicroVisualization moduleKey={moduleKey} data={profile?.[moduleKey]} />;
 }
