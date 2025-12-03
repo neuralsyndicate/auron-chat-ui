@@ -104,6 +104,44 @@
             --glow-low: 0.18;
             --glow-medium: 0.45;
             --glow-bright: 0.85;
+
+            /* ========================================
+               V5 LIQUID GLASS DESIGN SYSTEM
+               Apple VisionOS-inspired refraction UI
+               ======================================== */
+
+            /* Liquid Glass Core */
+            --liquid-glass-blur: 12px;
+            --liquid-glass-bg: rgba(10, 10, 31, 0.25);
+            --liquid-glass-bg-hover: rgba(10, 10, 31, 0.35);
+            --liquid-glass-border: rgba(255, 255, 255, 0.12);
+            --liquid-glass-border-hover: rgba(0, 217, 255, 0.35);
+            --liquid-glass-highlight: rgba(255, 255, 255, 0.5);
+            --liquid-glass-shadow: rgba(0, 0, 0, 0.4);
+            --liquid-refraction-scale: 70;
+
+            /* VisionOS Animation Curves */
+            --spring-curve: cubic-bezier(0.25, 0.84, 0.42, 1);
+            --bounce-curve: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --micro-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --smooth-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+            /* Sector Expansion */
+            --sector-expand-duration: 0.5s;
+            --sector-expand-radius: 420px;
+            --sector-collapse-radius: 320px;
+            --sector-dim-opacity: 0.1;
+            --sector-inner-radius: 120px;
+
+            /* Parallax Depths */
+            --parallax-bg-multiplier: 2;
+            --parallax-mid-multiplier: 1;
+            --parallax-fg-multiplier: 0.5;
+
+            /* Micro-motion */
+            --breathe-duration: 4s;
+            --shimmer-duration: 8s;
+            --drift-amplitude: 3px;
         }
 
         * {
@@ -2016,6 +2054,302 @@
 
             .mobile-tab-nav {
                 display: none;
+            }
+        }
+
+        /* ================================================
+           V5 LIQUID GLASS CLASSES & ANIMATIONS
+           Apple VisionOS-inspired glassmorphism
+           ================================================ */
+
+        /* Base Liquid Glass Surface */
+        .liquid-glass {
+            position: relative;
+            background: var(--liquid-glass-bg);
+            backdrop-filter: blur(var(--liquid-glass-blur));
+            -webkit-backdrop-filter: blur(var(--liquid-glass-blur));
+            border: 1px solid var(--liquid-glass-border);
+            border-radius: 16px;
+            isolation: isolate;
+            transition: all 0.3s var(--spring-curve);
+        }
+
+        /* Inner specular highlight */
+        .liquid-glass::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.1) 0%,
+                transparent 50%,
+                rgba(0, 0, 0, 0.05) 100%
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Edge bloom glow */
+        .liquid-glass::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            background: transparent;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+                0 0 20px rgba(0, 217, 255, 0.1);
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.3s var(--spring-curve);
+        }
+
+        .liquid-glass:hover::after {
+            opacity: 1;
+        }
+
+        /* Liquid Glass Node (for radial modules) */
+        .liquid-glass-node {
+            transition: all 0.3s var(--spring-curve);
+        }
+
+        .liquid-glass-node .node-glass-surface {
+            fill: var(--liquid-glass-bg);
+            stroke: var(--liquid-glass-border);
+            stroke-width: 1;
+            transition: all 0.3s var(--spring-curve);
+        }
+
+        .liquid-glass-node:hover .node-glass-surface {
+            fill: var(--liquid-glass-bg-hover);
+            stroke: var(--liquid-glass-border-hover);
+            filter: drop-shadow(0 0 15px rgba(0, 217, 255, 0.3));
+        }
+
+        .liquid-glass-node.selected .node-glass-surface {
+            fill: rgba(0, 217, 255, 0.15);
+            stroke: var(--neural-primary);
+            stroke-width: 2;
+            filter: drop-shadow(0 0 25px rgba(0, 217, 255, 0.5));
+        }
+
+        .liquid-glass-node.dimmed {
+            opacity: var(--sector-dim-opacity);
+            transform: scale(0.92);
+        }
+
+        /* Liquid Glass Sector Panel */
+        .liquid-glass-sector {
+            fill: var(--liquid-glass-bg);
+            stroke: var(--liquid-glass-border);
+            stroke-width: 1;
+            transition: all var(--sector-expand-duration) var(--spring-curve);
+        }
+
+        .sector-panel {
+            opacity: 0;
+            transform-origin: center;
+            transition: all var(--sector-expand-duration) var(--spring-curve);
+        }
+
+        .sector-panel.expanded {
+            opacity: 1;
+        }
+
+        .sector-panel.expanded .liquid-glass-sector {
+            fill: rgba(10, 10, 31, 0.4);
+            stroke: rgba(0, 217, 255, 0.25);
+            filter: drop-shadow(0 0 30px rgba(0, 217, 255, 0.2));
+        }
+
+        .sector-specular {
+            fill: url(#sector-specular-gradient);
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        /* Sector Particle Trails */
+        .sector-particle {
+            fill: var(--neural-primary);
+            opacity: 0;
+        }
+
+        .sector-panel.expanded .sector-particle {
+            animation: sector-particle-drift 0.8s var(--spring-curve) forwards;
+        }
+
+        @keyframes sector-particle-drift {
+            0% {
+                opacity: 0.6;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--drift-x, 30px), var(--drift-y, 0)) scale(0.3);
+            }
+        }
+
+        /* Liquid Glass Center Hub */
+        .liquid-glass-hub {
+            transition: transform 0.5s var(--bounce-curve);
+        }
+
+        .liquid-glass-hub.sector-expanded {
+            transform: translate(-50%, -50%) scale(0.85);
+        }
+
+        /* WebGL Canvas Layer */
+        .liquid-glass-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            border-radius: inherit;
+        }
+
+        /* Parallax Layer Groups */
+        .parallax-bg,
+        .parallax-mid,
+        .parallax-fg {
+            transition: transform 0.1s linear;
+            will-change: transform;
+        }
+
+        /* V5 Micro-motion Keyframes */
+        @keyframes glass-breathe {
+            0%, 100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.2));
+            }
+            50% {
+                transform: scale(1.02);
+                filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.35));
+            }
+        }
+
+        @keyframes edge-shimmer {
+            0%, 100% {
+                opacity: 0.3;
+                transform: translateX(-100%);
+            }
+            50% {
+                opacity: 0.6;
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes parallax-drift {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+            25% {
+                transform: translate(var(--drift-amplitude), calc(var(--drift-amplitude) * -0.5));
+            }
+            50% {
+                transform: translate(0, var(--drift-amplitude));
+            }
+            75% {
+                transform: translate(calc(var(--drift-amplitude) * -1), calc(var(--drift-amplitude) * 0.5));
+            }
+        }
+
+        @keyframes gentle-oscillate {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-2px) rotate(0.5deg);
+            }
+        }
+
+        @keyframes refraction-pulse {
+            0%, 100% {
+                --liquid-refraction-scale: 70;
+            }
+            50% {
+                --liquid-refraction-scale: 85;
+            }
+        }
+
+        /* Sector Visualization Container */
+        .sector-viz-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .sector-viz {
+            contain: layout paint style;
+            will-change: transform, opacity;
+        }
+
+        /* GPU Acceleration Hints */
+        .liquid-glass,
+        .liquid-glass-node,
+        .liquid-glass-sector,
+        .sector-panel,
+        .parallax-bg,
+        .parallax-mid,
+        .parallax-fg {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
+        /* V5 Performance: Layout containment */
+        .neural-identity-map {
+            contain: layout style;
+        }
+
+        .neural-radial-svg {
+            contain: layout paint;
+        }
+
+        .visualization-layer,
+        .connection-layer,
+        .sector-layer {
+            contain: layout;
+        }
+
+        /* V5 Performance: Reduce paint on static elements */
+        .neural-bg-ring {
+            contain: strict;
+        }
+
+        .neural-node-label {
+            contain: layout paint;
+        }
+
+        /* V5 Performance: Animation optimization */
+        @media (prefers-reduced-motion: reduce) {
+            .parallax-bg,
+            .parallax-mid,
+            .parallax-fg {
+                transition: none !important;
+            }
+
+            .liquid-glass-canvas {
+                display: none;
+            }
+
+            .sector-particle {
+                animation: none !important;
+            }
+        }
+
+        /* Browser Fallback */
+        @supports not (backdrop-filter: blur(12px)) {
+            .liquid-glass,
+            .liquid-glass-sector {
+                background: rgba(10, 10, 31, 0.85);
             }
         }
     </style>
@@ -7283,6 +7617,570 @@
             );
         }
 
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // V5 SECTOR VISUALIZATIONS - Blueprint aesthetic micro-visualizations
+        // ═══════════════════════════════════════════════════════════════════════════════
+
+        // Sound Description: Concentric ripple field
+        function SoundDescriptionViz({ profile, size = 120 }) {
+            const cx = size / 2, cy = size / 2;
+            const rings = 5;
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz sound-description-viz">
+                    {Array.from({ length: rings }).map((_, i) => (
+                        <circle
+                            key={i}
+                            cx={cx}
+                            cy={cy}
+                            r={10 + i * 15}
+                            fill="none"
+                            stroke="var(--neural-primary)"
+                            strokeWidth="1"
+                            opacity={0.15 + (rings - i) * 0.1}
+                            style={{
+                                animation: `pulse ${2 + i * 0.3}s ease-in-out infinite`,
+                                animationDelay: `${i * 0.2}s`
+                            }}
+                        />
+                    ))}
+                    <circle cx={cx} cy={cy} r="4" fill="var(--neural-primary)" opacity="0.8" />
+                </svg>
+            );
+        }
+
+        // Genre Fusion: Segment ring with colored arcs
+        function GenreFusionViz({ profile, size = 120 }) {
+            const cx = size / 2, cy = size / 2;
+            const genres = profile?.genre_fusion?.characteristics?.genre_proportions || {};
+            const genreList = Object.entries(genres).slice(0, 4);
+            const colors = ['#00D9FF', '#0066FF', '#FF6B00', '#00FF88'];
+            const r = 35;
+
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz genre-fusion-viz">
+                    {genreList.map(([genre, value], i) => {
+                        const startAngle = (i / genreList.length) * 360 - 90;
+                        const endAngle = ((i + 1) / genreList.length) * 360 - 90;
+                        const start = startAngle * Math.PI / 180;
+                        const end = endAngle * Math.PI / 180;
+                        const x1 = cx + r * Math.cos(start);
+                        const y1 = cy + r * Math.sin(start);
+                        const x2 = cx + r * Math.cos(end);
+                        const y2 = cy + r * Math.sin(end);
+                        const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+
+                        return (
+                            <path
+                                key={genre}
+                                d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`}
+                                fill="none"
+                                stroke={colors[i % colors.length]}
+                                strokeWidth="8"
+                                strokeLinecap="round"
+                                opacity={0.4 + (value || 0.2) * 0.5}
+                                style={{
+                                    filter: 'drop-shadow(0 0 4px ' + colors[i % colors.length] + '40)'
+                                }}
+                            />
+                        );
+                    })}
+                </svg>
+            );
+        }
+
+        // Neural Spectrum: Waveform arc
+        function NeuralSpectrumViz({ profile, size = 120 }) {
+            const specValue = profile?.neural_spectrum?.value ?? 0.5;
+            const points = [];
+            const cx = size / 2, cy = size / 2;
+            const r = 35;
+
+            for (let i = 0; i <= 40; i++) {
+                const t = i / 40;
+                const angle = -140 + t * 100; // -140 to -40 degrees
+                const rad = (angle - 90) * Math.PI / 180;
+                const wave = Math.sin(t * Math.PI * 4) * (10 + specValue * 15);
+                const x = cx + (r + wave) * Math.cos(rad);
+                const y = cy + (r + wave) * Math.sin(rad);
+                points.push(`${i === 0 ? 'M' : 'L'}${x},${y}`);
+            }
+
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz neural-spectrum-viz">
+                    <path
+                        d={points.join(' ')}
+                        fill="none"
+                        stroke="url(#spectrum-gradient)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        style={{ filter: 'drop-shadow(0 0 6px rgba(0,217,255,0.5))' }}
+                    />
+                </svg>
+            );
+        }
+
+        // Rhythmic DNA: Timing pulses
+        function RhythmicDNAViz({ profile, size = 120 }) {
+            const bpm = profile?.rhythmic_dna?.characteristics?.tempo_bpm || 120;
+            const bpmDuration = 60 / bpm;
+            const cx = size / 2, cy = size / 2;
+            const r = 30;
+
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz rhythmic-dna-viz">
+                    <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--neural-primary)" strokeWidth="1" opacity="0.2" strokeDasharray="3 5" />
+                    <g style={{ animation: `rotate ${bpmDuration * 4}s linear infinite` }}>
+                        {[0, 90, 180, 270].map((angle, i) => {
+                            const rad = (angle - 90) * Math.PI / 180;
+                            return (
+                                <circle
+                                    key={i}
+                                    cx={cx + r * Math.cos(rad)}
+                                    cy={cy + r * Math.sin(rad)}
+                                    r="4"
+                                    fill="var(--neural-primary)"
+                                    style={{
+                                        animation: `pulse ${bpmDuration}s ease-in-out infinite`,
+                                        animationDelay: `${i * bpmDuration / 4}s`
+                                    }}
+                                />
+                            );
+                        })}
+                    </g>
+                </svg>
+            );
+        }
+
+        // Timbre DNA: Wave stacks
+        function TimbreDNAViz({ profile, size = 120 }) {
+            const chars = profile?.timbre_dna?.characteristics || {};
+            const warmth = chars.warmth ?? 0.5;
+            const brightness = chars.brightness ?? 0.5;
+            const texture = chars.texture_complexity ?? 0.5;
+            const cx = size / 2;
+
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz timbre-dna-viz">
+                    {/* Warmth wave */}
+                    <path
+                        d={`M10 50 Q${cx} ${50 - warmth * 20} ${size - 10} 50`}
+                        fill="none"
+                        stroke="#FF6B00"
+                        strokeWidth="1.5"
+                        opacity="0.6"
+                    />
+                    {/* Brightness wave */}
+                    <path
+                        d={`M10 60 Q${cx} ${60 - brightness * 25} ${size - 10} 60`}
+                        fill="none"
+                        stroke="#00D9FF"
+                        strokeWidth="1.5"
+                        opacity="0.7"
+                    />
+                    {/* Texture wave */}
+                    <path
+                        d={`M10 70 Q${cx} ${70 - texture * 20} ${size - 10} 70`}
+                        fill="none"
+                        stroke="#00FF88"
+                        strokeWidth="1.5"
+                        opacity="0.5"
+                    />
+                </svg>
+            );
+        }
+
+        // Emotional Fingerprint: Compass wheel
+        function EmotionalFingerprintViz({ profile, size = 120 }) {
+            const chars = profile?.emotional_fingerprint?.characteristics || {};
+            const energy = chars.energy ?? 0.5;
+            const valence = chars.valence ?? 0.5;
+            const tension = chars.tension ?? 0.5;
+            const depth = chars.depth ?? 0.5;
+            const cx = size / 2, cy = size / 2;
+            const maxR = 40;
+
+            const arms = [
+                { label: 'E', value: energy, angle: 0 },
+                { label: 'V', value: valence, angle: 90 },
+                { label: 'T', value: tension, angle: 180 },
+                { label: 'D', value: depth, angle: 270 }
+            ];
+
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz emotional-fingerprint-viz">
+                    {arms.map(arm => {
+                        const rad = (arm.angle - 90) * Math.PI / 180;
+                        const r = 10 + arm.value * maxR;
+                        return (
+                            <g key={arm.label}>
+                                <line
+                                    x1={cx}
+                                    y1={cy}
+                                    x2={cx + r * Math.cos(rad)}
+                                    y2={cy + r * Math.sin(rad)}
+                                    stroke="var(--neural-primary)"
+                                    strokeWidth="2"
+                                    opacity="0.6"
+                                />
+                                <circle
+                                    cx={cx + r * Math.cos(rad)}
+                                    cy={cy + r * Math.sin(rad)}
+                                    r="3"
+                                    fill="var(--neural-primary)"
+                                />
+                            </g>
+                        );
+                    })}
+                    <circle cx={cx} cy={cy} r="4" fill="var(--neural-secondary)" opacity="0.8" />
+                </svg>
+            );
+        }
+
+        // Sonic Architecture: Vertical bars
+        function SonicArchitectureViz({ profile, size = 120 }) {
+            const sections = ['intro', 'verse', 'chorus', 'bridge', 'outro'];
+            const barWidth = 12;
+            const gap = 6;
+            const totalWidth = sections.length * barWidth + (sections.length - 1) * gap;
+            const startX = (size - totalWidth) / 2;
+
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz sonic-architecture-viz">
+                    {sections.map((section, i) => {
+                        const height = 20 + Math.random() * 40;
+                        return (
+                            <rect
+                                key={section}
+                                x={startX + i * (barWidth + gap)}
+                                y={size / 2 + 20 - height}
+                                width={barWidth}
+                                height={height}
+                                fill="url(#bar-gradient)"
+                                opacity="0.7"
+                                rx="2"
+                                style={{
+                                    animation: `bar-grow 1.5s ease-out ${i * 0.1}s`
+                                }}
+                            />
+                        );
+                    })}
+                </svg>
+            );
+        }
+
+        // Inspirational Triggers: Spark bursts
+        function InspirationalTriggersViz({ profile, size = 120 }) {
+            const cx = size / 2, cy = size / 2;
+            const particles = Array.from({ length: 12 }).map((_, i) => ({
+                angle: (i / 12) * 360,
+                r: 15 + Math.random() * 25,
+                delay: Math.random() * 2,
+                size: 1 + Math.random() * 2
+            }));
+
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz inspirational-triggers-viz">
+                    {particles.map((p, i) => {
+                        const rad = (p.angle - 90) * Math.PI / 180;
+                        return (
+                            <circle
+                                key={i}
+                                cx={cx + p.r * Math.cos(rad)}
+                                cy={cy + p.r * Math.sin(rad)}
+                                r={p.size}
+                                fill="var(--neural-primary)"
+                                style={{
+                                    animation: `twinkle 1.5s ease-in-out infinite`,
+                                    animationDelay: `${p.delay}s`
+                                }}
+                            />
+                        );
+                    })}
+                </svg>
+            );
+        }
+
+        // Sound Palette: Constellation
+        function SoundPaletteViz({ profile, size = 120 }) {
+            const richness = profile?.sound_palette?.characteristics?.harmonic_richness ?? 0.5;
+            const nodeCount = Math.floor(4 + richness * 4);
+            const cx = size / 2, cy = size / 2;
+
+            const nodes = React.useMemo(() =>
+                Array.from({ length: nodeCount }).map((_, i) => ({
+                    x: cx + (15 + Math.random() * 30) * Math.cos((i / nodeCount) * Math.PI * 2),
+                    y: cy + (15 + Math.random() * 30) * Math.sin((i / nodeCount) * Math.PI * 2),
+                    size: 2 + Math.random() * 3
+                }))
+            , [nodeCount, cx, cy]);
+
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz sound-palette-viz">
+                    {nodes.slice(0, -1).map((node, i) => (
+                        <line
+                            key={`line-${i}`}
+                            x1={node.x}
+                            y1={node.y}
+                            x2={nodes[i + 1].x}
+                            y2={nodes[i + 1].y}
+                            stroke="var(--neural-primary)"
+                            strokeWidth="0.5"
+                            opacity="0.3"
+                        />
+                    ))}
+                    {nodes.map((node, i) => (
+                        <circle
+                            key={`node-${i}`}
+                            cx={node.x}
+                            cy={node.y}
+                            r={node.size}
+                            fill="var(--neural-primary)"
+                            opacity="0.7"
+                        />
+                    ))}
+                </svg>
+            );
+        }
+
+        // Tonal Identity: Quadrant display
+        function TonalIdentityViz({ profile, size = 120 }) {
+            const chars = profile?.tonal_identity?.characteristics || {};
+            const key = chars.key || 'C';
+            const mode = chars.mode || 'Major';
+            const cx = size / 2, cy = size / 2;
+
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz tonal-identity-viz">
+                    <rect x={cx - 30} y={cy - 20} width="60" height="40" fill="none" stroke="var(--neural-primary)" strokeWidth="1" opacity="0.3" rx="4" />
+                    <line x1={cx} y1={cy - 20} x2={cx} y2={cy + 20} stroke="var(--neural-primary)" strokeWidth="0.5" opacity="0.3" />
+                    <line x1={cx - 30} y1={cy} x2={cx + 30} y2={cy} stroke="var(--neural-primary)" strokeWidth="0.5" opacity="0.3" />
+                    <text x={cx - 15} y={cy - 5} fill="var(--neural-primary)" fontSize="10" textAnchor="middle" opacity="0.8">{key}</text>
+                    <text x={cx + 15} y={cy + 12} fill="var(--neural-secondary)" fontSize="8" textAnchor="middle" opacity="0.6">{mode}</text>
+                </svg>
+            );
+        }
+
+        // Processing Signature: Stereo bars
+        function ProcessingSignatureViz({ profile, size = 120 }) {
+            const chars = profile?.processing_signature?.characteristics || {};
+            const width = chars.stereo_width ?? 0.5;
+            const range = chars.dynamic_range ?? 0.5;
+            const cx = size / 2, cy = size / 2;
+            const barWidth = width * 60;
+
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="sector-viz processing-signature-viz">
+                    {/* Stereo width bars */}
+                    <rect x={cx - barWidth / 2} y={cy - 5} width={barWidth} height="10" fill="var(--neural-primary)" opacity="0.5" rx="2" />
+                    {/* Dynamic range arc */}
+                    <path
+                        d={`M ${cx - 25} ${cy + 20} Q ${cx} ${cy + 20 - range * 20} ${cx + 25} ${cy + 20}`}
+                        fill="none"
+                        stroke="var(--neural-secondary)"
+                        strokeWidth="2"
+                        opacity="0.6"
+                    />
+                </svg>
+            );
+        }
+
+        // Visualization router component
+        function SectorVisualization({ moduleKey, profile }) {
+            const vizMap = {
+                'sound_description': SoundDescriptionViz,
+                'genre_fusion': GenreFusionViz,
+                'neural_spectrum': NeuralSpectrumViz,
+                'sound_palette': SoundPaletteViz,
+                'tonal_identity': TonalIdentityViz,
+                'rhythmic_dna': RhythmicDNAViz,
+                'timbre_dna': TimbreDNAViz,
+                'emotional_fingerprint': EmotionalFingerprintViz,
+                'processing_signature': ProcessingSignatureViz,
+                'sonic_architecture': SonicArchitectureViz,
+                'inspirational_triggers': InspirationalTriggersViz
+            };
+
+            const Component = vizMap[moduleKey];
+            if (!Component) return null;
+
+            return <Component profile={profile} size={100} />;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // V5 EXPANDED SECTOR PANEL COMPONENT
+        // Liquid glass wedge that expands from module node
+        // ═══════════════════════════════════════════════════════════════════════════════
+        function ExpandedSectorPanel({ module, profile, cx, cy, isExpanded, sectorPath, onClose }) {
+            if (!isExpanded || !module) return null;
+
+            const moduleData = profile?.[module.key];
+            const startAngle = (module.angle - 16.35 - 90) * Math.PI / 180;
+            const endAngle = (module.angle + 16.35 - 90) * Math.PI / 180;
+            const midAngle = (module.angle - 90) * Math.PI / 180;
+
+            // Particle positions along sector arc
+            const particles = React.useMemo(() =>
+                Array(12).fill(0).map((_, i) => {
+                    const t = i / 11;
+                    const angle = startAngle + (endAngle - startAngle) * t;
+                    const baseRadius = 280 + Math.random() * 60;
+                    return {
+                        x: cx + baseRadius * Math.cos(angle),
+                        y: cy + baseRadius * Math.sin(angle),
+                        delay: i * 0.04,
+                        driftX: (Math.random() - 0.5) * 40,
+                        driftY: (Math.random() - 0.5) * 40,
+                        scale: 0.5 + Math.random() * 0.5
+                    };
+                })
+            , [startAngle, endAngle, cx, cy]);
+
+            // Content position (centered in expanded sector)
+            const contentRadius = 270;
+            const contentX = cx + contentRadius * Math.cos(midAngle);
+            const contentY = cy + contentRadius * Math.sin(midAngle);
+
+            return (
+                <g className="sector-panel expanded">
+                    {/* Glass sector background */}
+                    <path
+                        className="liquid-glass-sector"
+                        d={sectorPath}
+                        fill="url(#sector-glass-gradient)"
+                        stroke="rgba(0,217,255,0.25)"
+                        strokeWidth="1.5"
+                        filter="url(#liquid-glass-filter)"
+                        style={{
+                            transition: 'all 0.5s cubic-bezier(0.25, 0.84, 0.42, 1)'
+                        }}
+                    />
+
+                    {/* Specular highlight overlay */}
+                    <path
+                        className="sector-specular"
+                        d={sectorPath}
+                        fill="url(#sector-specular-gradient)"
+                        opacity="0.25"
+                        style={{ pointerEvents: 'none' }}
+                    />
+
+                    {/* Edge glow */}
+                    <path
+                        className="sector-edge-glow"
+                        d={sectorPath}
+                        fill="none"
+                        stroke="rgba(0,217,255,0.4)"
+                        strokeWidth="2"
+                        filter="url(#edge-bloom-filter)"
+                        style={{ pointerEvents: 'none' }}
+                    />
+
+                    {/* Particle trails */}
+                    {particles.map((p, i) => (
+                        <circle
+                            key={`particle-${i}`}
+                            className="sector-particle"
+                            cx={p.x}
+                            cy={p.y}
+                            r={2 * p.scale}
+                            fill="var(--neural-primary)"
+                            style={{
+                                '--drift-x': `${p.driftX}px`,
+                                '--drift-y': `${p.driftY}px`,
+                                animationDelay: `${p.delay}s`,
+                                opacity: 0.7
+                            }}
+                        />
+                    ))}
+
+                    {/* Module label in sector */}
+                    <text
+                        className="sector-label"
+                        x={cx + 200 * Math.cos(midAngle)}
+                        y={cy + 200 * Math.sin(midAngle)}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="var(--neural-primary)"
+                        fontSize="12"
+                        fontWeight="500"
+                        letterSpacing="0.1em"
+                        style={{
+                            textTransform: 'uppercase',
+                            opacity: 0.9
+                        }}
+                    >
+                        {module.label}
+                    </text>
+
+                    {/* V5 Sector Visualization - Blueprint micro-viz */}
+                    <foreignObject
+                        x={contentX - 60}
+                        y={contentY - 70}
+                        width="120"
+                        height="120"
+                        style={{ overflow: 'visible' }}
+                    >
+                        <div
+                            xmlns="http://www.w3.org/1999/xhtml"
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <SectorVisualization moduleKey={module.key} profile={profile} />
+                        </div>
+                    </foreignObject>
+
+                    {/* Synthesis text below visualization */}
+                    {moduleData?.synthesis && (
+                        <foreignObject
+                            x={contentX - 80}
+                            y={contentY + 40}
+                            width="160"
+                            height="60"
+                            style={{ overflow: 'visible' }}
+                        >
+                            <div
+                                xmlns="http://www.w3.org/1999/xhtml"
+                                style={{
+                                    color: 'rgba(255,255,255,0.6)',
+                                    fontSize: '8px',
+                                    lineHeight: '1.3',
+                                    textAlign: 'center',
+                                    padding: '4px',
+                                    overflow: 'hidden',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: 'vertical'
+                                }}
+                            >
+                                {moduleData.synthesis.slice(0, 120)}
+                                {moduleData.synthesis.length > 120 ? '...' : ''}
+                            </div>
+                        </foreignObject>
+                    )}
+
+                    {/* Close hint */}
+                    <text
+                        className="sector-close-hint"
+                        x={cx + 380 * Math.cos(midAngle)}
+                        y={cy + 380 * Math.sin(midAngle)}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="rgba(255,255,255,0.3)"
+                        fontSize="8"
+                        style={{ cursor: 'pointer' }}
+                        onClick={onClose}
+                    >
+                        TAP TO CLOSE
+                    </text>
+                </g>
+            );
+        }
+
         // Neural Identity Map v3.1 - Unified Radial with Integrated Visualizations
         function NeuralIdentityMap({ profile, audioUrl, messages, input, setInput, sending, sendMessage, handleKeyPress }) {
             const [selectedModule, setSelectedModule] = useState(null);
@@ -7295,6 +8193,17 @@
             const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 769);
             const audioRef = useRef(null);
             const messagesEndRef = useRef(null);
+
+            // V5 Liquid Glass System - State and Refs
+            const [expandedSector, setExpandedSector] = useState(null);
+            const [sectorExpanding, setSectorExpanding] = useState(false);
+            const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
+            const containerRef = useRef(null);
+            const glCanvasRef = useRef(null);
+            const glContextRef = useRef(null);
+            const glProgramRef = useRef(null);
+            const rafRef = useRef(null);
+            const mouseRef = useRef({ x: 450, y: 450 });
 
             // Profile data extraction
             const placement = profile?.neural_spectrum?.placement || 'hybrid';
@@ -7343,14 +8252,34 @@
             const activeViz = getActiveViz();
 
             // Handle module click with ripple effect
+            // V5 Enhanced module click with sector expansion
             const handleModuleClick = (moduleKey, x, y) => {
                 setRippleOrigin({ x, y });
-                setSelectedModule(moduleKey === selectedModule ? null : moduleKey);
-                setTimeout(() => setRippleOrigin(null), 600);
+
+                if (expandedSector === moduleKey) {
+                    // Collapse current sector
+                    setSectorExpanding(true);
+                    setExpandedSector(null);
+                    setSelectedModule(null);
+                } else {
+                    // Expand new sector
+                    setSectorExpanding(true);
+                    setExpandedSector(moduleKey);
+                    setSelectedModule(moduleKey);
+                }
+
+                // Clear animation states
+                setTimeout(() => {
+                    setRippleOrigin(null);
+                    setSectorExpanding(false);
+                }, 500);
             };
 
             const handleBackToCenter = () => {
+                setSectorExpanding(true);
+                setExpandedSector(null);
                 setSelectedModule(null);
+                setTimeout(() => setSectorExpanding(false), 500);
             };
 
             // Responsive detection
@@ -7366,6 +8295,344 @@
                     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
                 }
             }, [messages, showChat]);
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // V5 WEBGL LIQUID GLASS REFRACTION SYSTEM
+            // Cross-browser shader implementation for organic glass distortion
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            // WebGL Shader Sources
+            const vertexShaderSource = `
+                attribute vec2 a_position;
+                attribute vec2 a_texCoord;
+                varying vec2 v_texCoord;
+                void main() {
+                    gl_Position = vec4(a_position, 0.0, 1.0);
+                    v_texCoord = a_texCoord;
+                }
+            `;
+
+            const fragmentShaderSource = `
+                precision mediump float;
+                uniform vec2 u_resolution;
+                uniform vec2 u_mouse;
+                uniform float u_time;
+                uniform float u_refractionStrength;
+                uniform float u_expandedSector;
+                varying vec2 v_texCoord;
+
+                // Pseudo-random noise
+                float noise(vec2 p) {
+                    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+                }
+
+                // Smooth noise interpolation
+                float smoothNoise(vec2 p) {
+                    vec2 i = floor(p);
+                    vec2 f = fract(p);
+                    f = f * f * (3.0 - 2.0 * f);
+                    float a = noise(i);
+                    float b = noise(i + vec2(1.0, 0.0));
+                    float c = noise(i + vec2(0.0, 1.0));
+                    float d = noise(i + vec2(1.0, 1.0));
+                    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+                }
+
+                // Fractal Brownian Motion for organic patterns
+                float fbm(vec2 p) {
+                    float value = 0.0;
+                    float amplitude = 0.5;
+                    for (int i = 0; i < 4; i++) {
+                        value += amplitude * smoothNoise(p);
+                        p *= 2.0;
+                        amplitude *= 0.5;
+                    }
+                    return value;
+                }
+
+                void main() {
+                    vec2 uv = v_texCoord;
+                    vec2 center = vec2(0.5);
+                    float dist = distance(uv, center);
+
+                    // Create organic displacement using FBM
+                    vec2 noiseCoord = uv * 8.0 + u_time * 0.05;
+                    float nx = fbm(noiseCoord) - 0.5;
+                    float ny = fbm(noiseCoord + vec2(5.0, 3.0)) - 0.5;
+
+                    // Radial mask - stronger effect near glass surfaces (ring area)
+                    float ringMask = smoothstep(0.15, 0.35, dist) * (1.0 - smoothstep(0.4, 0.5, dist));
+                    ringMask = max(ringMask, 0.3); // Base level everywhere
+
+                    // Apply refraction displacement
+                    vec2 displacement = vec2(nx, ny) * u_refractionStrength * 0.03 * ringMask;
+
+                    // Mouse-based focal point for interactive refraction
+                    vec2 mouseNorm = u_mouse / u_resolution;
+                    float mouseDist = distance(uv, mouseNorm);
+                    float mouseInfluence = 1.0 + (1.0 - smoothstep(0.0, 0.25, mouseDist)) * 0.4;
+                    displacement *= mouseInfluence;
+
+                    // Sector expansion ripple effect
+                    if (u_expandedSector >= 0.0) {
+                        float sectorAngle = u_expandedSector * 0.0174533; // degrees to radians
+                        vec2 sectorDir = vec2(cos(sectorAngle), sin(sectorAngle));
+                        float sectorDist = abs(dot(normalize(uv - center), sectorDir));
+                        float ripple = sin(dist * 20.0 - u_time * 3.0) * 0.02;
+                        displacement += sectorDir * ripple * (1.0 - sectorDist) * ringMask;
+                    }
+
+                    // Final UV with displacement
+                    vec2 finalUV = uv + displacement;
+
+                    // Chromatic aberration
+                    float aberration = u_refractionStrength * 0.003;
+                    float r = 0.05 + finalUV.x * 0.1; // Simulated color channel
+                    float g = 0.1 + finalUV.y * 0.1;
+                    float b = 0.15 + (1.0 - dist) * 0.2;
+
+                    // Fresnel edge glow
+                    float fresnel = pow(dist, 1.5) * 0.4 * u_refractionStrength;
+                    vec3 fresnelColor = vec3(0.0, 0.85, 1.0) * fresnel;
+
+                    // Base glass tint
+                    vec3 glassTint = vec3(0.04, 0.04, 0.12);
+
+                    // Combine: dark glass with fresnel edge and subtle distortion pattern
+                    vec3 color = glassTint + fresnelColor;
+                    color += vec3(nx * 0.05, ny * 0.05, (nx + ny) * 0.03) * ringMask;
+
+                    // Specular highlight (top-left light source)
+                    vec2 lightDir = normalize(vec2(-0.5, -0.7));
+                    float specular = max(0.0, dot(normalize(uv - center), lightDir));
+                    specular = pow(specular, 8.0) * 0.3 * (1.0 - dist);
+                    color += vec3(1.0) * specular;
+
+                    gl_FragColor = vec4(color, 0.6 * ringMask);
+                }
+            `;
+
+            // Compile shader helper
+            const compileShader = (gl, type, source) => {
+                const shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+                    gl.deleteShader(shader);
+                    return null;
+                }
+                return shader;
+            };
+
+            // Create program helper
+            const createProgram = (gl, vertShader, fragShader) => {
+                const program = gl.createProgram();
+                gl.attachShader(program, vertShader);
+                gl.attachShader(program, fragShader);
+                gl.linkProgram(program);
+                if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                    console.error('Program link error:', gl.getProgramInfoLog(program));
+                    return null;
+                }
+                return program;
+            };
+
+            // WebGL initialization effect
+            useEffect(() => {
+                const canvas = glCanvasRef.current;
+                if (!canvas || isMobile) return;
+
+                const gl = canvas.getContext('webgl', {
+                    alpha: true,
+                    premultipliedAlpha: false,
+                    antialias: true,
+                    preserveDrawingBuffer: false
+                });
+
+                if (!gl) {
+                    console.warn('WebGL not supported, falling back to CSS effects');
+                    return;
+                }
+
+                glContextRef.current = gl;
+
+                // Compile shaders
+                const vertShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+                const fragShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+                if (!vertShader || !fragShader) return;
+
+                const program = createProgram(gl, vertShader, fragShader);
+                if (!program) return;
+                glProgramRef.current = program;
+
+                // Set up geometry (full-screen quad)
+                const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+                const texCoords = new Float32Array([0, 1, 1, 1, 0, 0, 1, 0]);
+
+                const posBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+                const posLoc = gl.getAttribLocation(program, 'a_position');
+                gl.enableVertexAttribArray(posLoc);
+                gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+                const texBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.STATIC_DRAW);
+                const texLoc = gl.getAttribLocation(program, 'a_texCoord');
+                gl.enableVertexAttribArray(texLoc);
+                gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 0, 0);
+
+                // Enable blending for transparency
+                gl.enable(gl.BLEND);
+                gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+                // Get uniform locations
+                const uniforms = {
+                    resolution: gl.getUniformLocation(program, 'u_resolution'),
+                    mouse: gl.getUniformLocation(program, 'u_mouse'),
+                    time: gl.getUniformLocation(program, 'u_time'),
+                    refractionStrength: gl.getUniformLocation(program, 'u_refractionStrength'),
+                    expandedSector: gl.getUniformLocation(program, 'u_expandedSector')
+                };
+
+                // Animation loop with visibility-based pausing
+                let startTime = performance.now();
+                let isVisible = true;
+                let lastFrameTime = 0;
+                const targetFPS = 30; // Throttle to 30fps for performance
+                const frameInterval = 1000 / targetFPS;
+
+                const render = (time) => {
+                    // Skip rendering if tab is not visible
+                    if (!isVisible) {
+                        rafRef.current = requestAnimationFrame(render);
+                        return;
+                    }
+
+                    // Throttle to target FPS
+                    const delta = time - lastFrameTime;
+                    if (delta < frameInterval) {
+                        rafRef.current = requestAnimationFrame(render);
+                        return;
+                    }
+                    lastFrameTime = time - (delta % frameInterval);
+
+                    const elapsed = (time - startTime) * 0.001;
+
+                    gl.viewport(0, 0, canvas.width, canvas.height);
+                    gl.clearColor(0, 0, 0, 0);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+
+                    gl.useProgram(program);
+
+                    // Update uniforms
+                    gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+                    gl.uniform2f(uniforms.mouse, mouseRef.current.x, mouseRef.current.y);
+                    gl.uniform1f(uniforms.time, elapsed);
+                    gl.uniform1f(uniforms.refractionStrength, 0.7);
+
+                    // Expanded sector angle (-1 if none)
+                    const sectorAngle = expandedSector
+                        ? NEURAL_MODULES.find(m => m.key === expandedSector)?.angle ?? -1
+                        : -1;
+                    gl.uniform1f(uniforms.expandedSector, sectorAngle);
+
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+                    rafRef.current = requestAnimationFrame(render);
+                };
+
+                // Visibility change handler for performance
+                const handleVisibilityChange = () => {
+                    isVisible = !document.hidden;
+                };
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+
+                rafRef.current = requestAnimationFrame(render);
+
+                return () => {
+                    if (rafRef.current) {
+                        cancelAnimationFrame(rafRef.current);
+                    }
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    // Cleanup WebGL resources
+                    gl.deleteProgram(program);
+                    gl.deleteShader(vertShader);
+                    gl.deleteShader(fragShader);
+                    gl.deleteBuffer(posBuffer);
+                    gl.deleteBuffer(texBuffer);
+                };
+            }, [isMobile, expandedSector]);
+
+            // Parallax tracking effect
+            useEffect(() => {
+                if (isMobile) return;
+
+                let animationFrame;
+                const handleMouseMove = (e) => {
+                    const container = containerRef.current;
+                    if (!container) return;
+
+                    const rect = container.getBoundingClientRect();
+                    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;  // -1 to 1
+                    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+
+                    // Update WebGL mouse position
+                    mouseRef.current = {
+                        x: (e.clientX - rect.left) / rect.width * 900,
+                        y: (1 - (e.clientY - rect.top) / rect.height) * 900
+                    };
+
+                    // Damped parallax lerp
+                    animationFrame = requestAnimationFrame(() => {
+                        setParallaxOffset(prev => ({
+                            x: prev.x + (x * 15 - prev.x) * 0.08,
+                            y: prev.y + (y * 15 - prev.y) * 0.08
+                        }));
+                    });
+                };
+
+                window.addEventListener('mousemove', handleMouseMove);
+                return () => {
+                    window.removeEventListener('mousemove', handleMouseMove);
+                    if (animationFrame) cancelAnimationFrame(animationFrame);
+                };
+            }, [isMobile]);
+
+            // V5 Sector path generator
+            const generateSectorPath = (cx, cy, innerR, outerR, startAngle, endAngle) => {
+                const start = (startAngle - 90) * Math.PI / 180;
+                const end = (endAngle - 90) * Math.PI / 180;
+
+                const x1 = cx + innerR * Math.cos(start);
+                const y1 = cy + innerR * Math.sin(start);
+                const x2 = cx + outerR * Math.cos(start);
+                const y2 = cy + outerR * Math.sin(start);
+                const x3 = cx + outerR * Math.cos(end);
+                const y3 = cy + outerR * Math.sin(end);
+                const x4 = cx + innerR * Math.cos(end);
+                const y4 = cy + innerR * Math.sin(end);
+
+                const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+
+                return `M${x1},${y1} L${x2},${y2} A${outerR},${outerR} 0 ${largeArc} 1 ${x3},${y3} L${x4},${y4} A${innerR},${innerR} 0 ${largeArc} 0 ${x1},${y1} Z`;
+            };
+
+            // Memoized sector paths for performance
+            const sectorPaths = React.useMemo(() =>
+                NEURAL_MODULES.reduce((acc, mod) => {
+                    const halfAngle = 16.35;
+                    acc[mod.key] = {
+                        collapsed: generateSectorPath(450, 450, 120, 320, mod.angle - halfAngle, mod.angle + halfAngle),
+                        expanded: generateSectorPath(450, 450, 120, 420, mod.angle - halfAngle, mod.angle + halfAngle)
+                    };
+                    return acc;
+                }, {})
+            , []);
+
+            // ═══════════════════════════════════════════════════════════════════════════
 
             // Get module data
             const getModuleData = (key) => {
@@ -7594,9 +8861,41 @@
 
             // Desktop: Full radial layout
             return (
-                <div className={`neural-identity-map ${selectedModule ? 'module-selected' : ''}`}>
-                    {/* Background ambient rings */}
-                    <div className="neural-bg-rings">
+                <div
+                    ref={containerRef}
+                    className={`neural-identity-map ${selectedModule ? 'module-selected' : ''} ${expandedSector ? 'sector-expanded' : ''}`}
+                >
+                    {/* V5 WebGL Liquid Glass Canvas Layer */}
+                    {!isMobile && (
+                        <canvas
+                            ref={glCanvasRef}
+                            className="liquid-glass-canvas"
+                            width={900}
+                            height={900}
+                            style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                width: '100%',
+                                maxWidth: '900px',
+                                height: 'auto',
+                                aspectRatio: '1 / 1',
+                                pointerEvents: 'none',
+                                zIndex: 0,
+                                opacity: 0.7,
+                                mixBlendMode: 'screen'
+                            }}
+                        />
+                    )}
+
+                    {/* Background ambient rings with parallax */}
+                    <div
+                        className="neural-bg-rings parallax-bg"
+                        style={{
+                            transform: `translate(${parallaxOffset.x * 2}px, ${parallaxOffset.y * 2}px)`
+                        }}
+                    >
                         {[1, 2, 3, 4, 5].map(i => (<div key={`ring-${i}`} className="neural-bg-ring" style={{ width: `${200 + i * 150}px`, height: `${200 + i * 150}px`, animationDelay: `${i * 0.5}s` }} />))}
                     </div>
 
@@ -7613,88 +8912,349 @@
                             <linearGradient id="bar-gradient" x1="0%" y1="100%" x2="0%" y2="0%">
                                 <stop offset="0%" stopColor="#0066FF" /><stop offset="100%" stopColor="#00D9FF" />
                             </linearGradient>
+
+                            {/* ═══════════════════════════════════════════════════════════════
+                                V5 LIQUID GLASS SVG FILTERS
+                                Apple VisionOS-inspired refraction and glass effects
+                            ═══════════════════════════════════════════════════════════════ */}
+
+                            {/* Primary Liquid Glass Filter - Organic distortion */}
+                            <filter id="liquid-glass-filter" x="-20%" y="-20%" width="140%" height="140%">
+                                <feTurbulence
+                                    type="fractalNoise"
+                                    baseFrequency="0.008 0.008"
+                                    numOctaves="2"
+                                    seed="92"
+                                    result="noise"
+                                />
+                                <feGaussianBlur in="noise" stdDeviation="2" result="blurred-noise"/>
+                                <feDisplacementMap
+                                    in="SourceGraphic"
+                                    in2="blurred-noise"
+                                    scale="70"
+                                    xChannelSelector="R"
+                                    yChannelSelector="G"
+                                    result="displaced"
+                                />
+                                <feGaussianBlur in="displaced" stdDeviation="0.5" result="softened"/>
+                                <feMerge>
+                                    <feMergeNode in="softened"/>
+                                </feMerge>
+                            </filter>
+
+                            {/* Hover Liquid Glass - Enhanced distortion with animated seed */}
+                            <filter id="liquid-glass-hover" x="-20%" y="-20%" width="140%" height="140%">
+                                <feTurbulence
+                                    type="fractalNoise"
+                                    baseFrequency="0.012 0.012"
+                                    numOctaves="3"
+                                    seed="42"
+                                    result="noise"
+                                >
+                                    <animate
+                                        attributeName="seed"
+                                        values="42;92;142;92;42"
+                                        dur="3s"
+                                        repeatCount="indefinite"
+                                    />
+                                </feTurbulence>
+                                <feGaussianBlur in="noise" stdDeviation="2.5" result="blurred-noise"/>
+                                <feDisplacementMap
+                                    in="SourceGraphic"
+                                    in2="blurred-noise"
+                                    scale="90"
+                                    xChannelSelector="R"
+                                    yChannelSelector="G"
+                                />
+                            </filter>
+
+                            {/* Ripple Feedback Filter - Click/expansion effect */}
+                            <filter id="liquid-glass-ripple" x="-30%" y="-30%" width="160%" height="160%">
+                                <feTurbulence
+                                    type="fractalNoise"
+                                    baseFrequency="0.015 0.015"
+                                    numOctaves="4"
+                                    seed="7"
+                                    result="noise"
+                                />
+                                <feGaussianBlur in="noise" stdDeviation="3" result="blurred-noise"/>
+                                <feDisplacementMap
+                                    in="SourceGraphic"
+                                    in2="blurred-noise"
+                                    scale="120"
+                                    xChannelSelector="R"
+                                    yChannelSelector="G"
+                                />
+                            </filter>
+
+                            {/* Edge Bloom Filter - Soft glow around glass edges */}
+                            <filter id="edge-bloom-filter" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur in="SourceAlpha" stdDeviation="8" result="blur"/>
+                                <feFlood floodColor="rgba(0,217,255,0.3)" result="color"/>
+                                <feComposite in="color" in2="blur" operator="in" result="glow"/>
+                                <feMerge>
+                                    <feMergeNode in="glow"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+
+                            {/* Glass Inner Highlight Filter */}
+                            <filter id="glass-inner-light" x="-10%" y="-10%" width="120%" height="120%">
+                                <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+                                <feSpecularLighting
+                                    in="blur"
+                                    surfaceScale="5"
+                                    specularConstant="0.75"
+                                    specularExponent="20"
+                                    result="spec"
+                                >
+                                    <fePointLight x="450" y="200" z="400"/>
+                                </feSpecularLighting>
+                                <feComposite in="SourceGraphic" in2="spec" operator="arithmetic" k1="0" k2="1" k3="0.3" k4="0"/>
+                            </filter>
+
+                            {/* ═══════════════════════════════════════════════════════════════
+                                V5 GRADIENT DEFINITIONS
+                            ═══════════════════════════════════════════════════════════════ */}
+
+                            {/* Sector Specular Gradient - Top-down highlight */}
+                            <linearGradient id="sector-specular-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="rgba(255,255,255,0.4)"/>
+                                <stop offset="30%" stopColor="rgba(255,255,255,0.1)"/>
+                                <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
+                            </linearGradient>
+
+                            {/* Sector Glass Fill Gradient - Depth effect */}
+                            <radialGradient id="sector-glass-gradient" cx="50%" cy="30%" r="70%">
+                                <stop offset="0%" stopColor="rgba(0,217,255,0.15)"/>
+                                <stop offset="50%" stopColor="rgba(10,10,31,0.3)"/>
+                                <stop offset="100%" stopColor="rgba(10,10,31,0.4)"/>
+                            </radialGradient>
+
+                            {/* Hub Glass Gradient - Center hub depth */}
+                            <radialGradient id="hub-glass-gradient" cx="50%" cy="40%" r="60%">
+                                <stop offset="0%" stopColor="rgba(255,255,255,0.15)"/>
+                                <stop offset="40%" stopColor="rgba(0,217,255,0.08)"/>
+                                <stop offset="100%" stopColor="rgba(10,10,31,0.35)"/>
+                            </radialGradient>
+
+                            {/* Node Glass Gradient - Module nodes */}
+                            <radialGradient id="node-glass-gradient" cx="50%" cy="30%" r="70%">
+                                <stop offset="0%" stopColor="rgba(255,255,255,0.2)"/>
+                                <stop offset="50%" stopColor="rgba(0,217,255,0.1)"/>
+                                <stop offset="100%" stopColor="rgba(10,10,31,0.3)"/>
+                            </radialGradient>
+
+                            {/* Chromatic Aberration Mask */}
+                            <mask id="chromatic-mask">
+                                <rect x="0" y="0" width="900" height="900" fill="white"/>
+                                <circle cx="450" cy="450" r="400" fill="black" opacity="0.3"/>
+                            </mask>
                         </defs>
 
-                        {/* === INTEGRATED VISUALIZATIONS (Background layers) === */}
+                        {/* === V5 PARALLAX LAYER: BACKGROUND (2x depth) === */}
+                        <g
+                            className="parallax-bg visualization-layer"
+                            style={{
+                                transform: `translate(${parallaxOffset.x * 2}px, ${parallaxOffset.y * 2}px)`,
+                                transition: 'transform 0.1s ease-out'
+                            }}
+                        >
+                            {/* Neural Spectrum Arc */}
+                            <g className={`neural-spectrum-arc ${activeViz === 'spectrum' ? 'active' : ''}`}>
+                                <path className="spectrum-arc-path" d={generateSpectrumArc()} />
+                            </g>
 
-                        {/* Neural Spectrum Arc */}
-                        <g className={`neural-spectrum-arc ${activeViz === 'spectrum' ? 'active' : ''}`}>
-                            <path className="spectrum-arc-path" d={generateSpectrumArc()} />
-                        </g>
+                            {/* Floating Constellation */}
+                            <g className={`floating-constellation ${activeViz === 'constellation' ? 'active' : ''}`}>
+                                {constellationNodes.map((node, i) => (<circle key={`const-${i}`} className="constellation-node" cx={node.x} cy={node.y} r={node.size} />))}
+                                {constellationNodes.slice(0, -1).map((node, i) => (<line key={`const-line-${i}`} className="constellation-line" x1={node.x} y1={node.y} x2={constellationNodes[i + 1].x} y2={constellationNodes[i + 1].y} />))}
+                            </g>
 
-                        {/* Floating Constellation */}
-                        <g className={`floating-constellation ${activeViz === 'constellation' ? 'active' : ''}`}>
-                            {constellationNodes.map((node, i) => (<circle key={`const-${i}`} className="constellation-node" cx={node.x} cy={node.y} r={node.size} />))}
-                            {constellationNodes.slice(0, -1).map((node, i) => (<line key={`const-line-${i}`} className="constellation-line" x1={node.x} y1={node.y} x2={constellationNodes[i + 1].x} y2={constellationNodes[i + 1].y} />))}
-                        </g>
+                            {/* Emotional Compass */}
+                            <g className={`emotional-compass ${activeViz === 'compass' ? 'active' : ''}`}>
+                                {compassSegments.map((seg, i) => (<g key={`compass-${i}`}><path className="compass-segment" d={seg.path} /><text className="compass-label" x={seg.labelX} y={seg.labelY} textAnchor="middle">{seg.label}</text></g>))}
+                            </g>
 
-                        {/* Emotional Compass */}
-                        <g className={`emotional-compass ${activeViz === 'compass' ? 'active' : ''}`}>
-                            {compassSegments.map((seg, i) => (<g key={`compass-${i}`}><path className="compass-segment" d={seg.path} /><text className="compass-label" x={seg.labelX} y={seg.labelY} textAnchor="middle">{seg.label}</text></g>))}
-                        </g>
+                            {/* Architecture Bars */}
+                            <g className={`architecture-bar-ring ${activeViz === 'bars' ? 'active' : ''}`}>
+                                {archBars.map((bar, i) => (<rect key={`bar-${i}`} className="arch-bar" x={bar.x - 3} y={bar.y - bar.height} width="6" height={bar.height} style={{ '--bar-index': i }} transform={`rotate(${bar.angle}, ${bar.x}, ${bar.y})`} />))}
+                            </g>
 
-                        {/* Architecture Bars */}
-                        <g className={`architecture-bar-ring ${activeViz === 'bars' ? 'active' : ''}`}>
-                            {archBars.map((bar, i) => (<rect key={`bar-${i}`} className="arch-bar" x={bar.x - 3} y={bar.y - bar.height} width="6" height={bar.height} style={{ '--bar-index': i }} transform={`rotate(${bar.angle}, ${bar.x}, ${bar.y})`} />))}
-                        </g>
+                            {/* Genre Segments */}
+                            <g className={`genre-segments ${activeViz === 'genres' ? 'active' : ''}`}>
+                                {genreSegments.map((seg, i) => (<path key={`genre-${i}`} className="genre-segment" d={seg.path} stroke={seg.color} />))}
+                            </g>
 
-                        {/* Genre Segments */}
-                        <g className={`genre-segments ${activeViz === 'genres' ? 'active' : ''}`}>
-                            {genreSegments.map((seg, i) => (<path key={`genre-${i}`} className="genre-segment" d={seg.path} stroke={seg.color} />))}
-                        </g>
-
-                        {/* Rhythmic Pulse Ring */}
-                        <g className={`rhythmic-pulse-ring ${activeViz === 'pulse' ? 'active' : ''}`} style={{ '--bpm-duration': `${bpmDuration}s` }}>
-                            <circle cx={cx} cy={cy} r={100} fill="none" stroke="var(--neural-primary)" strokeWidth="1" opacity="0.2" strokeDasharray="2 6" />
-                            <g className="pulse-dots-group">
-                                {[0, 90, 180, 270].map((angle, i) => {
-                                    const rad = (angle - 90) * Math.PI / 180;
-                                    return <circle key={`pulse-${i}`} className="pulse-dot" cx={cx + 100 * Math.cos(rad)} cy={cy + 100 * Math.sin(rad)} r="4" />;
-                                })}
+                            {/* Rhythmic Pulse Ring */}
+                            <g className={`rhythmic-pulse-ring ${activeViz === 'pulse' ? 'active' : ''}`} style={{ '--bpm-duration': `${bpmDuration}s` }}>
+                                <circle cx={cx} cy={cy} r={100} fill="none" stroke="var(--neural-primary)" strokeWidth="1" opacity="0.2" strokeDasharray="2 6" />
+                                <g className="pulse-dots-group">
+                                    {[0, 90, 180, 270].map((angle, i) => {
+                                        const rad = (angle - 90) * Math.PI / 180;
+                                        return <circle key={`pulse-${i}`} className="pulse-dot" cx={cx + 100 * Math.cos(rad)} cy={cy + 100 * Math.sin(rad)} r="4" />;
+                                    })}
+                                </g>
                             </g>
                         </g>
 
                         {/* === CORE RADIAL STRUCTURE === */}
 
                         {/* Connection lines from center to each node */}
-                        {NEURAL_MODULES.map((mod) => {
-                            const x = cx + radius * Math.cos((mod.angle - 90) * Math.PI / 180);
-                            const y = cy + radius * Math.sin((mod.angle - 90) * Math.PI / 180);
-                            const isActive = selectedModule === mod.key;
-                            return <line key={`conn-${mod.key}`} className={`neural-connection ${isActive ? 'active' : ''}`} x1={cx} y1={cy} x2={x} y2={y} />;
-                        })}
+                        <g
+                            className="parallax-mid connection-layer"
+                            style={{
+                                transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
+                                transition: 'transform 0.1s ease-out'
+                            }}
+                        >
+                            {NEURAL_MODULES.map((mod) => {
+                                const x = cx + radius * Math.cos((mod.angle - 90) * Math.PI / 180);
+                                const y = cy + radius * Math.sin((mod.angle - 90) * Math.PI / 180);
+                                const isActive = selectedModule === mod.key;
+                                const isDimmed = expandedSector && expandedSector !== mod.key;
+                                return (
+                                    <line
+                                        key={`conn-${mod.key}`}
+                                        className={`neural-connection ${isActive ? 'active' : ''}`}
+                                        x1={cx}
+                                        y1={cy}
+                                        x2={x}
+                                        y2={y}
+                                        style={{
+                                            opacity: isDimmed ? 0.1 : undefined,
+                                            transition: 'opacity 0.4s ease'
+                                        }}
+                                    />
+                                );
+                            })}
 
-                        {/* Ring connecting all nodes */}
-                        <circle cx={cx} cy={cy} r={radius} fill="none" stroke={baseColor} strokeWidth="1" opacity="0.1" strokeDasharray="4 8" />
+                            {/* Ring connecting all nodes */}
+                            <circle
+                                cx={cx}
+                                cy={cy}
+                                r={radius}
+                                fill="none"
+                                stroke={baseColor}
+                                strokeWidth="1"
+                                opacity={expandedSector ? 0.05 : 0.1}
+                                strokeDasharray="4 8"
+                                style={{ transition: 'opacity 0.4s ease' }}
+                            />
+                        </g>
 
-                        {/* Module nodes with glyphs */}
-                        {NEURAL_MODULES.map((mod) => {
-                            const x = cx + radius * Math.cos((mod.angle - 90) * Math.PI / 180);
-                            const y = cy + radius * Math.sin((mod.angle - 90) * Math.PI / 180);
-                            const hasData = !!profile?.[mod.key]?.synthesis;
-                            const isSelected = selectedModule === mod.key;
-                            const isFaded = selectedModule && !isSelected;
-                            const nodeRadius = isSelected ? 32 : 26;
+                        {/* === V5 PARALLAX LAYER: FOREGROUND (0.5x depth) === */}
+                        <g
+                            className="parallax-fg sector-layer"
+                            style={{
+                                transform: `translate(${parallaxOffset.x * 0.5}px, ${parallaxOffset.y * 0.5}px)`,
+                                transition: 'transform 0.1s ease-out'
+                            }}
+                        >
+                            {/* V5 Expanded Sector Panels */}
+                            {expandedSector && (
+                                <ExpandedSectorPanel
+                                    module={NEURAL_MODULES.find(m => m.key === expandedSector)}
+                                    profile={profile}
+                                    cx={cx}
+                                    cy={cy}
+                                    isExpanded={true}
+                                    sectorPath={sectorPaths[expandedSector]?.expanded}
+                                    onClose={handleBackToCenter}
+                                />
+                            )}
+                        </g>
 
-                            return (
-                                <g key={mod.key} className={`neural-node-group ${isSelected ? 'selected' : ''} ${isFaded ? 'faded' : ''}`} onClick={() => handleModuleClick(mod.key, x, y)} style={{ cursor: 'pointer' }}>
-                                    <circle className="neural-node-circle" cx={x} cy={y} r={nodeRadius} fill={hasData ? baseColor : 'rgba(255,255,255,0.1)'} stroke={isSelected ? '#fff' : baseColor} strokeWidth={isSelected ? 2 : 1} />
-                                    <foreignObject x={x - 14} y={y - 14} width="28" height="28" className="neural-node-glyph">
-                                        <div xmlns="http://www.w3.org/1999/xhtml" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                                            <NeuralGlyph type={mod.glyph} size={24} />
-                                        </div>
-                                    </foreignObject>
-                                    <text className="neural-node-label" x={x} y={y + nodeRadius + 14}>{mod.label}</text>
-                                </g>
-                            );
-                        })}
+                        {/* Module nodes with V5 liquid glass styling */}
+                        <g
+                            className="parallax-mid"
+                            style={{
+                                transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`
+                            }}
+                        >
+                            {NEURAL_MODULES.map((mod) => {
+                                const x = cx + radius * Math.cos((mod.angle - 90) * Math.PI / 180);
+                                const y = cy + radius * Math.sin((mod.angle - 90) * Math.PI / 180);
+                                const hasData = !!profile?.[mod.key]?.synthesis;
+                                const isSelected = selectedModule === mod.key;
+                                const isExpanded = expandedSector === mod.key;
+                                const isDimmed = expandedSector && !isExpanded;
+                                const nodeRadius = isSelected ? 32 : 26;
+
+                                return (
+                                    <g
+                                        key={mod.key}
+                                        className={`neural-node-group liquid-glass-node ${isSelected ? 'selected' : ''} ${isDimmed ? 'dimmed' : ''} ${isExpanded ? 'expanded' : ''}`}
+                                        onClick={() => handleModuleClick(mod.key, x, y)}
+                                        style={{
+                                            cursor: 'pointer',
+                                            opacity: isDimmed ? 0.15 : 1,
+                                            transition: 'opacity 0.4s var(--spring-curve, ease-out)'
+                                        }}
+                                    >
+                                        {/* Glass surface background */}
+                                        <circle
+                                            className="node-glass-surface"
+                                            cx={x}
+                                            cy={y}
+                                            r={nodeRadius + 4}
+                                            fill="url(#node-glass-gradient)"
+                                            stroke="var(--liquid-glass-border, rgba(255,255,255,0.12))"
+                                            strokeWidth="1"
+                                            filter={isExpanded ? 'url(#liquid-glass-hover)' : 'url(#liquid-glass-filter)'}
+                                            opacity={hasData ? 0.8 : 0.4}
+                                        />
+
+                                        {/* Main node circle */}
+                                        <circle
+                                            className="neural-node-circle"
+                                            cx={x}
+                                            cy={y}
+                                            r={nodeRadius}
+                                            fill={hasData ? baseColor : 'rgba(255,255,255,0.1)'}
+                                            stroke={isSelected ? '#fff' : baseColor}
+                                            strokeWidth={isSelected ? 2 : 1}
+                                            filter={isSelected ? 'url(#edge-bloom-filter)' : 'none'}
+                                        />
+
+                                        {/* Glyph */}
+                                        <foreignObject x={x - 14} y={y - 14} width="28" height="28" className="neural-node-glyph">
+                                            <div xmlns="http://www.w3.org/1999/xhtml" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                                                <NeuralGlyph type={mod.glyph} size={24} />
+                                            </div>
+                                        </foreignObject>
+
+                                        {/* Label */}
+                                        <text
+                                            className="neural-node-label"
+                                            x={x}
+                                            y={y + nodeRadius + 14}
+                                            style={{
+                                                opacity: isDimmed ? 0.3 : 1,
+                                                transition: 'opacity 0.4s ease'
+                                            }}
+                                        >
+                                            {mod.label}
+                                        </text>
+                                    </g>
+                                );
+                            })}
+                        </g>
 
                         {/* Ripple effect on click */}
-                        {rippleOrigin && (<circle className="ripple-effect" cx={rippleOrigin.x} cy={rippleOrigin.y} r="30" />)}
+                        {rippleOrigin && (
+                            <circle
+                                className="ripple-effect"
+                                cx={rippleOrigin.x}
+                                cy={rippleOrigin.y}
+                                r="30"
+                                filter="url(#liquid-glass-ripple)"
+                            />
+                        )}
                     </svg>
 
-                    {/* Center hub (HTML overlay) */}
-                    <div className={`neural-center-hub ${selectedModule ? 'module-active' : ''}`}>
+                    {/* Center hub (HTML overlay) with V5 liquid glass */}
+                    <div className={`neural-center-hub liquid-glass-hub ${selectedModule ? 'module-active' : ''} ${expandedSector ? 'sector-expanded' : ''}`}>
                         {selectedModule && (<button className="neural-back-btn" onClick={handleBackToCenter}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 12H5M12 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>Back to Profile</button>)}
                         <div className="neural-emblem"><NeuralEmblem profile={profile} placement={placement} pulseDuration={pulseDuration} rotateDuration={rotateDuration} /></div>
                         <div className="neural-center-identity"><h2 className="neural-center-title">{centerContent.title}</h2><div className="neural-center-creator">Neural Music Profile</div></div>
