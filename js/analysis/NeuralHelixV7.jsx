@@ -144,7 +144,7 @@ function HelixCanvasV7({
 // DETAIL PANEL V7 - Floating Glass Card
 // ═══════════════════════════════════════════════════════════════
 
-function DetailPanelV7({ visible, moduleKey, profile, audioUrl, onClose }) {
+function DetailPanelV7({ visible, moduleKey, anchorX, anchorY, isMobile = false, profile, audioUrl, onClose }) {
     const moduleInfo = HELIX_MODULES_V7.find(m => m.key === moduleKey);
     const data = profile?.[moduleKey];
 
@@ -254,8 +254,21 @@ function DetailPanelV7({ visible, moduleKey, profile, audioUrl, onClose }) {
         return { label, title, description };
     }, [displayedKey, displayedData, displayedModuleInfo]);
 
+    // Anchored positioning style for desktop (mobile uses CSS bottom sheet)
+    const panelStyle = isMobile ? {} : {
+        left: anchorX,
+        top: anchorY,
+        transform: visible
+            ? 'translate(-50%, 16px) scale(1)'
+            : 'translate(-50%, -8px) scale(0.95)',
+        transformOrigin: 'top center'
+    };
+
     return (
-        <div className={`detail-panel-v7 ${visible ? 'visible' : ''}`}>
+        <div
+            className={`detail-panel-v7 ${visible ? 'visible' : ''}`}
+            style={panelStyle}
+        >
             <div className="panel-glass-card-v7">
                 {/* Close button */}
                 <button
@@ -324,7 +337,10 @@ function MobileLayoutV7({
 }) {
     const [panelVisible, setPanelVisible] = useState(false);
 
-    const handleNodeClick = useCallback((moduleKey) => {
+    // Mobile uses old string-only selection (no position needed for bottom sheet)
+    const handleNodeClick = useCallback((clickData) => {
+        // clickData is now { key, screenX, screenY, index } but mobile only needs key
+        const moduleKey = typeof clickData === 'string' ? clickData : clickData.key;
         if (selectedModule === moduleKey) {
             setPanelVisible(false);
             setTimeout(() => setSelectedModule(null), 400);
@@ -375,6 +391,7 @@ function MobileLayoutV7({
             <DetailPanelV7
                 visible={panelVisible}
                 moduleKey={selectedModule}
+                isMobile={true}
                 profile={profile}
                 audioUrl={audioUrl}
                 onClose={handleClosePanel}
@@ -389,13 +406,38 @@ function MobileLayoutV7({
 
 function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sending, sendMessage, handleKeyPress }) {
     // State
-    const [selectedModule, setSelectedModule] = useState(null);
-    const [hoveredNode, setHoveredNode] = useState(null);  // Now stores { key, label, screenX, screenY }
+    const [selectedNode, setSelectedNode] = useState(null);  // { key, screenX, screenY, index } or null
+    const [hoveredNode, setHoveredNode] = useState(null);    // { key, label, screenX, screenY } or null
     const [panelVisible, setPanelVisible] = useState(false);
     const [renderMode, setRenderMode] = useState('detecting');
     const [isMobile, setIsMobile] = useState(
         typeof window !== 'undefined' && window.innerWidth < 769
     );
+
+    // Compute anchor position with bounds checking
+    const anchorPosition = useMemo(() => {
+        if (!selectedNode) {
+            return {
+                x: typeof window !== 'undefined' ? window.innerWidth / 2 : 500,
+                y: typeof window !== 'undefined' ? window.innerHeight * 0.6 : 400
+            };
+        }
+
+        const padding = 20;
+        const panelWidth = 500;
+        const panelHeight = 400;
+
+        let x = selectedNode.screenX;
+        let y = selectedNode.screenY;
+
+        // Keep panel within viewport
+        if (typeof window !== 'undefined') {
+            x = Math.max(padding + panelWidth / 2, Math.min(x, window.innerWidth - padding - panelWidth / 2));
+            y = Math.min(y, window.innerHeight - panelHeight - padding);
+        }
+
+        return { x, y };
+    }, [selectedNode]);
 
     // Detect renderer on mount
     useEffect(() => {
@@ -420,16 +462,18 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
         return () => window.removeEventListener('resize', handleResize);
     }, [isMobile]);
 
-    // Node click handler
-    const handleNodeClick = useCallback((moduleKey) => {
-        if (selectedModule === moduleKey) {
+    // Node click handler - now receives { key, screenX, screenY, index }
+    const handleNodeClick = useCallback((clickData) => {
+        if (selectedNode?.key === clickData.key) {
+            // Deselect
             setPanelVisible(false);
-            setTimeout(() => setSelectedModule(null), 400);
+            setTimeout(() => setSelectedNode(null), 400);
         } else {
-            setSelectedModule(moduleKey);
+            // Select new node with position
+            setSelectedNode(clickData);
             setPanelVisible(true);
         }
-    }, [selectedModule]);
+    }, [selectedNode]);
 
     // Node hover handler - now receives full hover data with position
     const handleNodeHover = useCallback((hoverData) => {
@@ -439,7 +483,7 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
     // Close panel handler
     const handleClosePanel = useCallback(() => {
         setPanelVisible(false);
-        setTimeout(() => setSelectedModule(null), 400);
+        setTimeout(() => setSelectedNode(null), 400);
     }, []);
 
     // Loading state
@@ -476,7 +520,7 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                     typeof NeuralHelix !== 'undefined' && (
                         <NeuralHelix
                             modules={HELIX_MODULES_V7}
-                            selectedModule={selectedModule}
+                            selectedModule={selectedNode?.key}
                             onNodeClick={handleNodeClick}
                             parallaxOffset={{ x: 0, y: 0 }}
                         />
@@ -484,15 +528,54 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                 ) : (
                     <HelixCanvasV7
                         renderMode={renderMode}
-                        selectedModule={selectedModule}
+                        selectedModule={selectedNode?.key}
                         hoveredModule={hoveredNode?.key}
                         onNodeClick={handleNodeClick}
                         onNodeHover={handleNodeHover}
                     />
                 )}
 
+                {/* Anchor connector line (node → card) */}
+                {selectedNode && panelVisible && (
+                    <svg
+                        className="node-anchor-connector"
+                        style={{
+                            position: 'fixed',
+                            left: 0,
+                            top: 0,
+                            width: '100%',
+                            height: '100%',
+                            pointerEvents: 'none',
+                            zIndex: 99
+                        }}
+                    >
+                        <defs>
+                            <linearGradient id="anchorGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="rgba(0, 217, 255, 0.6)" />
+                                <stop offset="100%" stopColor="rgba(0, 217, 255, 0)" />
+                            </linearGradient>
+                            <filter id="anchorGlow">
+                                <feGaussianBlur stdDeviation="2" result="blur" />
+                                <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <line
+                            x1={selectedNode.screenX}
+                            y1={selectedNode.screenY}
+                            x2={anchorPosition.x}
+                            y2={anchorPosition.y}
+                            stroke="url(#anchorGradient)"
+                            strokeWidth="2"
+                            filter="url(#anchorGlow)"
+                        />
+                    </svg>
+                )}
+
                 {/* Positioned hover tooltip near node */}
-                {hoveredNode && !selectedModule && (
+                {hoveredNode && !selectedNode && (
                     <div
                         className="helix-hover-tooltip-v7"
                         style={{
@@ -506,17 +589,20 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                 )}
 
                 {/* Instructions (when nothing selected) */}
-                {!selectedModule && (
+                {!selectedNode && (
                     <div className="helix-instructions-v7">
                         <p>Click on a node to explore</p>
                     </div>
                 )}
             </div>
 
-            {/* Floating panel OVER helix */}
+            {/* Floating panel OVER helix - anchored to node */}
             <DetailPanelV7
                 visible={panelVisible}
-                moduleKey={selectedModule}
+                moduleKey={selectedNode?.key}
+                anchorX={anchorPosition.x}
+                anchorY={anchorPosition.y}
+                isMobile={false}
                 profile={profile}
                 audioUrl={audioUrl}
                 onClose={handleClosePanel}

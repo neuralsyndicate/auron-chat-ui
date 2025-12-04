@@ -102,7 +102,11 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    background: var(--v7-bg);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 10% 80%, rgba(0, 80, 160, 0.35) 0%, transparent 55%),
+        radial-gradient(circle at 90% 60%, rgba(0, 40, 120, 0.28) 0%, transparent 55%),
+        #020611;
     overflow: hidden;
 }
 
@@ -208,19 +212,20 @@
 
 .detail-panel-v7 {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) translateY(15px) scale(0.95);
+    /* left/top set via inline style for node-anchored positioning */
     opacity: 0;
     pointer-events: none;
     z-index: 100;
     width: 90%;
     max-width: 500px;
-    transition: all 0.5s var(--v7-transition);
+    transition:
+        opacity 220ms ease,
+        transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        left 300ms ease-out,
+        top 300ms ease-out;
 }
 
 .detail-panel-v7.visible {
-    transform: translate(-50%, -50%) translateY(0) scale(1);
     opacity: 1;
     pointer-events: auto;
 }
@@ -352,6 +357,20 @@
         opacity: 0;
         transform: translateY(-8px);
     }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANCHOR CONNECTOR (node → card)
+═══════════════════════════════════════════════════════════════ */
+
+.node-anchor-connector {
+    opacity: 0;
+    animation: connector-fade-in 0.3s ease-out forwards;
+}
+
+@keyframes connector-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 /* ═══════════════════════════════════════════════════════════════

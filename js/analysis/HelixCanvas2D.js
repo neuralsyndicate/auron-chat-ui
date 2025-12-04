@@ -9,16 +9,16 @@
 // ═══════════════════════════════════════════════════════════════
 
 const CANVAS2D_CONFIG = {
-    horizontalStretch: 1.3,
-    amplitude: 0.28,
-    frequency: 4.5,
+    horizontalStretch: 1.8,     // +38% wider for fullscreen
+    amplitude: 0.38,            // +36% taller oscillations
+    frequency: 3.0,             // Fewer waves for smoother DNA curves
     segments: 100,
     nodeCount: 11,
     // Diagonal offset (top-left to bottom-right flow)
-    diagonalOffsetX: -0.3,
-    diagonalOffsetY: 0.2,
-    diagonalSlopeX: 0.6,
-    diagonalSlopeY: -0.4
+    diagonalOffsetX: -0.4,      // Shift left more
+    diagonalOffsetY: 0.25,      // Slightly higher start
+    diagonalSlopeX: 0.8,        // Wider diagonal spread
+    diagonalSlopeY: -0.5        // Steeper diagonal
 };
 
 const CANVAS2D_NODE_KEYS = [
@@ -90,15 +90,16 @@ function strandB2D(t) {
 // PARTICLE GENERATOR
 // ═══════════════════════════════════════════════════════════════
 
-function generateParticles(count = 25) {
+function generateParticles(count = 7) {
+    // Subtle neural dust clustered around helix (not fullscreen)
     const particles = [];
     for (let i = 0; i < count; i++) {
         particles.push({
-            x: (Math.random() - 0.5) * 2.5,
-            y: (Math.random() - 0.5) * 2.0,
-            z: (Math.random() - 0.5) * 0.8,
-            size: 1.5 + Math.random() * 3.0,
-            alpha: 0.08 + Math.random() * 0.12,
+            x: (Math.random() - 0.5) * 1.2,   // Tighter X range (clustered)
+            y: (Math.random() - 0.5) * 0.6,   // Tighter Y range
+            z: (Math.random() - 0.5) * 0.3,   // Tighter Z range
+            size: 2.0,                         // Uniform size (no variation)
+            alpha: 0.03 + Math.random() * 0.03, // Very subtle (0.03-0.06)
             phase: Math.random() * Math.PI * 2
         });
     }
@@ -118,8 +119,8 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         return null;
     }
 
-    // Generate particles
-    const particles = generateParticles(25);
+    // Generate particles (subtle neural dust)
+    const particles = generateParticles(7);
 
     // Calculate node positions ON the helix curve (diagonal)
     const nodePositions = [];
@@ -273,18 +274,20 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
 
     function renderParticles() {
         particles.forEach(p => {
-            // Apply half drift to particles
-            const px = p.x + animation.xDrift * 0.5;
-            const py = p.y + animation.yDrift * 0.5;
+            // Very slow drift (50% slower than before)
+            const driftX = Math.sin(animation.time * 0.15 + p.phase) * 0.015;
+            const driftY = Math.sin(animation.time * 0.1 + p.phase * 1.5) * 0.015;
+            const px = p.x + animation.xDrift * 0.5 + driftX;
+            const py = p.y + animation.yDrift * 0.5 + driftY;
             const proj = project(px, py, p.z);
 
-            // Twinkle effect
-            const twinkle = 0.5 + 0.5 * Math.sin(animation.time * 2.0 + p.phase);
+            // Subtle twinkle effect (slower)
+            const twinkle = 0.8 + 0.2 * Math.sin(animation.time * 1.0 + p.phase * 3.0);
             const alpha = p.alpha * twinkle;
 
-            // Draw particle
+            // Draw smaller particle
             ctx.beginPath();
-            ctx.arc(proj.sx, proj.sy, p.size * proj.scale * 2, 0, Math.PI * 2);
+            ctx.arc(proj.sx, proj.sy, p.size * proj.scale * 1.5, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(0, 217, 255, ${alpha})`;
             ctx.fill();
         });
@@ -528,7 +531,16 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
     function handleClick(e) {
         const hit = hitTest(e.clientX, e.clientY);
         if (hit && onClick) {
-            onClick(nodePositions[hit.index].key);
+            // Pass full click data including pixel coordinates for anchored panel
+            const node = nodePositions[hit.index];
+            const proj = project(node.x, node.y, node.z);
+            const rect = canvas.getBoundingClientRect();
+            onClick({
+                key: node.key,
+                screenX: rect.left + proj.sx,
+                screenY: rect.top + proj.sy,
+                index: hit.index
+            });
         }
     }
 

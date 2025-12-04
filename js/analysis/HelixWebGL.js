@@ -9,16 +9,16 @@
 // ═══════════════════════════════════════════════════════════════
 
 const HELIX_CONFIG = {
-    horizontalStretch: 1.3,
-    amplitude: 0.28,
-    frequency: 4.5,
+    horizontalStretch: 1.8,     // +38% wider for fullscreen
+    amplitude: 0.38,            // +36% taller oscillations
+    frequency: 3.0,             // Fewer waves for smoother DNA curves
     segments: 200,
     nodeCount: 11,
     // Diagonal offset (top-left to bottom-right flow)
-    diagonalOffsetX: -0.3,
-    diagonalOffsetY: 0.2,
-    diagonalSlopeX: 0.6,
-    diagonalSlopeY: -0.4
+    diagonalOffsetX: -0.4,      // Shift left more
+    diagonalOffsetY: 0.25,      // Slightly higher start
+    diagonalSlopeX: 0.8,        // Wider diagonal spread
+    diagonalSlopeY: -0.5        // Steeper diagonal
 };
 
 const NODE_KEYS = [
@@ -350,14 +350,14 @@ void main() {
     pos.x += u_xDrift * 0.5;
     pos.y += u_yDrift * 0.5;
 
-    // Subtle particle drift
-    pos.x += sin(u_time * 0.3 + a_phase) * 0.02;
-    pos.y += sin(u_time * 0.2 + a_phase * 1.5) * 0.02;
+    // Very slow particle drift (50% slower)
+    pos.x += sin(u_time * 0.15 + a_phase) * 0.015;
+    pos.y += sin(u_time * 0.1 + a_phase * 1.5) * 0.015;
 
     float perspective = 1.0 / (1.0 + pos.z * 0.3);
     float aspect = u_resolution.x / u_resolution.y;
 
-    gl_PointSize = a_size * perspective * min(u_resolution.x, u_resolution.y) * 0.008;
+    gl_PointSize = a_size * perspective * min(u_resolution.x, u_resolution.y) * 0.006;
     gl_Position = vec4(
         pos.x * perspective / aspect,
         pos.y * perspective,
@@ -365,8 +365,8 @@ void main() {
         1.0
     );
 
-    // Twinkle effect
-    float twinkle = 0.7 + sin(u_time * 2.0 + a_phase * 3.0) * 0.3;
+    // Subtle twinkle effect (slower)
+    float twinkle = 0.8 + sin(u_time * 1.0 + a_phase * 3.0) * 0.2;
     v_alpha = a_alpha * twinkle;
 }
 `;
@@ -440,15 +440,16 @@ function calculateNodePositions() {
     return nodes;
 }
 
-function generateParticles(count = 25) {
+function generateParticles(count = 7) {
+    // Subtle neural dust clustered around helix (not fullscreen)
     const particles = [];
     for (let i = 0; i < count; i++) {
         particles.push({
-            x: (Math.random() - 0.5) * 2.5,
-            y: (Math.random() - 0.5) * 2.0,
-            z: (Math.random() - 0.5) * 0.8,
-            size: 1.5 + Math.random() * 3.0,
-            alpha: 0.08 + Math.random() * 0.12,
+            x: (Math.random() - 0.5) * 1.2,   // Tighter X range (clustered)
+            y: (Math.random() - 0.5) * 0.6,   // Tighter Y range
+            z: (Math.random() - 0.5) * 0.3,   // Tighter Z range
+            size: 2.0,                         // Uniform size (no variation)
+            alpha: 0.03 + Math.random() * 0.03, // Very subtle (0.03-0.06)
             phase: Math.random() * Math.PI * 2
         });
     }
@@ -634,7 +635,7 @@ function createHelixRenderer(canvas, callbacks = {}) {
     // Generate geometry
     const helixGeometry = generateHelixGeometry();
     const nodePositions = calculateNodePositions();
-    const particles = generateParticles(25);
+    const particles = generateParticles(7);  // Subtle neural dust
 
     // ─────────────────────────────────────────────────────────────
     // ANIMATION STATE
@@ -1012,7 +1013,13 @@ function createHelixRenderer(canvas, callbacks = {}) {
         const hit = hitDetector.test(e.clientX, e.clientY);
 
         if (hit && onClick) {
-            onClick(nodePositions[hit.index].key);
+            // Pass full click data including pixel coordinates for anchored panel
+            onClick({
+                key: hit.key,
+                screenX: hit.screenX,
+                screenY: hit.screenY,
+                index: hit.index
+            });
         }
     }
 
