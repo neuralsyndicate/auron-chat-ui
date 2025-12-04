@@ -176,84 +176,143 @@ function getNodeLabel(key) {
 
 // ═══════════════════════════════════════════════════════════════
 // AUDIO SESSION MODAL V8
-// Wrapper for the audio session experience
+// Drop-in replacement for V7 modal - same props interface
 // ═══════════════════════════════════════════════════════════════
 
-function AudioSessionModalV8({ audioSessionId, onClose }) {
-    const [profile, setProfile] = React.useState(null);
-    const [audioUrl, setAudioUrl] = React.useState(null);
-    const [loading, setLoading] = React.useState(true);
-    const [error, setError] = React.useState(null);
+function AudioSessionModalV8({ uploadId, synthesizedProfile, onClose, audioUrl }) {
+    // Profile data from synthesized response (same as V7)
+    const profile = synthesizedProfile?.profile || {};
 
-    // Fetch session data
-    React.useEffect(() => {
-        async function fetchSession() {
-            if (!audioSessionId) {
-                setError('No session ID provided');
-                setLoading(false);
-                return;
-            }
+    // Transform profile modules into format V8 renderer expects
+    const transformedProfile = React.useMemo(() => {
+        if (!profile) return { modules: {} };
 
-            try {
-                // Fetch profile data
-                const response = await fetch(`/api/audio-sessions/${audioSessionId}`);
-                if (!response.ok) {
-                    throw new Error('Failed to load session');
-                }
+        // Map the profile data to module format for card display
+        const modules = {};
 
-                const data = await response.json();
-                setProfile(data.profile || {});
-                setAudioUrl(data.audioUrl);
-                setLoading(false);
-
-            } catch (err) {
-                console.error('Error fetching session:', err);
-                setError(err.message);
-                setLoading(false);
-            }
+        // Sound Description
+        if (profile.sound_description) {
+            const sd = profile.sound_description;
+            modules.sound_description = {
+                label: 'Sound Description',
+                title: sd.sonic_title || sd.characteristics?.sonic_title || 'Sonic Identity',
+                description: sd.sonic_story || sd.characteristics?.sonic_story ||
+                    (sd.characteristics ? `${sd.characteristics.primary_genre || ''} with ${sd.characteristics.mood || ''} energy` : '')
+            };
         }
 
-        fetchSession();
-    }, [audioSessionId]);
+        // Genre Fusion
+        if (profile.genre_fusion) {
+            const gf = profile.genre_fusion;
+            modules.genre_fusion = {
+                label: 'Genre Fusion',
+                title: gf.primary_genre || 'Genre Analysis',
+                description: gf.genre_story || (gf.influences ? `Influenced by ${gf.influences.slice(0, 3).join(', ')}` : '')
+            };
+        }
+
+        // Neural Spectrum
+        if (profile.neural_spectrum) {
+            const ns = profile.neural_spectrum;
+            modules.neural_spectrum = {
+                label: 'Neural Spectrum',
+                title: 'Frequency Analysis',
+                description: ns.summary || 'Spectral characteristics of your sound'
+            };
+        }
+
+        // Sound Palette
+        if (profile.sound_palette) {
+            const sp = profile.sound_palette;
+            modules.sound_palette = {
+                label: 'Sound Palette',
+                title: 'Timbral Colors',
+                description: sp.description || (sp.primary_colors ? `Primary: ${sp.primary_colors.join(', ')}` : '')
+            };
+        }
+
+        // Tonal Identity
+        if (profile.tonal_identity) {
+            const ti = profile.tonal_identity;
+            modules.tonal_identity = {
+                label: 'Tonal DNA',
+                title: ti.key ? `${ti.key} ${ti.mode || ''}` : 'Harmonic Profile',
+                description: ti.harmonic_story || ti.description || ''
+            };
+        }
+
+        // Rhythmic DNA
+        if (profile.rhythmic_dna) {
+            const rd = profile.rhythmic_dna;
+            modules.rhythmic_dna = {
+                label: 'Rhythmic DNA',
+                title: rd.tempo ? `${Math.round(rd.tempo)} BPM` : 'Rhythm Profile',
+                description: rd.groove_story || rd.description || ''
+            };
+        }
+
+        // Timbre DNA
+        if (profile.timbre_dna) {
+            const td = profile.timbre_dna;
+            modules.timbre_dna = {
+                label: 'Timbre DNA',
+                title: 'Textural Identity',
+                description: td.texture_story || td.description || ''
+            };
+        }
+
+        // Emotional Fingerprint
+        if (profile.emotional_fingerprint) {
+            const ef = profile.emotional_fingerprint;
+            modules.emotional_fingerprint = {
+                label: 'Emotional Fingerprint',
+                title: ef.primary_emotion || 'Emotional Arc',
+                description: ef.emotional_story || ef.description || ''
+            };
+        }
+
+        // Processing Signature
+        if (profile.processing_signature) {
+            const ps = profile.processing_signature;
+            modules.processing_signature = {
+                label: 'Processing Signature',
+                title: 'Production DNA',
+                description: ps.production_story || ps.description || ''
+            };
+        }
+
+        // Sonic Architecture
+        if (profile.sonic_architecture) {
+            const sa = profile.sonic_architecture;
+            modules.sonic_architecture = {
+                label: 'Sonic Architecture',
+                title: 'Structural Design',
+                description: sa.architecture_story || sa.description || ''
+            };
+        }
+
+        // Inspirational Triggers
+        if (profile.inspirational_triggers) {
+            const it = profile.inspirational_triggers;
+            modules.inspirational_triggers = {
+                label: 'Inspirational Triggers',
+                title: 'Creative Seeds',
+                description: it.trigger_story || (it.triggers ? it.triggers.slice(0, 3).join(', ') : '')
+            };
+        }
+
+        return { modules, raw: profile };
+    }, [profile]);
 
     // Handle node selection
     const handleNodeSelect = (key, data) => {
-        console.log('Node selected:', key, data);
+        console.log('V8 Node selected:', key, data);
     };
-
-    if (loading) {
-        return (
-            <div className="audio-session-modal-v8">
-                <div className="session-loading">
-                    <div className="v8-loading-spinner" />
-                    <p>Loading session...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="audio-session-modal-v8">
-                <div className="session-header-v8">
-                    <h2 className="session-title-v8">Neural Identity Map</h2>
-                    <button className="session-close-v8" onClick={onClose}>
-                        Close
-                    </button>
-                </div>
-                <div className="session-content-v8">
-                    <div className="v8-error-state">
-                        <p className="v8-error-text">{error}</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="audio-session-modal-v8">
             <NeuralHelixV8
-                profile={profile}
+                profile={transformedProfile}
                 audioUrl={audioUrl}
                 onClose={onClose}
                 onNodeSelect={handleNodeSelect}

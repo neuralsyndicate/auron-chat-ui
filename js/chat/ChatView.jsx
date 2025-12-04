@@ -366,7 +366,7 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
             <input ref={audioFileInputRef} type="file" accept=".wav,.mp3,.flac,.m4a,.aiff,.ogg" onChange={handleAudioFileSelect} style={{ display: 'none' }} />
 
             {audioSessionId && (
-                <AudioSessionModalV7
+                <AudioSessionModalV8
                     uploadId={audioSessionId}
                     synthesizedProfile={synthesizedProfile}
                     audioUrl={audioFileUrl}
