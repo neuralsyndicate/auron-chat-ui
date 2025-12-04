@@ -76,7 +76,16 @@ function SoundDescriptionMicro({ data, size = 160 }) {
 // Genre Fusion: Neon donut wheel
 function GenreFusionMicro({ data, size = 160 }) {
     const cx = size / 2, cy = size / 2;
-    const genres = Array.isArray(data) ? data.slice(0, 5) : [];
+    // Handle both array format and object with genres property
+    let rawGenres = [];
+    if (Array.isArray(data)) {
+        rawGenres = data;
+    } else if (data?.characteristics?.genres && Array.isArray(data.characteristics.genres)) {
+        rawGenres = data.characteristics.genres.map((g, i) => ({ genre: g, weight: 1 / data.characteristics.genres.length }));
+    } else if (Array.isArray(data?.genres)) {
+        rawGenres = data.genres;
+    }
+    const genres = rawGenres.slice(0, 5);
     const colors = ['#00D9FF', '#0066FF', '#00FF88', '#FF6B00', '#FF4488'];
     const r = 55;
     const strokeWidth = 14;
@@ -90,7 +99,7 @@ function GenreFusionMicro({ data, size = 160 }) {
     }
 
     let accumulated = 0;
-    const total = genres.reduce((sum, g) => sum + (g.weight || 0.2), 0);
+    const total = genres.reduce((sum, g) => sum + (typeof g.weight === 'number' && !isNaN(g.weight) ? g.weight : 0.2), 0) || 1;
 
     return (
         <svg viewBox={`0 0 ${size} ${size}`} className="micro-viz genre-fusion-micro">
@@ -137,7 +146,8 @@ function GenreFusionMicro({ data, size = 160 }) {
 
 // Neural Spectrum: Blue-White-Orange gradient bar
 function NeuralSpectrumMicro({ data, size = 160 }) {
-    const specValue = data?.value ?? 0.5;
+    const rawValue = data?.value ?? data?.intensity ?? 0.5;
+    const specValue = typeof rawValue === 'number' && !isNaN(rawValue) ? Math.max(0, Math.min(1, rawValue)) : 0.5;
     const placement = data?.placement || 'hybrid';
     const cx = size / 2, cy = size / 2;
     const barWidth = size * 0.75;
@@ -189,8 +199,9 @@ function NeuralSpectrumMicro({ data, size = 160 }) {
 // Sound Palette: Orbital constellation dots
 function SoundPaletteMicro({ data, size = 160 }) {
     const cx = size / 2, cy = size / 2;
-    const richness = data?.characteristics?.harmonic_richness ?? 0.5;
-    const nodeCount = Math.floor(5 + richness * 5);
+    const rawRichness = data?.characteristics?.harmonic_richness ?? data?.harmonic_richness ?? 0.5;
+    const richness = typeof rawRichness === 'number' && !isNaN(rawRichness) ? Math.max(0, Math.min(1, rawRichness)) : 0.5;
+    const nodeCount = Math.max(5, Math.floor(5 + richness * 5));
 
     const nodes = React.useMemo(() =>
         Array.from({ length: nodeCount }).map((_, i) => {
@@ -253,8 +264,11 @@ function SoundPaletteMicro({ data, size = 160 }) {
 // Tonal DNA: 2D quadrant with position marker
 function TonalDNAMicro({ data, size = 160 }) {
     const cx = size / 2, cy = size / 2;
-    const darkBright = data?.dark_bright ?? 0.5;
-    const minimalMaximal = data?.minimal_maximal ?? 0.5;
+    // Safely extract values with fallback to center (0.5)
+    const rawDarkBright = data?.dark_bright ?? data?.characteristics?.dark_bright ?? 0.5;
+    const rawMinMax = data?.minimal_maximal ?? data?.characteristics?.minimal_maximal ?? 0.5;
+    const darkBright = typeof rawDarkBright === 'number' && !isNaN(rawDarkBright) ? Math.max(0, Math.min(1, rawDarkBright)) : 0.5;
+    const minimalMaximal = typeof rawMinMax === 'number' && !isNaN(rawMinMax) ? Math.max(0, Math.min(1, rawMinMax)) : 0.5;
     const quadSize = 100;
 
     // Map values to quadrant position
@@ -307,7 +321,8 @@ function TonalDNAMicro({ data, size = 160 }) {
 // Rhythmic DNA: Circular arc with pulse points
 function RhythmicDNAMicro({ data, size = 160 }) {
     const cx = size / 2, cy = size / 2;
-    const bpm = data?.characteristics?.tempo_bpm || 120;
+    const rawBpm = data?.characteristics?.tempo_bpm ?? data?.tempo_bpm ?? data?.bpm ?? 120;
+    const bpm = typeof rawBpm === 'number' && !isNaN(rawBpm) && rawBpm > 0 ? Math.round(rawBpm) : 120;
     const r = 50;
     const pulseCount = 8;
 
@@ -418,7 +433,15 @@ function TimbreDNAMicro({ data, size = 160 }) {
 // Emotional Fingerprint: Blue/Orange polar field
 function EmotionalFingerprintMicro({ data, size = 160 }) {
     const cx = size / 2, cy = size / 2;
-    const nodes = data?.nodes || [];
+    // Handle various data formats
+    let nodes = [];
+    if (Array.isArray(data?.nodes)) {
+        nodes = data.nodes;
+    } else if (Array.isArray(data)) {
+        nodes = data;
+    } else if (data?.characteristics?.emotions && Array.isArray(data.characteristics.emotions)) {
+        nodes = data.characteristics.emotions;
+    }
     const maxR = 55;
 
     // Default emotional axes if no nodes
@@ -431,13 +454,18 @@ function EmotionalFingerprintMicro({ data, size = 160 }) {
         { label: 'Wonder', angle: 300, value: 0.4, color: '#00D9FF' }
     ];
 
+    const axisCount = Math.max(1, Math.min(nodes.length, 6));
     const axes = nodes.length > 0
-        ? nodes.slice(0, 6).map((n, i) => ({
-            label: n.label || n.emotion || `E${i}`,
-            angle: (i / Math.min(nodes.length, 6)) * 360,
-            value: n.intensity || n.value || 0.5,
-            color: i % 2 === 0 ? '#00D9FF' : '#FF6B00'
-        }))
+        ? nodes.slice(0, 6).map((n, i) => {
+            const rawValue = n.intensity ?? n.value ?? 0.5;
+            const safeValue = typeof rawValue === 'number' && !isNaN(rawValue) ? Math.max(0, Math.min(1, rawValue)) : 0.5;
+            return {
+                label: n.label || n.emotion || `E${i}`,
+                angle: (i / axisCount) * 360,
+                value: safeValue,
+                color: i % 2 === 0 ? '#00D9FF' : '#FF6B00'
+            };
+        })
         : defaultAxes;
 
     // Generate shape path
@@ -699,6 +727,17 @@ function InspirationalTriggersMicro({ data, size = 160 }) {
 // MICRO-VISUALIZATION ROUTER - V6 Interface
 // ============================================================
 
+// Helper to ensure a value is a valid number, with fallback
+function safeNumber(value, fallback = 0) {
+    const num = typeof value === 'number' ? value : parseFloat(value);
+    return isNaN(num) || !isFinite(num) ? fallback : num;
+}
+
+// Helper to clamp a value between min and max
+function clamp(value, min, max) {
+    return Math.min(Math.max(safeNumber(value, (min + max) / 2), min), max);
+}
+
 function MicroVisualization({ moduleKey, data }) {
     const vizMap = {
         'sound_description': SoundDescriptionMicro,
@@ -717,11 +756,17 @@ function MicroVisualization({ moduleKey, data }) {
     const Component = vizMap[moduleKey];
     if (!Component) return null;
 
-    return (
-        <div className="micro-visualization-container">
-            <Component data={data} size={160} />
-        </div>
-    );
+    // Wrap in error boundary-like try/catch for rendering safety
+    try {
+        return (
+            <div className="micro-visualization-container">
+                <Component data={data} size={160} />
+            </div>
+        );
+    } catch (e) {
+        console.warn('MicroVisualization render error:', moduleKey, e);
+        return null;
+    }
 }
 
 // ============================================================
