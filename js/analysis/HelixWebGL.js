@@ -135,6 +135,9 @@ uniform vec3 u_colorBack;
 uniform float u_time;
 uniform float u_waveOffset;
 uniform float u_glowIntensity;
+uniform float u_depthShimmer;
+uniform float u_alpha;
+uniform float u_colorScale;
 
 varying float v_progress;
 varying float v_depth;
@@ -143,22 +146,27 @@ varying float v_strand;
 void main() {
     // Depth-based color (front cyan, back blue)
     float depthFactor = smoothstep(-0.3, 0.3, v_depth);
-    vec3 baseColor = mix(u_colorBack, u_colorFront, depthFactor);
+
+    // Apply color scale for multi-pass rendering (outer passes are dimmer)
+    vec3 baseColor = mix(u_colorBack, u_colorFront, depthFactor * u_colorScale);
 
     // Traveling luminous wave (brighter)
     float wave = sin((v_progress * 30.0) - u_waveOffset) * 0.5 + 0.5;
-    float waveGlow = wave * 0.4;
+    float waveGlow = wave * 0.5;
+
+    // Depth shimmer effect (modulate based on depth + time)
+    float shimmer = sin(v_depth * 8.0 + u_time * 2.0) * 0.15 * u_depthShimmer;
 
     // Core glow (bright light tube effect)
-    float coreGlow = 1.2;
+    float coreGlow = 1.4;
 
-    // Final color with bloom
-    vec3 glowColor = baseColor * (1.0 + coreGlow + waveGlow);
+    // Final color with bloom + shimmer
+    vec3 glowColor = baseColor * (1.0 + coreGlow + waveGlow + shimmer);
 
     // Edge fade at helix ends
     float edgeFade = smoothstep(0.0, 0.05, v_progress) * smoothstep(1.0, 0.95, v_progress);
 
-    float alpha = (0.8 + depthFactor * 0.2) * edgeFade;
+    float alpha = u_alpha * edgeFade;
 
     gl_FragColor = vec4(glowColor, alpha);
 }
@@ -207,15 +215,15 @@ void main() {
     float depthSize = mix(0.6, 1.4, (pos.z + 0.3) / 0.6);
     float finalSize = u_baseSize * a_size * depthSize * perspective;
 
-    // Node breathing effect (subtle pulsation)
-    float nodePulse = 1.0 + sin(u_time * 2.0 + a_index * 0.5) * 0.05;
+    // Node breathing effect (±6% over 2.5 seconds, staggered by index)
+    float nodePulse = 1.0 + sin(u_time * 2.5 + a_index * 0.7) * 0.06;
     finalSize *= nodePulse;
 
     // Selection/hover size boost
     if (a_selected > 0.5) {
         finalSize *= 1.5;
     } else if (a_hovered > 0.5) {
-        finalSize *= 1.3;
+        finalSize *= 1.18;  // 18% hover scale boost
     }
 
     // 30% larger nodes (0.065 vs 0.05)
@@ -241,6 +249,7 @@ precision highp float;
 
 uniform vec3 u_colorPrimary;
 uniform vec3 u_colorSelected;
+uniform vec3 u_colorHalo;
 uniform float u_time;
 
 varying float v_depth;
@@ -253,36 +262,65 @@ void main() {
     vec2 center = gl_PointCoord - 0.5;
     float dist = length(center);
 
-    // Core sphere
-    float core = 1.0 - smoothstep(0.0, 0.25, dist);
+    // LAYER 1: Core circle (solid bright center)
+    float core = 1.0 - smoothstep(0.0, 0.18, dist);
 
-    // Larger soft outer halo
-    float halo = 1.0 - smoothstep(0.12, 0.5, dist);
-    halo *= 0.6;
+    // LAYER 2: Inner ring (65% opacity ring around core)
+    float innerRing = smoothstep(0.15, 0.22, dist) * (1.0 - smoothstep(0.28, 0.35, dist));
+    innerRing *= 0.65;
 
-    if (core + halo < 0.01) discard;
+    // LAYER 3: Outer halo (soft radial gradient)
+    float halo = 1.0 - smoothstep(0.25, 0.5, dist);
+    halo = pow(halo, 2.0) * 0.4;
+
+    if (core + innerRing + halo < 0.01) discard;
 
     // Depth-based brightness
     float depthFactor = smoothstep(-0.3, 0.3, v_depth);
-    vec3 baseColor = u_colorPrimary * mix(0.5, 1.0, depthFactor);
 
-    // Selection state
+    // State-based intensity modifications
+    float coreIntensity = 1.0;
+    float ringIntensity = 1.0;
+    float haloIntensity = 1.0;
+
+    vec3 coreColor = u_colorPrimary * mix(0.6, 1.0, depthFactor);
+    vec3 ringColor = u_colorPrimary * 0.8 * mix(0.6, 1.0, depthFactor);
+    vec3 haloColor = u_colorHalo;
+
     if (v_selected > 0.5) {
-        float pulse = sin(u_time * 4.0) * 0.3 + 0.7;
-        baseColor = u_colorSelected * pulse;
-        core *= 1.8;
-        halo *= 2.5;
+        // Selection: brightest state + ring ripple effect
+        float selectionPulse = sin(u_time * 5.0) * 0.15 + 0.9;
+        coreColor = u_colorSelected;
+        coreIntensity = 1.5 * selectionPulse;
+
+        // Ring ripple (expanding ring animation)
+        float rippleTime = fract(u_time * 0.8);
+        float rippleRadius = 0.2 + rippleTime * 0.3;
+        float rippleRing = smoothstep(rippleRadius - 0.05, rippleRadius, dist) *
+                          (1.0 - smoothstep(rippleRadius, rippleRadius + 0.08, dist));
+        rippleRing *= (1.0 - rippleTime);  // Fade out as it expands
+
+        haloIntensity = 2.5;
+        ringIntensity = 1.5 + rippleRing * 2.0;
+
     } else if (v_hovered > 0.5) {
-        baseColor *= 1.4;
-        core *= 1.3;
-        halo *= 1.5;
+        // Hover: increased brightness
+        coreIntensity = 1.3;
+        ringIntensity = 1.3;
+        haloIntensity = 1.8;
     }
 
-    // Dimming when another node selected
-    float dim = v_dimmed > 0.5 ? 0.4 : 1.0;
+    // Combine all three layers
+    vec3 color = coreColor * core * coreIntensity;
+    color += ringColor * innerRing * ringIntensity;
+    color += haloColor * halo * haloIntensity;
 
-    vec3 color = baseColor * (core + halo) * dim;
-    float alpha = (core + halo * 0.5) * dim * mix(0.6, 1.0, depthFactor);
+    // Dimming when another node is selected
+    float dim = v_dimmed > 0.5 ? 0.35 : 1.0;
+    color *= dim;
+
+    float alpha = (core + innerRing * 0.7 + halo * 0.4) * dim;
+    alpha *= mix(0.6, 1.0, depthFactor);
 
     gl_FragColor = vec4(color, alpha);
 }
@@ -502,7 +540,8 @@ function hexToGL(hex) {
 const COLORS = {
     front: hexToGL('#00D9FF'),
     back: hexToGL('#002C55'),
-    selected: hexToGL('#00FFFF')
+    selected: hexToGL('#00FFFF'),
+    halo: [0.0, 0.2, 0.4]  // Deep blue halo rgba(0, 50, 100)
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -521,7 +560,7 @@ function createHitDetector(canvas, nodes, animation) {
 
             let closest = null;
             let minDist = Infinity;
-            const hitRadius = 0.08;
+            const hitRadius = 0.1;  // Slightly larger hit radius for better UX
 
             for (const node of nodes) {
                 let x = node.x + animation.xDrift;
@@ -533,15 +572,27 @@ function createHitDetector(canvas, nodes, animation) {
                 z *= animation.breathScale * animation.zoom;
 
                 const p = 1.0 / (1.0 + z * 0.3);
-                const screenX = (x * p) / aspect;
-                const screenY = y * p;
+                const ndcNodeX = (x * p) / aspect;
+                const ndcNodeY = y * p;
 
-                const dist = Math.hypot(ndcX - screenX, ndcY - screenY);
+                const dist = Math.hypot(ndcX - ndcNodeX, ndcY - ndcNodeY);
                 const adjustedRadius = hitRadius * p;
 
                 if (dist < adjustedRadius && dist < minDist) {
                     minDist = dist;
-                    closest = { ...node, screenX, screenY, dist };
+
+                    // Convert NDC to pixel coordinates for tooltip positioning
+                    const pixelX = ((ndcNodeX + 1) / 2) * rect.width;
+                    const pixelY = ((1 - ndcNodeY) / 2) * rect.height;
+
+                    closest = {
+                        ...node,
+                        ndcX: ndcNodeX,
+                        ndcY: ndcNodeY,
+                        screenX: rect.left + pixelX,  // Absolute pixel X
+                        screenY: rect.top + pixelY,   // Absolute pixel Y
+                        dist
+                    };
                 }
             }
 
@@ -598,10 +649,15 @@ function createHelixRenderer(canvas, callbacks = {}) {
         xDriftAmplitude: 0.02,
         yDriftAmplitude: 0.02,
 
-        // Breathing scale
+        // Multi-frequency organic breathing (6-8 second cycle)
         breathScale: 1.0,
-        breathSpeed: 0.1,
-        breathAmplitude: 0.015,
+        breathFrequencies: [0.08, 0.13, 0.21],  // Layered sine waves
+        breathWeights: [1.0, 0.4, 0.2],
+        breathAmplitude: 0.04,  // ±4% scale oscillation
+
+        // Depth shimmer
+        depthShimmer: 0,
+        depthShimmerIntensity: 0.3,
 
         // Traveling wave
         waveOffset: 0,
@@ -637,7 +693,8 @@ function createHelixRenderer(canvas, callbacks = {}) {
     const helixAttribs = getAttribLocations(gl, helixProgram, ['a_position', 'a_progress', 'a_strand']);
     const helixUniforms = getUniformLocations(gl, helixProgram, [
         'u_time', 'u_xDrift', 'u_yDrift', 'u_breathScale', 'u_zoom', 'u_resolution',
-        'u_colorFront', 'u_colorBack', 'u_waveOffset', 'u_glowIntensity'
+        'u_colorFront', 'u_colorBack', 'u_waveOffset', 'u_glowIntensity',
+        'u_depthShimmer', 'u_alpha', 'u_colorScale'
     ]);
 
     // ─────────────────────────────────────────────────────────────
@@ -689,7 +746,7 @@ function createHelixRenderer(canvas, callbacks = {}) {
     ]);
     const nodeUniforms = getUniformLocations(gl, nodeProgram, [
         'u_time', 'u_xDrift', 'u_yDrift', 'u_breathScale', 'u_zoom', 'u_resolution', 'u_baseSize',
-        'u_colorPrimary', 'u_colorSelected'
+        'u_colorPrimary', 'u_colorSelected', 'u_colorHalo'
     ]);
 
     // ─────────────────────────────────────────────────────────────
@@ -774,8 +831,16 @@ function createHelixRenderer(canvas, callbacks = {}) {
         animation.xDrift = Math.sin(time * animation.xDriftSpeed) * animation.xDriftAmplitude * animation.motionScale;
         animation.yDrift = Math.sin(time * animation.yDriftSpeed + 2.0) * animation.yDriftAmplitude * animation.motionScale;
 
-        // Breathing scale
-        animation.breathScale = 1.0 + Math.sin(time * animation.breathSpeed) * animation.breathAmplitude * animation.motionScale;
+        // Multi-frequency organic breathing (6-8 second cycle)
+        let breathTotal = 0;
+        animation.breathFrequencies.forEach((freq, i) => {
+            breathTotal += Math.sin(time * freq + i * 0.5) * animation.breathWeights[i];
+        });
+        breathTotal /= 1.6;  // Normalize weights
+        animation.breathScale = 1.0 + breathTotal * animation.breathAmplitude * animation.motionScale;
+
+        // Depth shimmer modulation (slow wave)
+        animation.depthShimmer = 0.5 + Math.sin(time * 0.3) * 0.5;
 
         // Traveling wave
         animation.waveOffset = time * animation.waveSpeed * animation.motionScale;
@@ -808,6 +873,7 @@ function createHelixRenderer(canvas, callbacks = {}) {
     function renderHelix() {
         gl.useProgram(helixProgram);
 
+        // Set common uniforms
         gl.uniform1f(helixUniforms.u_time, animation.time);
         gl.uniform1f(helixUniforms.u_xDrift, animation.xDrift);
         gl.uniform1f(helixUniforms.u_yDrift, animation.yDrift);
@@ -818,15 +884,30 @@ function createHelixRenderer(canvas, callbacks = {}) {
         gl.uniform3fv(helixUniforms.u_colorBack, COLORS.back);
         gl.uniform1f(helixUniforms.u_waveOffset, animation.waveOffset);
         gl.uniform1f(helixUniforms.u_glowIntensity, 0.4);
+        gl.uniform1f(helixUniforms.u_depthShimmer, animation.depthShimmer);
 
         bindVertexAttrib(gl, helixAttribs.a_position, helixPosBuffer, 3);
         bindVertexAttrib(gl, helixAttribs.a_progress, helixProgressBuffer, 1);
         bindVertexAttrib(gl, helixAttribs.a_strand, helixStrandBuffer, 1);
 
         const segmentsPerStrand = HELIX_CONFIG.segments + 1;
-        gl.lineWidth(2.0);
-        gl.drawArrays(gl.LINE_STRIP, 0, segmentsPerStrand);
-        gl.drawArrays(gl.LINE_STRIP, segmentsPerStrand, segmentsPerStrand);
+
+        // Multi-pass rendering for thick tube-like glow effect
+        const passes = [
+            { width: 6.0, alpha: 0.15, colorScale: 0.3 },   // Outer halo (deep blue)
+            { width: 4.0, alpha: 0.35, colorScale: 0.6 },   // Mid glow
+            { width: 2.5, alpha: 0.9, colorScale: 1.0 },    // Core (bright cyan)
+        ];
+
+        passes.forEach(pass => {
+            gl.lineWidth(pass.width);
+            gl.uniform1f(helixUniforms.u_alpha, pass.alpha);
+            gl.uniform1f(helixUniforms.u_colorScale, pass.colorScale);
+
+            // Draw both strands
+            gl.drawArrays(gl.LINE_STRIP, 0, segmentsPerStrand);
+            gl.drawArrays(gl.LINE_STRIP, segmentsPerStrand, segmentsPerStrand);
+        });
 
         disableVertexAttribs(gl, helixAttribs);
     }
@@ -858,6 +939,7 @@ function createHelixRenderer(canvas, callbacks = {}) {
         gl.uniform1f(nodeUniforms.u_baseSize, 1.3);  // 30% larger
         gl.uniform3fv(nodeUniforms.u_colorPrimary, COLORS.front);
         gl.uniform3fv(nodeUniforms.u_colorSelected, COLORS.selected);
+        gl.uniform3fv(nodeUniforms.u_colorHalo, COLORS.halo);
 
         bindVertexAttrib(gl, nodeAttribs.a_position, nodePosBuffer, 3);
         bindVertexAttrib(gl, nodeAttribs.a_size, nodeSizeBuffer, 1);
@@ -914,7 +996,14 @@ function createHelixRenderer(canvas, callbacks = {}) {
             canvas.style.cursor = newHoveredIndex >= 0 ? 'pointer' : 'default';
 
             if (onHover) {
-                onHover(newHoveredIndex >= 0 ? nodePositions[newHoveredIndex].key : null);
+                // Pass full hover data including pixel coordinates for tooltip positioning
+                onHover(hit ? {
+                    key: hit.key,
+                    label: hit.label,
+                    screenX: hit.screenX,
+                    screenY: hit.screenY,
+                    index: hit.index
+                } : null);
             }
         }
     }
@@ -967,9 +1056,9 @@ function createHelixRenderer(canvas, callbacks = {}) {
             state.selectedIndex = index;
 
             if (index >= 0) {
-                // Selection: slow motion by 50%, zoom 5%
+                // Selection: slow motion by 50%, zoom OUT 10%
                 animation.targetMotionScale = 0.5;
-                animation.targetZoom = 1.05;
+                animation.targetZoom = 0.9;  // Zoom OUT to make room for card
             } else {
                 // Deselection: restore full speed
                 animation.targetMotionScale = 1.0;

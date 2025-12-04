@@ -151,10 +151,11 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         xDriftAmplitude: 0.02,
         yDriftAmplitude: 0.02,
 
-        // Breathing scale
+        // Multi-frequency breathing (matches WebGL)
         breathScale: 1.0,
-        breathSpeed: 0.1,
-        breathAmplitude: 0.015,
+        breathFrequencies: [0.08, 0.13, 0.21],
+        breathWeights: [1.0, 0.4, 0.2],
+        breathAmplitude: 0.04,  // ±4%
 
         // Traveling wave
         waveOffset: 0,
@@ -357,29 +358,71 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
             const isHovered = node.index === state.hoveredIndex;
             const isDimmed = state.selectedIndex >= 0 && !isSelected;
 
-            // Larger base size (30% bigger) with depth scaling
-            let size = 16 * node.scale;
+            // Base size with depth scaling
+            let baseSize = 16 * node.scale;
 
-            // Node breathing
-            const nodePulse = 1.0 + Math.sin(animation.time * 2.0 + node.index * 0.5) * 0.05;
-            size *= nodePulse;
+            // Node breathing (6% over 2.5s - matches WebGL)
+            const nodePulse = 1.0 + Math.sin(animation.time * 2.5 + node.index * 0.5) * 0.06;
+            baseSize *= nodePulse;
 
-            if (isSelected) size *= 1.5;
-            else if (isHovered) size *= 1.3;
+            // Hover/selection scaling (matches WebGL: 18% hover, 50% selected)
+            if (isSelected) baseSize *= 1.5;
+            else if (isHovered) baseSize *= 1.18;
 
             // Depth-based alpha
             let alpha = 0.6 + (node.depth + 0.3) * 0.67;
             if (isDimmed) alpha *= 0.4;
 
-            // Selection/hover glow
-            if (isSelected || isHovered) {
-                ctx.shadowBlur = isSelected ? 40 : 25;
-                ctx.shadowColor = CANVAS2D_COLORS.selected;
+            // ═══════════════════════════════════════════════════════
+            // 3-LAYER NODE DESIGN (matches WebGL shader)
+            // ═══════════════════════════════════════════════════════
+
+            // Layer 3: Outer halo (drawn first, behind everything)
+            if (!isDimmed) {
+                const haloSize = baseSize * 2.2;
+                const gradient = ctx.createRadialGradient(
+                    node.sx, node.sy, baseSize * 0.5,
+                    node.sx, node.sy, haloSize
+                );
+                gradient.addColorStop(0, 'rgba(0, 51, 102, 0.4)');  // Deep blue halo
+                gradient.addColorStop(1, 'rgba(0, 51, 102, 0)');
+
+                ctx.beginPath();
+                ctx.arc(node.sx, node.sy, haloSize, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.globalAlpha = alpha * 0.4;
+                ctx.fill();
             }
 
-            // Draw node
+            // Layer 2: Inner ring
+            const ringSize = baseSize * 1.3;
             ctx.beginPath();
-            ctx.arc(node.sx, node.sy, size, 0, Math.PI * 2);
+            ctx.arc(node.sx, node.sy, ringSize, 0, Math.PI * 2);
+
+            if (isSelected) {
+                // Ring ripple effect on selection
+                const rippleTime = (animation.time * 0.8) % 1;
+                const rippleRadius = baseSize * (0.8 + rippleTime * 0.6);
+                const rippleAlpha = (1.0 - rippleTime) * 0.5;
+
+                ctx.strokeStyle = CANVAS2D_COLORS.selected;
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = rippleAlpha * alpha;
+                ctx.stroke();
+            }
+
+            const innerRingColor = interpolateColor(node.depth);
+            ctx.fillStyle = innerRingColor;
+            ctx.globalAlpha = alpha * 0.65;
+            ctx.fill();
+
+            // Layer 1: Core (brightest, on top)
+            const coreSize = baseSize * 0.7;
+            ctx.shadowBlur = isSelected ? 40 : isHovered ? 25 : 15;
+            ctx.shadowColor = isSelected ? CANVAS2D_COLORS.selected : CANVAS2D_COLORS.front;
+
+            ctx.beginPath();
+            ctx.arc(node.sx, node.sy, coreSize, 0, Math.PI * 2);
 
             if (isSelected) {
                 const pulse = Math.sin(animation.time * 4) * 0.2 + 0.8;
@@ -387,21 +430,13 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
                 ctx.globalAlpha = alpha * pulse;
             } else if (isHovered) {
                 ctx.fillStyle = CANVAS2D_COLORS.front;
-                ctx.globalAlpha = alpha * 1.3;
+                ctx.globalAlpha = Math.min(1, alpha * 1.3);
             } else {
                 ctx.fillStyle = interpolateColor(node.depth);
                 ctx.globalAlpha = alpha;
             }
 
             ctx.fill();
-
-            // Draw larger halo
-            if (!isDimmed) {
-                ctx.beginPath();
-                ctx.arc(node.sx, node.sy, size * 1.8, 0, Math.PI * 2);
-                ctx.globalAlpha = alpha * 0.25;
-                ctx.fill();
-            }
 
             ctx.shadowBlur = 0;
             ctx.globalAlpha = 1;
@@ -417,8 +452,14 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         animation.xDrift = Math.sin(time * animation.xDriftSpeed) * animation.xDriftAmplitude * animation.motionScale;
         animation.yDrift = Math.sin(time * animation.yDriftSpeed + 2.0) * animation.yDriftAmplitude * animation.motionScale;
 
-        // Breathing scale
-        animation.breathScale = 1.0 + Math.sin(time * animation.breathSpeed) * animation.breathAmplitude * animation.motionScale;
+        // Multi-frequency organic breathing (matches WebGL)
+        let breathSum = 0;
+        let weightSum = 0;
+        for (let i = 0; i < animation.breathFrequencies.length; i++) {
+            breathSum += Math.sin(time * animation.breathFrequencies[i] * Math.PI * 2) * animation.breathWeights[i];
+            weightSum += animation.breathWeights[i];
+        }
+        animation.breathScale = 1.0 + (breathSum / weightSum) * animation.breathAmplitude * animation.motionScale;
 
         // Traveling wave
         animation.waveOffset = time * animation.waveSpeed * animation.motionScale;
@@ -466,7 +507,20 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
             canvas.style.cursor = newHoveredIndex >= 0 ? 'pointer' : 'default';
 
             if (onHover) {
-                onHover(newHoveredIndex >= 0 ? nodePositions[newHoveredIndex].key : null);
+                if (newHoveredIndex >= 0) {
+                    // Return full hover data with pixel coordinates (matches WebGL)
+                    const node = nodePositions[newHoveredIndex];
+                    const proj = project(node.x, node.y, node.z);
+                    const rect = canvas.getBoundingClientRect();
+                    onHover({
+                        key: node.key,
+                        label: node.label,
+                        screenX: rect.left + proj.sx,
+                        screenY: rect.top + proj.sy
+                    });
+                } else {
+                    onHover(null);
+                }
             }
         }
     }
@@ -479,11 +533,13 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
     }
 
     function handleMouseLeave() {
-        state.hoveredIndex = -1;
-        canvas.style.cursor = 'default';
+        if (state.hoveredIndex !== -1) {
+            state.hoveredIndex = -1;
+            canvas.style.cursor = 'default';
 
-        if (onHover) {
-            onHover(null);
+            if (onHover) {
+                onHover(null);
+            }
         }
     }
 
@@ -518,9 +574,9 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         setSelectedIndex(index) {
             state.selectedIndex = index;
             if (index >= 0) {
-                // Slow motion by 50% on selection
+                // Slow motion by 50% on selection, zoom OUT to show context
                 animation.targetMotionScale = 0.5;
-                animation.targetZoom = 1.05;
+                animation.targetZoom = 0.9;  // Zoom OUT (matches WebGL)
             } else {
                 animation.targetMotionScale = 1.0;
                 animation.targetZoom = 1.0;

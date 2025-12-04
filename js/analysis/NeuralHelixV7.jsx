@@ -95,7 +95,7 @@ function HelixCanvasV7({
 
         // Use ref callbacks so renderer doesn't need recreation
         const callbacks = {
-            onHover: (key) => onNodeHoverRef.current?.(key),
+            onHover: (hoverData) => onNodeHoverRef.current?.(hoverData),
             onClick: (key) => onNodeClickRef.current?.(key)
         };
 
@@ -148,73 +148,102 @@ function DetailPanelV7({ visible, moduleKey, profile, audioUrl, onClose }) {
     const moduleInfo = HELIX_MODULES_V7.find(m => m.key === moduleKey);
     const data = profile?.[moduleKey];
 
-    // Content extraction (reuse V6 logic pattern)
-    const content = useMemo(() => {
-        if (!moduleKey) return { label: '', title: '', description: '' };
+    // Crossfade state management
+    const [displayedKey, setDisplayedKey] = useState(moduleKey);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const prevKeyRef = useRef(moduleKey);
 
-        const label = moduleInfo?.label || moduleKey;
+    // Handle module switching with crossfade
+    useEffect(() => {
+        if (moduleKey !== prevKeyRef.current && moduleKey && visible) {
+            // Start exit animation
+            setIsTransitioning(true);
+
+            // After exit animation, switch content and start enter animation
+            const timer = setTimeout(() => {
+                setDisplayedKey(moduleKey);
+                setIsTransitioning(false);
+            }, 250); // Match crossfade-out duration
+
+            prevKeyRef.current = moduleKey;
+            return () => clearTimeout(timer);
+        } else if (moduleKey) {
+            setDisplayedKey(moduleKey);
+            prevKeyRef.current = moduleKey;
+        }
+    }, [moduleKey, visible]);
+
+    // Use displayed key for content rendering
+    const displayedModuleInfo = HELIX_MODULES_V7.find(m => m.key === displayedKey);
+    const displayedData = profile?.[displayedKey];
+
+    // Content extraction (reuse V6 logic pattern) - uses displayedKey for smooth crossfade
+    const content = useMemo(() => {
+        if (!displayedKey) return { label: '', title: '', description: '' };
+
+        const label = displayedModuleInfo?.label || displayedKey;
         let title = label;
         let description = '';
 
-        if (!data) {
+        if (!displayedData) {
             return { label, title, description: 'Analysis data not available.' };
         }
 
-        switch (moduleKey) {
+        switch (displayedKey) {
             case 'sound_description':
-                title = data.sonic_title || data.characteristics?.sonic_title || 'Sonic Profile';
-                description = data.synthesis || '';
+                title = displayedData.sonic_title || displayedData.characteristics?.sonic_title || 'Sonic Profile';
+                description = displayedData.synthesis || '';
                 break;
 
             case 'genre_fusion':
-                if (Array.isArray(data)) {
-                    title = data[0]?.genre || 'Genre Blend';
-                    description = data.map(g =>
+                if (Array.isArray(displayedData)) {
+                    title = displayedData[0]?.genre || 'Genre Blend';
+                    description = displayedData.map(g =>
                         `${g.genre} (${Math.round((g.weight || 0) * 100)}%)`
                     ).join(' · ');
-                } else if (data.characteristics?.genres) {
+                } else if (displayedData.characteristics?.genres) {
                     title = 'Genre Fusion';
-                    description = data.synthesis || data.characteristics.genres.join(', ');
+                    description = displayedData.synthesis || displayedData.characteristics.genres.join(', ');
                 }
                 break;
 
             case 'neural_spectrum':
-                const placement = data.placement || 'hybrid';
+                const placement = displayedData.placement || 'hybrid';
                 title = placement.charAt(0).toUpperCase() + placement.slice(1).replace('_', ' ');
-                description = data.synthesis || `Neural spectrum: ${placement}. Intensity: ${Math.round((data.intensity || 0) * 100)}%`;
+                description = displayedData.synthesis || `Neural spectrum: ${placement}. Intensity: ${Math.round((displayedData.intensity || 0) * 100)}%`;
                 break;
 
             case 'rhythmic_dna':
-                const bpm = data.characteristics?.tempo_bpm;
+                const bpm = displayedData.characteristics?.tempo_bpm;
                 title = bpm ? `${Math.round(bpm)} BPM` : 'Rhythmic DNA';
-                description = data.synthesis || '';
+                description = displayedData.synthesis || '';
                 break;
 
             case 'emotional_fingerprint':
-                if (data.nodes && Array.isArray(data.nodes)) {
-                    title = data.nodes[0]?.emotion || 'Emotional Impact';
-                    description = data.synthesis || data.nodes.map(n => n.emotion).join(', ');
+                if (displayedData.nodes && Array.isArray(displayedData.nodes)) {
+                    title = displayedData.nodes[0]?.emotion || 'Emotional Impact';
+                    description = displayedData.synthesis || displayedData.nodes.map(n => n.emotion).join(', ');
                 } else {
                     title = 'Emotional Fingerprint';
-                    description = data.synthesis || '';
+                    description = displayedData.synthesis || '';
                 }
                 break;
 
             case 'inspirational_triggers':
-                if (data.sources && Array.isArray(data.sources)) {
+                if (displayedData.sources && Array.isArray(displayedData.sources)) {
                     title = 'Inner Mind';
-                    description = data.synthesis || data.sources.join(', ');
+                    description = displayedData.synthesis || displayedData.sources.join(', ');
                 } else {
                     title = 'Inspirational Triggers';
-                    description = data.synthesis || '';
+                    description = displayedData.synthesis || '';
                 }
                 break;
 
             default:
                 title = label;
-                description = data.synthesis || (
-                    data.characteristics ?
-                        Object.entries(data.characteristics)
+                description = displayedData.synthesis || (
+                    displayedData.characteristics ?
+                        Object.entries(displayedData.characteristics)
                             .slice(0, 5)
                             .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`)
                             .join(' · ')
@@ -223,7 +252,7 @@ function DetailPanelV7({ visible, moduleKey, profile, audioUrl, onClose }) {
         }
 
         return { label, title, description };
-    }, [moduleKey, data, moduleInfo]);
+    }, [displayedKey, displayedData, displayedModuleInfo]);
 
     return (
         <div className={`detail-panel-v7 ${visible ? 'visible' : ''}`}>
@@ -239,37 +268,43 @@ function DetailPanelV7({ visible, moduleKey, profile, audioUrl, onClose }) {
                     </svg>
                 </button>
 
-                {moduleKey && (
-                    <>
-                        {/* Component label */}
-                        <div className="panel-label-v7">
-                            {content.label}
-                        </div>
+                {/* Content with crossfade animation */}
+                {displayedKey && (
+                    <div className="panel-content-v7">
+                        <div
+                            className={`panel-content-inner-v7 ${isTransitioning ? 'crossfade-exit' : ''}`}
+                            key={displayedKey}
+                        >
+                            {/* Component label */}
+                            <div className="panel-label-v7">
+                                {content.label}
+                            </div>
 
-                        {/* Title */}
-                        <h2 className="panel-title-v7">
-                            {content.title}
-                        </h2>
+                            {/* Title */}
+                            <h2 className="panel-title-v7">
+                                {content.title}
+                            </h2>
 
-                        {/* Description */}
-                        <p className="panel-description-v7">
-                            {content.description}
-                        </p>
+                            {/* Description */}
+                            <p className="panel-description-v7">
+                                {content.description}
+                            </p>
 
-                        {/* Micro-visualization (reuse from V6) */}
-                        <div className="panel-viz-v7">
-                            {typeof MicroVisualization !== 'undefined' && (
-                                <MicroVisualization moduleKey={moduleKey} data={data} />
+                            {/* Micro-visualization (reuse from V6) */}
+                            <div className="panel-viz-v7">
+                                {typeof MicroVisualization !== 'undefined' && (
+                                    <MicroVisualization moduleKey={displayedKey} data={displayedData} />
+                                )}
+                            </div>
+
+                            {/* Audio player (reuse from V6) */}
+                            {audioUrl && typeof MicroPlayer !== 'undefined' && (
+                                <div className="panel-player-v7">
+                                    <MicroPlayer audioUrl={audioUrl} />
+                                </div>
                             )}
                         </div>
-
-                        {/* Audio player (reuse from V6) */}
-                        {audioUrl && typeof MicroPlayer !== 'undefined' && (
-                            <div className="panel-player-v7">
-                                <MicroPlayer audioUrl={audioUrl} />
-                            </div>
-                        )}
-                    </>
+                    </div>
                 )}
             </div>
         </div>
@@ -355,7 +390,7 @@ function MobileLayoutV7({
 function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sending, sendMessage, handleKeyPress }) {
     // State
     const [selectedModule, setSelectedModule] = useState(null);
-    const [hoveredModule, setHoveredModule] = useState(null);
+    const [hoveredNode, setHoveredNode] = useState(null);  // Now stores { key, label, screenX, screenY }
     const [panelVisible, setPanelVisible] = useState(false);
     const [renderMode, setRenderMode] = useState('detecting');
     const [isMobile, setIsMobile] = useState(
@@ -396,9 +431,9 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
         }
     }, [selectedModule]);
 
-    // Node hover handler
-    const handleNodeHover = useCallback((moduleKey) => {
-        setHoveredModule(moduleKey);
+    // Node hover handler - now receives full hover data with position
+    const handleNodeHover = useCallback((hoverData) => {
+        setHoveredNode(hoverData);  // { key, label, screenX, screenY } or null
     }, []);
 
     // Close panel handler
@@ -450,16 +485,23 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                     <HelixCanvasV7
                         renderMode={renderMode}
                         selectedModule={selectedModule}
-                        hoveredModule={hoveredModule}
+                        hoveredModule={hoveredNode?.key}
                         onNodeClick={handleNodeClick}
                         onNodeHover={handleNodeHover}
                     />
                 )}
 
-                {/* Hover label overlay */}
-                {hoveredModule && !selectedModule && (
-                    <div className="helix-hover-label-v7">
-                        {HELIX_MODULES_V7.find(m => m.key === hoveredModule)?.label}
+                {/* Positioned hover tooltip near node */}
+                {hoveredNode && !selectedModule && (
+                    <div
+                        className="helix-hover-tooltip-v7"
+                        style={{
+                            left: hoveredNode.screenX,
+                            top: hoveredNode.screenY - 45,
+                            transform: 'translateX(-50%)'
+                        }}
+                    >
+                        {hoveredNode.label}
                     </div>
                 )}
 
