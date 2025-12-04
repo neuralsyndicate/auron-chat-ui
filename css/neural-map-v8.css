@@ -1,0 +1,362 @@
+/* ═══════════════════════════════════════════════════════════════
+   V8 NEURAL HELIX - Full Viewport Cinematic Experience
+   No layout constraints, pure immersive canvas
+═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   ROOT VARIABLES
+═══════════════════════════════════════════════════════════════ */
+
+:root {
+    --v8-primary: #00D9FF;
+    --v8-secondary: #0066FF;
+    --v8-accent: #FF6B00;
+    --v8-selected: #00FFFF;
+    --v8-bg: #000000;
+    --v8-glass-bg: rgba(8, 12, 28, 0.35);
+    --v8-glass-border: rgba(0, 217, 255, 0.12);
+    --v8-text: #ffffff;
+    --v8-text-dim: rgba(255, 255, 255, 0.7);
+    --v8-text-subtle: rgba(255, 255, 255, 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN CONTAINER - FULL VIEWPORT
+═══════════════════════════════════════════════════════════════ */
+
+.neural-helix-v8-container {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--v8-bg);
+    overflow: hidden;
+    z-index: 1000;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WEBGL CANVAS - FULL VIEWPORT
+═══════════════════════════════════════════════════════════════ */
+
+.helix-canvas-v8 {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HEADER BAR
+═══════════════════════════════════════════════════════════════ */
+
+.v8-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 28px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.v8-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--v8-text);
+    margin: 0;
+    letter-spacing: 0.02em;
+    opacity: 0.9;
+}
+
+.v8-close-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--v8-text);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    pointer-events: auto;
+    backdrop-filter: blur(8px);
+}
+
+.v8-close-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.v8-close-button kbd {
+    font-family: inherit;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    color: var(--v8-text-dim);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HOVER LABEL
+═══════════════════════════════════════════════════════════════ */
+
+.v8-hover-label {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    background: var(--v8-glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--v8-glass-border);
+    border-radius: 24px;
+    color: var(--v8-primary);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: v8-label-fade-in 0.2s ease-out;
+    box-shadow: 0 0 40px rgba(0, 217, 255, 0.1);
+    z-index: 10;
+}
+
+@keyframes v8-label-fade-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INSTRUCTIONS
+═══════════════════════════════════════════════════════════════ */
+
+.v8-instructions {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.v8-instructions p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--v8-text-subtle);
+    letter-spacing: 0.03em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOADING STATE
+═══════════════════════════════════════════════════════════════ */
+
+.v8-loading-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--v8-bg);
+    gap: 24px;
+    z-index: 20;
+}
+
+.v8-loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 2px solid rgba(0, 217, 255, 0.1);
+    border-top-color: var(--v8-primary);
+    border-radius: 50%;
+    animation: v8-spinner 0.8s linear infinite;
+}
+
+@keyframes v8-spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.v8-loading-text {
+    font-size: 14px;
+    color: var(--v8-text-dim);
+    letter-spacing: 0.02em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ERROR STATE
+═══════════════════════════════════════════════════════════════ */
+
+.v8-error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 16px;
+    padding: 40px;
+    text-align: center;
+}
+
+.v8-error-icon {
+    color: var(--v8-text-subtle);
+    opacity: 0.5;
+}
+
+.v8-error-text {
+    font-size: 16px;
+    color: var(--v8-text-dim);
+    margin: 0;
+}
+
+.v8-error-detail {
+    font-size: 13px;
+    color: var(--v8-text-subtle);
+    margin: 0;
+}
+
+.v8-error-button {
+    margin-top: 16px;
+    padding: 10px 24px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--v8-text);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.v8-error-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AUDIO SESSION MODAL
+═══════════════════════════════════════════════════════════════ */
+
+.audio-session-modal-v8 {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: var(--v8-bg);
+}
+
+.audio-session-modal-v8 .session-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--v8-text-dim);
+    gap: 20px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE
+═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    .v8-header {
+        padding: 16px 20px;
+    }
+
+    .v8-title {
+        font-size: 0.9rem;
+    }
+
+    .v8-close-button {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+
+    .v8-close-button kbd {
+        display: none;
+    }
+
+    .v8-hover-label {
+        display: none; /* No hover on touch */
+    }
+
+    .v8-instructions {
+        bottom: 24px;
+    }
+
+    .v8-instructions p {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .v8-header {
+        padding: 12px 16px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REDUCED MOTION
+═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+    .v8-loading-spinner {
+        animation: none;
+        border-color: var(--v8-primary);
+    }
+
+    .v8-hover-label {
+        animation: none;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BROWSER FALLBACKS
+═══════════════════════════════════════════════════════════════ */
+
+@supports not (backdrop-filter: blur(16px)) {
+    .v8-hover-label {
+        background: rgba(8, 12, 28, 0.92);
+    }
+
+    .v8-close-button {
+        background: rgba(8, 12, 28, 0.8);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PERFORMANCE OPTIMIZATIONS
+═══════════════════════════════════════════════════════════════ */
+
+.neural-helix-v8-container {
+    contain: strict;
+}
+
+.helix-canvas-v8 {
+    will-change: contents;
+}
+
+.v8-header,
+.v8-hover-label,
+.v8-instructions {
+    contain: layout paint;
+}
+
+/* GPU acceleration */
+.v8-hover-label,
+.v8-close-button {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
