@@ -1,6 +1,7 @@
 // ============================================================
 // V7 NEURAL HELIX INTERFACE
-// Pseudo-3D WebGL helix with floating glass detail panel
+// Fullscreen immersive WebGL helix with floating glass panel
+// Diagonal flow: top-left to bottom-right
 // ============================================================
 
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
@@ -305,8 +306,8 @@ function MobileLayoutV7({
 
     return (
         <div className="neural-helix-v7-container mobile">
-            {/* Helix view */}
-            <div className="helix-column-v7 mobile">
+            {/* Fullscreen helix canvas */}
+            <div className="helix-column-v7">
                 {renderMode === 'svg' ? (
                     // V6 SVG fallback
                     typeof NeuralHelix !== 'undefined' && (
@@ -326,9 +327,16 @@ function MobileLayoutV7({
                         onNodeHover={() => {}}
                     />
                 )}
+
+                {/* Instructions (when nothing selected) */}
+                {!selectedModule && (
+                    <div className="helix-instructions-v7">
+                        <p>Tap a node to explore</p>
+                    </div>
+                )}
             </div>
 
-            {/* Bottom sheet panel */}
+            {/* Bottom sheet panel (slides up on mobile) */}
             <DetailPanelV7
                 visible={panelVisible}
                 moduleKey={selectedModule}
@@ -423,10 +431,10 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
         );
     }
 
-    // Desktop layout
+    // Desktop layout - Fullscreen cinematic mode
     return (
         <div className="neural-helix-v7-container">
-            {/* Helix column (45%) */}
+            {/* Fullscreen helix canvas */}
             <div className="helix-column-v7">
                 {renderMode === 'svg' ? (
                     // V6 SVG fallback
@@ -454,27 +462,23 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                         {HELIX_MODULES_V7.find(m => m.key === hoveredModule)?.label}
                     </div>
                 )}
-            </div>
 
-            {/* Detail column (55%) */}
-            <div className="detail-column-v7">
-                <DetailPanelV7
-                    visible={panelVisible}
-                    moduleKey={selectedModule}
-                    profile={profile}
-                    audioUrl={audioUrl}
-                    onClose={handleClosePanel}
-                />
-
-                {/* Empty state */}
-                {!panelVisible && (
-                    <div className="helix-empty-state-v7">
-                        <p className="empty-state-text">
-                            Select a node to explore your sonic profile
-                        </p>
+                {/* Instructions (when nothing selected) */}
+                {!selectedModule && (
+                    <div className="helix-instructions-v7">
+                        <p>Click on a node to explore</p>
                     </div>
                 )}
             </div>
+
+            {/* Floating panel OVER helix */}
+            <DetailPanelV7
+                visible={panelVisible}
+                moduleKey={selectedModule}
+                profile={profile}
+                audioUrl={audioUrl}
+                onClose={handleClosePanel}
+            />
         </div>
     );
 }
