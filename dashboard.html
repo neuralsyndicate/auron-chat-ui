@@ -55,6 +55,7 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/chat.css">
     <link rel="stylesheet" href="css/neural-map.css">
+    <link rel="stylesheet" href="css/neural-map-v7.css">
 </head>
 <body>
     <div id="root"></div>
@@ -76,6 +77,11 @@
     <script type="text/babel" src="js/analysis/NeuralIdentityMap.jsx"></script>
     <script type="text/babel" src="js/analysis/TechnicalPanel.jsx"></script>
     <script type="text/babel" src="js/analysis/ProfileView.jsx"></script>
+
+    <!-- V7 Neural Helix (WebGL) - loads after V6 for fallback support -->
+    <script src="js/analysis/HelixWebGL.js"></script>
+    <script src="js/analysis/HelixCanvas2D.js"></script>
+    <script type="text/babel" src="js/analysis/NeuralHelixV7.jsx"></script>
 
     <!-- Questionnaire -->
     <script type="text/babel" src="js/questionnaire/NeuralQuestionnaireModal.jsx"></script>
