@@ -70,7 +70,7 @@ void main() {
     // Strand-based color offset (subtle variation between strands)
     baseColor = mix(baseColor, baseColor * vec3(0.9, 1.0, 1.1), v_strand * 0.15);
 
-    // Vertical edge fade (smooth at top/bottom)
+    // Horizontal edge fade (smooth at left/right ends)
     float edgeFade = smoothstep(0.0, 0.06, v_progress) * smoothstep(1.0, 0.94, v_progress);
 
     // Subtle traveling pulse along helix
@@ -268,28 +268,28 @@ void main() {
 // ═══════════════════════════════════════════════════════════════
 
 const HELIX_CONFIG = {
-    height: 2.0,
-    radius: 0.32,
-    frequency: 3,
-    segments: 180
+    width: 2.0,       // Horizontal span (-1 to 1)
+    radius: 0.32,     // Circular cross-section radius
+    frequency: 3,     // Number of turns
+    segments: 180     // Points per strand
 };
 
 const NODE_CONFIG = [
-    { key: 'sound_description', label: 'Sound Description', yPercent: 8 },
-    { key: 'genre_fusion', label: 'Genre Fusion', yPercent: 16 },
-    { key: 'neural_spectrum', label: 'Neural Spectrum', yPercent: 24 },
-    { key: 'sound_palette', label: 'Sound Palette', yPercent: 32 },
-    { key: 'tonal_identity', label: 'Tonal DNA', yPercent: 40 },
-    { key: 'rhythmic_dna', label: 'Rhythmic DNA', yPercent: 48 },
-    { key: 'timbre_dna', label: 'Timbre DNA', yPercent: 56 },
-    { key: 'emotional_fingerprint', label: 'Emotional Fingerprint', yPercent: 64 },
-    { key: 'processing_signature', label: 'Processing Signature', yPercent: 72 },
-    { key: 'sonic_architecture', label: 'Sonic Architecture', yPercent: 80 },
-    { key: 'inspirational_triggers', label: 'Inspirational Triggers', yPercent: 88 }
+    { key: 'sound_description', label: 'Sound Description', xPercent: 8 },
+    { key: 'genre_fusion', label: 'Genre Fusion', xPercent: 16 },
+    { key: 'neural_spectrum', label: 'Neural Spectrum', xPercent: 24 },
+    { key: 'sound_palette', label: 'Sound Palette', xPercent: 32 },
+    { key: 'tonal_identity', label: 'Tonal DNA', xPercent: 40 },
+    { key: 'rhythmic_dna', label: 'Rhythmic DNA', xPercent: 48 },
+    { key: 'timbre_dna', label: 'Timbre DNA', xPercent: 56 },
+    { key: 'emotional_fingerprint', label: 'Emotional Fingerprint', xPercent: 64 },
+    { key: 'processing_signature', label: 'Processing Signature', xPercent: 72 },
+    { key: 'sonic_architecture', label: 'Sonic Architecture', xPercent: 80 },
+    { key: 'inspirational_triggers', label: 'Inspirational Triggers', xPercent: 88 }
 ];
 
 function generateHelixGeometry(config = HELIX_CONFIG) {
-    const { height, radius, frequency, segments } = config;
+    const { width, radius, frequency, segments } = config;
     const positions = [];
     const progress = [];
     const strands = [];
@@ -298,13 +298,14 @@ function generateHelixGeometry(config = HELIX_CONFIG) {
         const phase = strand * Math.PI;
         for (let i = 0; i <= segments; i++) {
             const t = i / segments;
-            const y = (t - 0.5) * height;
+            // Horizontal: spine runs along X axis
+            const x = (t - 0.5) * width;
             const angle = t * frequency * Math.PI * 2 + phase;
 
             positions.push(
-                Math.cos(angle) * radius,
-                y,
-                Math.sin(angle) * radius
+                x,                          // Spine position (horizontal)
+                Math.cos(angle) * radius,   // Circular Y component
+                Math.sin(angle) * radius    // Circular Z component
             );
             progress.push(t);
             strands.push(strand);
@@ -320,20 +321,21 @@ function generateHelixGeometry(config = HELIX_CONFIG) {
 }
 
 function calculateNodePositions(config = HELIX_CONFIG) {
-    const { height, radius, frequency } = config;
+    const { width, radius, frequency } = config;
 
     return NODE_CONFIG.map((node, i) => {
-        const t = node.yPercent / 100;
-        const y = (t - 0.5) * height;
+        const t = node.xPercent / 100;
+        // Horizontal: spine position along X axis
+        const x = (t - 0.5) * width;
         // Alternate nodes between strands for better distribution
         const strandPhase = (i % 2) * Math.PI;
         const angle = t * frequency * Math.PI * 2 + strandPhase;
 
         return {
             ...node,
-            x: Math.cos(angle) * radius,
-            y: y,
-            z: Math.sin(angle) * radius,
+            x: x,                           // Spine position (horizontal)
+            y: Math.cos(angle) * radius,    // Circular Y component
+            z: Math.sin(angle) * radius,    // Circular Z component
             index: i
         };
     });
@@ -343,8 +345,9 @@ function generateParticles(count = 25) {
     const particles = [];
     for (let i = 0; i < count; i++) {
         particles.push({
-            x: (Math.random() - 0.5) * 1.4,
-            y: (Math.random() - 0.5) * 2.2,
+            // Horizontal layout: wider spread on X (spine), narrower on Y (circular)
+            x: (Math.random() - 0.5) * 2.2,
+            y: (Math.random() - 0.5) * 1.4,
             z: (Math.random() - 0.5) * 0.7,
             vx: (Math.random() - 0.5) * 0.0008,
             vy: (Math.random() - 0.5) * 0.0004,
@@ -680,10 +683,10 @@ function createHelixRenderer(canvas, callbacks = {}) {
             p.vx *= 0.99;
             p.vy *= 0.99;
 
-            // Wrap around bounds
-            if (p.y > 1.1) p.y = -1.1;
-            if (p.y < -1.1) p.y = 1.1;
-            if (Math.abs(p.x) > 0.8) p.x *= 0.95;
+            // Wrap around bounds (horizontal: wrap X, clamp Y)
+            if (p.x > 1.1) p.x = -1.1;
+            if (p.x < -1.1) p.x = 1.1;
+            if (Math.abs(p.y) > 0.8) p.y *= 0.95;
             if (Math.abs(p.z) > 0.5) p.z *= 0.95;
 
             // Update buffer data

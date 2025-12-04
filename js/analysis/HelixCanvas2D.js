@@ -4,11 +4,11 @@
 // ============================================================
 
 const CANVAS2D_CONFIG = {
-    height: 2.0,
-    radius: 0.32,
-    frequency: 3,
-    segments: 100,
-    depthScale: 0.25
+    width: 2.0,       // Horizontal span (-1 to 1)
+    radius: 0.32,     // Circular cross-section radius
+    frequency: 3,     // Number of turns
+    segments: 100,    // Points per strand
+    depthScale: 0.25  // Perspective depth factor
 };
 
 const CANVAS2D_COLORS = {
@@ -19,17 +19,17 @@ const CANVAS2D_COLORS = {
 };
 
 const CANVAS2D_NODES = [
-    { key: 'sound_description', label: 'Sound Description', yPercent: 8 },
-    { key: 'genre_fusion', label: 'Genre Fusion', yPercent: 16 },
-    { key: 'neural_spectrum', label: 'Neural Spectrum', yPercent: 24 },
-    { key: 'sound_palette', label: 'Sound Palette', yPercent: 32 },
-    { key: 'tonal_identity', label: 'Tonal DNA', yPercent: 40 },
-    { key: 'rhythmic_dna', label: 'Rhythmic DNA', yPercent: 48 },
-    { key: 'timbre_dna', label: 'Timbre DNA', yPercent: 56 },
-    { key: 'emotional_fingerprint', label: 'Emotional Fingerprint', yPercent: 64 },
-    { key: 'processing_signature', label: 'Processing Signature', yPercent: 72 },
-    { key: 'sonic_architecture', label: 'Sonic Architecture', yPercent: 80 },
-    { key: 'inspirational_triggers', label: 'Inspirational Triggers', yPercent: 88 }
+    { key: 'sound_description', label: 'Sound Description', xPercent: 8 },
+    { key: 'genre_fusion', label: 'Genre Fusion', xPercent: 16 },
+    { key: 'neural_spectrum', label: 'Neural Spectrum', xPercent: 24 },
+    { key: 'sound_palette', label: 'Sound Palette', xPercent: 32 },
+    { key: 'tonal_identity', label: 'Tonal DNA', xPercent: 40 },
+    { key: 'rhythmic_dna', label: 'Rhythmic DNA', xPercent: 48 },
+    { key: 'timbre_dna', label: 'Timbre DNA', xPercent: 56 },
+    { key: 'emotional_fingerprint', label: 'Emotional Fingerprint', xPercent: 64 },
+    { key: 'processing_signature', label: 'Processing Signature', xPercent: 72 },
+    { key: 'sonic_architecture', label: 'Sonic Architecture', xPercent: 80 },
+    { key: 'inspirational_triggers', label: 'Inspirational Triggers', xPercent: 88 }
 ];
 
 function createCanvas2DRenderer(canvas, callbacks = {}) {
@@ -43,26 +43,27 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
 
     const config = CANVAS2D_CONFIG;
 
-    // Calculate node positions
+    // Calculate node positions (horizontal: spine on X axis)
     const nodePositions = CANVAS2D_NODES.map((node, i) => {
-        const t = node.yPercent / 100;
-        const y = (t - 0.5) * config.height;
+        const t = node.xPercent / 100;
+        // Horizontal: spine position along X axis
+        const x = (t - 0.5) * config.width;
         const strandPhase = (i % 2) * Math.PI;
         const angle = t * config.frequency * Math.PI * 2 + strandPhase;
 
         return {
             ...node,
-            x: Math.cos(angle) * config.radius,
-            y: y,
-            z: Math.sin(angle) * config.radius,
+            x: x,                           // Spine position (horizontal)
+            y: Math.cos(angle) * config.radius,  // Circular Y component
+            z: Math.sin(angle) * config.radius,  // Circular Z component
             index: i
         };
     });
 
-    // Generate particles
+    // Generate particles (horizontal: wider on X, narrower on Y)
     const particles = Array.from({ length: 15 }, () => ({
-        x: (Math.random() - 0.5) * 1.4,
-        y: (Math.random() - 0.5) * 2.2,
+        x: (Math.random() - 0.5) * 2.2,  // Wider spread along horizontal spine
+        y: (Math.random() - 0.5) * 1.4,  // Narrower spread for circular component
         z: (Math.random() - 0.5) * 0.5,
         size: 2 + Math.random() * 3,
         alpha: 0.05 + Math.random() * 0.08,
@@ -160,8 +161,9 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
             p.x += Math.sin(state.time * 0.5 + p.phase) * 0.001;
             p.y += Math.cos(state.time * 0.3 + p.phase) * 0.0008;
 
-            // Wrap
-            if (Math.abs(p.y) > 1.1) p.y *= -0.9;
+            // Wrap (horizontal: wrap on X, clamp Y)
+            if (Math.abs(p.x) > 1.1) p.x *= -0.9;
+            if (Math.abs(p.y) > 0.8) p.y *= 0.95;
 
             const proj = project(p.x, p.y, p.z, state.rotation);
             const size = p.size * proj.scale;
@@ -177,7 +179,7 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
     function renderHelix() {
         const rect = canvas.getBoundingClientRect();
 
-        // Draw both strands
+        // Draw both strands (horizontal: spine on X axis)
         for (let strand = 0; strand < 2; strand++) {
             const phase = strand * Math.PI;
             const color = strand === 0 ? CANVAS2D_COLORS.primary : CANVAS2D_COLORS.secondary;
@@ -188,10 +190,11 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
 
             for (let i = 0; i <= config.segments; i++) {
                 const t = i / config.segments;
-                const y = (t - 0.5) * config.height;
+                // Horizontal: spine runs along X axis
+                const x = (t - 0.5) * config.width;
                 const angle = t * config.frequency * Math.PI * 2 + phase;
-                const x = Math.cos(angle) * config.radius;
-                const z = Math.sin(angle) * config.radius;
+                const y = Math.cos(angle) * config.radius;  // Circular Y
+                const z = Math.sin(angle) * config.radius;  // Circular Z
 
                 const proj = project(x, y, z, state.rotation);
 
@@ -223,10 +226,11 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
 
             for (let i = 0; i <= config.segments; i++) {
                 const t = i / config.segments;
-                const y = (t - 0.5) * config.height;
+                // Horizontal: spine runs along X axis
+                const x = (t - 0.5) * config.width;
                 const angle = t * config.frequency * Math.PI * 2 + phase;
-                const x = Math.cos(angle) * config.radius;
-                const z = Math.sin(angle) * config.radius;
+                const y = Math.cos(angle) * config.radius;  // Circular Y
+                const z = Math.sin(angle) * config.radius;  // Circular Z
 
                 const proj = project(x, y, z, state.rotation);
 

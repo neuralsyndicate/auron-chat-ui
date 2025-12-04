@@ -93,6 +93,7 @@
 
 .neural-helix-v7-container {
     display: flex;
+    flex-direction: column;  /* Stacked layout for horizontal helix */
     width: 100%;
     height: 100%;
     background: var(--v7-bg);
@@ -106,12 +107,12 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   HELIX COLUMN (LEFT 45%)
+   HELIX ROW (TOP 45%)
 ═══════════════════════════════════════════════════════════════ */
 
 .helix-column-v7 {
-    width: 45%;
-    height: 100%;
+    width: 100%;
+    height: 45%;
     position: relative;
     display: flex;
     align-items: center;
@@ -159,17 +160,18 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   DETAIL COLUMN (RIGHT 55%)
+   DETAIL ROW (BOTTOM 55%)
 ═══════════════════════════════════════════════════════════════ */
 
 .detail-column-v7 {
-    width: 55%;
-    height: 100%;
+    width: 100%;
+    height: 55%;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    padding: 40px;
+    padding: 24px 40px 40px;
     position: relative;
+    overflow-y: auto;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -327,17 +329,8 @@
 ═══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
-    .neural-helix-v7-container {
-        flex-direction: column;
-    }
-
-    .neural-helix-v7-container.mobile {
-        flex-direction: column;
-    }
-
     .helix-column-v7 {
-        width: 100%;
-        height: 55vh;
+        height: 40%;
     }
 
     .helix-column-v7.mobile {
@@ -345,9 +338,12 @@
     }
 
     .detail-column-v7 {
-        width: 100%;
-        height: 45vh;
-        padding: 20px;
+        height: 60%;
+        padding: 16px 20px 20px;
+    }
+
+    /* Mobile bottom sheet mode - when .mobile class is applied */
+    .neural-helix-v7-container.mobile .detail-column-v7 {
         display: none; /* Hidden on mobile, using bottom sheet */
     }
 
@@ -401,7 +397,11 @@
 
 @media (max-width: 480px) {
     .helix-column-v7 {
-        height: 50vh;
+        height: 35%;
+    }
+
+    .detail-column-v7 {
+        height: 65%;
     }
 
     .panel-glass-card-v7 {
