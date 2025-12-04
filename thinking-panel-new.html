@@ -1,0 +1,342 @@
+// Stage icons and behaviors
+const STAGE_CONFIG = {
+    'complexity': { icon: '🔍', label: 'Complexity', color: 'rgba(0, 217, 255, 0.6)' },
+    'emotion': { icon: '💭', label: 'Emotion', color: 'rgba(138, 43, 226, 0.6)' },
+    'domain': { icon: '🎯', label: 'Domain', color: 'rgba(0, 217, 255, 0.6)' },
+    'trigger': { icon: '🧩', label: 'Patterns', color: 'rgba(0, 150, 255, 0.6)' },
+    'web_search': { icon: '📚', label: 'Research', color: 'rgba(0, 217, 255, 0.6)' },
+    'auron': { icon: '🧠', label: 'Auron', color: 'rgba(0, 217, 255, 0.8)' }
+};
+
+// Particle system for subtle background animation
+class ParticleSystem {
+    constructor(canvasId, stageType) {
+        this.canvas = document.getElementById(canvasId);
+        if (!this.canvas) return;
+
+        this.ctx = this.canvas.getContext('2d');
+        this.particles = [];
+        this.stageType = stageType;
+        this.animationId = null;
+
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.init();
+    }
+
+    resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
+
+    init() {
+        // Keep it minimal - only 20 particles max
+        const count = 20;
+        for (let i = 0; i < count; i++) {
+            this.particles.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                vx: (Math.random() - 0.5) * 0.3, // Slow movement
+                vy: (Math.random() - 0.5) * 0.3,
+                size: Math.random() * 2 + 1,
+                opacity: Math.random() * 0.3 + 0.1, // Very subtle
+                life: Math.random() * 100
+            });
+        }
+    }
+
+    updateStage(newStage) {
+        this.stageType = newStage;
+    }
+
+    animate() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Draw subtle particles
+        this.particles.forEach((p, index) => {
+            // Update position (slow, gentle movement)
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life += 0.5;
+
+            // Wrap around edges
+            if (p.x < 0) p.x = this.canvas.width;
+            if (p.x > this.canvas.width) p.x = 0;
+            if (p.y < 0) p.y = this.canvas.height;
+            if (p.y > this.canvas.height) p.y = 0;
+
+            // Subtle opacity pulse
+            p.opacity = 0.1 + Math.sin(p.life * 0.02) * 0.15;
+
+            // Draw particle (very subtle)
+            this.ctx.beginPath();
+            this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            this.ctx.fillStyle = `rgba(0, 217, 255, ${p.opacity})`;
+            this.ctx.fill();
+
+            // Draw subtle connections (only to nearby particles)
+            this.particles.slice(index + 1).forEach(p2 => {
+                const dx = p2.x - p.x;
+                const dy = p2.y - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 150) { // Only connect nearby
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(p.x, p.y);
+                    this.ctx.lineTo(p2.x, p2.y);
+                    this.ctx.strokeStyle = `rgba(0, 217, 255, ${0.05 * (1 - dist / 150)})`;
+                    this.ctx.lineWidth = 0.5;
+                    this.ctx.stroke();
+                }
+            });
+        });
+
+        this.animationId = requestAnimationFrame(() => this.animate());
+    }
+
+    start() {
+        if (!this.animationId) {
+            this.animate();
+        }
+    }
+
+    stop() {
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+    }
+
+    destroy() {
+        this.stop();
+        this.particles = [];
+    }
+}
+
+// ThinkingPanel - Clean bottom bar with subtle neural background
+function ThinkingPanel({ stage, progress, completedStages, isFading }) {
+    const canvasRef = React.useRef(null);
+    const particleSystemRef = React.useRef(null);
+
+    // Extract stage category
+    const getStageCategory = (stageName) => {
+        if (!stageName) return null;
+        if (stageName.startsWith('complexity')) return 'complexity';
+        if (stageName.startsWith('emotion')) return 'emotion';
+        if (stageName.startsWith('domain')) return 'domain';
+        if (stageName.startsWith('trigger')) return 'trigger';
+        if (stageName.startsWith('web_search')) return 'web_search';
+        if (stageName.startsWith('auron')) return 'auron';
+        return null;
+    };
+
+    const currentCategory = getStageCategory(stage);
+    const completedCategories = completedStages
+        ? [...new Set(completedStages.map(s => getStageCategory(s)).filter(Boolean))]
+        : [];
+
+    const allStages = ['complexity', 'emotion', 'domain', 'trigger', 'web_search', 'auron'];
+
+    // Initialize particle system
+    React.useEffect(() => {
+        if (canvasRef.current && !particleSystemRef.current) {
+            particleSystemRef.current = new ParticleSystem('thinking-canvas', currentCategory);
+            particleSystemRef.current.start();
+        }
+
+        return () => {
+            if (particleSystemRef.current) {
+                particleSystemRef.current.destroy();
+                particleSystemRef.current = null;
+            }
+        };
+    }, []);
+
+    // Update stage
+    React.useEffect(() => {
+        if (particleSystemRef.current && currentCategory) {
+            particleSystemRef.current.updateStage(currentCategory);
+        }
+    }, [currentCategory]);
+
+    return (
+        <>
+            {/* Subtle particle canvas background */}
+            <canvas
+                id="thinking-canvas"
+                ref={canvasRef}
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                    zIndex: 1999,
+                    opacity: isFading ? 0 : 0.4,
+                    transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+            />
+
+            {/* Subtle dark overlay */}
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0, 0, 0, 0.6)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                zIndex: 2000,
+                opacity: isFading ? 0 : 1,
+                transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
+            }} />
+
+            {/* Bottom progress bar */}
+            <div style={{
+                position: 'fixed',
+                bottom: '4rem',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '500px',
+                maxWidth: '90vw',
+                zIndex: 2001,
+                opacity: isFading ? 0 : 1,
+                transform: isFading ? 'translate(-50%, 20px)' : 'translateX(-50%)',
+                transition: 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
+            }}>
+                {/* Current stage text */}
+                {stage && SSE_STAGE_MESSAGES[stage] && (
+                    <div style={{
+                        textAlign: 'center',
+                        marginBottom: '1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        letterSpacing: '-0.01em'
+                    }}>
+                        {SSE_STAGE_MESSAGES[stage]}
+                    </div>
+                )}
+
+                {/* Progress bar */}
+                <div style={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '3px',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    borderRadius: '1.5px',
+                    overflow: 'hidden',
+                    marginBottom: '1.25rem'
+                }}>
+                    <div style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        height: '100%',
+                        width: `${progress}%`,
+                        background: 'linear-gradient(90deg, #000DFF 0%, #00D9FF 100%)',
+                        borderRadius: '1.5px',
+                        transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                        boxShadow: '0 0 8px rgba(0, 217, 255, 0.4)'
+                    }} />
+                </div>
+
+                {/* Stage icons row */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '0.5rem'
+                }}>
+                    {allStages.map((stageCategory) => {
+                        const config = STAGE_CONFIG[stageCategory];
+                        const isCompleted = completedCategories.includes(stageCategory);
+                        const isCurrent = currentCategory === stageCategory;
+                        const isUpcoming = !isCompleted && !isCurrent;
+
+                        return (
+                            <div key={stageCategory} style={{
+                                flex: 1,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                opacity: isUpcoming ? 0.25 : 1,
+                                transition: 'opacity 0.3s ease'
+                            }}>
+                                {/* Icon */}
+                                <div style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '1rem',
+                                    background: isCurrent
+                                        ? 'rgba(0, 217, 255, 0.12)'
+                                        : isCompleted
+                                        ? 'rgba(0, 217, 255, 0.08)'
+                                        : 'rgba(255, 255, 255, 0.03)',
+                                    border: `1px solid ${
+                                        isCurrent ? 'rgba(0, 217, 255, 0.3)'
+                                        : isCompleted ? 'rgba(0, 217, 255, 0.15)'
+                                        : 'rgba(255, 255, 255, 0.06)'
+                                    }`,
+                                    boxShadow: isCurrent
+                                        ? '0 0 12px rgba(0, 217, 255, 0.2)'
+                                        : 'none',
+                                    position: 'relative',
+                                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                                }}>
+                                    {isCompleted ? '✓' : config.icon}
+                                    {isCurrent && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '-1px',
+                                            right: '-1px',
+                                            width: '6px',
+                                            height: '6px',
+                                            background: '#00D9FF',
+                                            borderRadius: '50%',
+                                            boxShadow: '0 0 6px rgba(0, 217, 255, 0.8)'
+                                        }} />
+                                    )}
+                                </div>
+
+                                {/* Label */}
+                                <div style={{
+                                    fontSize: '0.6875rem',
+                                    fontWeight: '500',
+                                    color: isCurrent
+                                        ? 'rgba(0, 217, 255, 0.85)'
+                                        : isCompleted
+                                        ? 'rgba(255, 255, 255, 0.5)'
+                                        : 'rgba(255, 255, 255, 0.3)',
+                                    textAlign: 'center',
+                                    letterSpacing: '-0.005em'
+                                }}>
+                                    {config.label}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Progress percentage */}
+                <div style={{
+                    textAlign: 'center',
+                    marginTop: '0.75rem',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    color: 'rgba(0, 217, 255, 0.7)',
+                    fontVariantNumeric: 'tabular-nums'
+                }}>
+                    {Math.round(progress)}%
+                </div>
+            </div>
+        </>
+    );
+}

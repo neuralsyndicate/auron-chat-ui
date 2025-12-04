@@ -125,7 +125,7 @@ void main() {
 
     // Depth-based size scaling (closer = larger)
     float depthSize = mix(0.5, 1.3, (rotated.z + 1.0) * 0.5);
-    float finalSize = u_baseSize * depthSize * perspective;
+    float finalSize = u_baseSize * a_size * depthSize * perspective;
 
     // Selection/hover size boost
     if (a_selected > 0.5) {
@@ -937,16 +937,21 @@ function createHelixRenderer(canvas, callbacks = {}) {
 
             // Delete programs
             [helixProgram, nodeProgram, particleProgram].forEach(program => {
-                gl.detachShader(program, program.vertShader);
-                gl.detachShader(program, program.fragShader);
-                gl.deleteShader(program.vertShader);
-                gl.deleteShader(program.fragShader);
-                gl.deleteProgram(program);
+                if (program) {
+                    if (program.vertShader) {
+                        gl.detachShader(program, program.vertShader);
+                        gl.deleteShader(program.vertShader);
+                    }
+                    if (program.fragShader) {
+                        gl.detachShader(program, program.fragShader);
+                        gl.deleteShader(program.fragShader);
+                    }
+                    gl.deleteProgram(program);
+                }
             });
 
-            // Lose context
-            const ext = gl.getExtension('WEBGL_lose_context');
-            if (ext) ext.loseContext();
+            // Note: We intentionally do NOT call loseContext() here
+            // as it permanently destroys the context and prevents reuse
         }
     };
 }

@@ -77,14 +77,25 @@ function HelixCanvasV7({
     const canvasRef = useRef(null);
     const rendererRef = useRef(null);
 
-    // Initialize renderer
+    // Store callbacks in refs to avoid triggering useEffect on every render
+    const onNodeClickRef = useRef(onNodeClick);
+    const onNodeHoverRef = useRef(onNodeHover);
+
+    // Keep refs updated
+    useEffect(() => {
+        onNodeClickRef.current = onNodeClick;
+        onNodeHoverRef.current = onNodeHover;
+    }, [onNodeClick, onNodeHover]);
+
+    // Initialize renderer - only depends on renderMode
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
+        // Use ref callbacks so renderer doesn't need recreation
         const callbacks = {
-            onHover: onNodeHover,
-            onClick: onNodeClick
+            onHover: (key) => onNodeHoverRef.current?.(key),
+            onClick: (key) => onNodeClickRef.current?.(key)
         };
 
         if (renderMode === 'webgl' && window.HelixWebGL) {
@@ -103,7 +114,7 @@ function HelixCanvasV7({
                 rendererRef.current = null;
             }
         };
-    }, [renderMode, onNodeClick, onNodeHover]);
+    }, [renderMode]); // Only recreate when renderMode changes
 
     // Update selected state
     useEffect(() => {
