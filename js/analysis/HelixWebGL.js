@@ -67,6 +67,9 @@ void main() {
     float depthFactor = smoothstep(-1.0, 1.0, v_depth);
     vec3 baseColor = mix(u_colorBack, u_colorFront, depthFactor);
 
+    // Strand-based color offset (subtle variation between strands)
+    baseColor = mix(baseColor, baseColor * vec3(0.9, 1.0, 1.1), v_strand * 0.15);
+
     // Vertical edge fade (smooth at top/bottom)
     float edgeFade = smoothstep(0.0, 0.06, v_progress) * smoothstep(1.0, 0.94, v_progress);
 
@@ -363,7 +366,12 @@ function createShader(gl, type, source) {
     gl.compileShader(shader);
 
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+        const info = gl.getShaderInfoLog(shader);
+        const typeName = type === gl.VERTEX_SHADER ? 'VERTEX' : 'FRAGMENT';
+        console.error(`${typeName} shader compile error:`, info || '(no info available)');
+        // Log first few lines of source for debugging
+        const lines = source.split('\n').slice(0, 10).join('\n');
+        console.error('Shader source (first 10 lines):', lines);
         gl.deleteShader(shader);
         return null;
     }
@@ -405,9 +413,28 @@ function getUniformLocations(gl, program, names) {
 function getAttribLocations(gl, program, names) {
     const locations = {};
     names.forEach(name => {
-        locations[name] = gl.getAttribLocation(program, name);
+        const loc = gl.getAttribLocation(program, name);
+        locations[name] = loc;
+        if (loc === -1) {
+            console.warn(`Attribute '${name}' not found in shader program (may be optimized out)`);
+        }
     });
     return locations;
+}
+
+// Helper to safely enable and bind vertex attribute
+function bindVertexAttrib(gl, location, buffer, size, type = gl.FLOAT) {
+    if (location === -1) return; // Skip if attribute was optimized out
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.enableVertexAttribArray(location);
+    gl.vertexAttribPointer(location, size, type, false, 0, 0);
+}
+
+// Helper to disable all used attributes to prevent state leakage
+function disableVertexAttribs(gl, attribs) {
+    Object.values(attribs).forEach(loc => {
+        if (loc !== -1) gl.disableVertexAttribArray(loc);
+    });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -691,25 +718,18 @@ function createHelixRenderer(canvas, callbacks = {}) {
         gl.uniform3fv(helixUniforms.u_colorBack, COLORS.secondary);
         gl.uniform1f(helixUniforms.u_glowIntensity, 0.2);
 
-        // Bind position buffer
-        gl.bindBuffer(gl.ARRAY_BUFFER, helixPosBuffer);
-        gl.enableVertexAttribArray(helixAttribs.a_position);
-        gl.vertexAttribPointer(helixAttribs.a_position, 3, gl.FLOAT, false, 0, 0);
-
-        // Bind progress buffer
-        gl.bindBuffer(gl.ARRAY_BUFFER, helixProgressBuffer);
-        gl.enableVertexAttribArray(helixAttribs.a_progress);
-        gl.vertexAttribPointer(helixAttribs.a_progress, 1, gl.FLOAT, false, 0, 0);
-
-        // Bind strand buffer
-        gl.bindBuffer(gl.ARRAY_BUFFER, helixStrandBuffer);
-        gl.enableVertexAttribArray(helixAttribs.a_strand);
-        gl.vertexAttribPointer(helixAttribs.a_strand, 1, gl.FLOAT, false, 0, 0);
+        // Bind vertex attributes safely
+        bindVertexAttrib(gl, helixAttribs.a_position, helixPosBuffer, 3);
+        bindVertexAttrib(gl, helixAttribs.a_progress, helixProgressBuffer, 1);
+        bindVertexAttrib(gl, helixAttribs.a_strand, helixStrandBuffer, 1);
 
         // Draw both strands as line strips
         const segmentsPerStrand = HELIX_CONFIG.segments + 1;
         gl.drawArrays(gl.LINE_STRIP, 0, segmentsPerStrand);
         gl.drawArrays(gl.LINE_STRIP, segmentsPerStrand, segmentsPerStrand);
+
+        // Disable attributes to prevent state leakage
+        disableVertexAttribs(gl, helixAttribs);
     }
 
     function renderNodes() {
@@ -737,28 +757,17 @@ function createHelixRenderer(canvas, callbacks = {}) {
         gl.uniform3fv(nodeUniforms.u_colorSelected, COLORS.selected);
         gl.uniform1f(nodeUniforms.u_selectedIndex, state.selectedIndex);
 
-        // Bind buffers
-        gl.bindBuffer(gl.ARRAY_BUFFER, nodePosBuffer);
-        gl.enableVertexAttribArray(nodeAttribs.a_position);
-        gl.vertexAttribPointer(nodeAttribs.a_position, 3, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, nodeSizeBuffer);
-        gl.enableVertexAttribArray(nodeAttribs.a_size);
-        gl.vertexAttribPointer(nodeAttribs.a_size, 1, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, nodeSelectedBuffer);
-        gl.enableVertexAttribArray(nodeAttribs.a_selected);
-        gl.vertexAttribPointer(nodeAttribs.a_selected, 1, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, nodeHoveredBuffer);
-        gl.enableVertexAttribArray(nodeAttribs.a_hovered);
-        gl.vertexAttribPointer(nodeAttribs.a_hovered, 1, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, nodeIndexBuffer);
-        gl.enableVertexAttribArray(nodeAttribs.a_index);
-        gl.vertexAttribPointer(nodeAttribs.a_index, 1, gl.FLOAT, false, 0, 0);
+        // Bind vertex attributes safely
+        bindVertexAttrib(gl, nodeAttribs.a_position, nodePosBuffer, 3);
+        bindVertexAttrib(gl, nodeAttribs.a_size, nodeSizeBuffer, 1);
+        bindVertexAttrib(gl, nodeAttribs.a_selected, nodeSelectedBuffer, 1);
+        bindVertexAttrib(gl, nodeAttribs.a_hovered, nodeHoveredBuffer, 1);
+        bindVertexAttrib(gl, nodeAttribs.a_index, nodeIndexBuffer, 1);
 
         gl.drawArrays(gl.POINTS, 0, nodeCount);
+
+        // Disable attributes to prevent state leakage
+        disableVertexAttribs(gl, nodeAttribs);
     }
 
     function renderParticles() {
@@ -770,19 +779,15 @@ function createHelixRenderer(canvas, callbacks = {}) {
         gl.uniform1f(particleUniforms.u_depthScale, depthScale);
         gl.uniform3fv(particleUniforms.u_color, COLORS.particle);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, particlePosBuffer);
-        gl.enableVertexAttribArray(particleAttribs.a_position);
-        gl.vertexAttribPointer(particleAttribs.a_position, 3, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, particleSizeBuffer);
-        gl.enableVertexAttribArray(particleAttribs.a_size);
-        gl.vertexAttribPointer(particleAttribs.a_size, 1, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, particleAlphaBuffer);
-        gl.enableVertexAttribArray(particleAttribs.a_alpha);
-        gl.vertexAttribPointer(particleAttribs.a_alpha, 1, gl.FLOAT, false, 0, 0);
+        // Bind vertex attributes safely
+        bindVertexAttrib(gl, particleAttribs.a_position, particlePosBuffer, 3);
+        bindVertexAttrib(gl, particleAttribs.a_size, particleSizeBuffer, 1);
+        bindVertexAttrib(gl, particleAttribs.a_alpha, particleAlphaBuffer, 1);
 
         gl.drawArrays(gl.POINTS, 0, particleCount);
+
+        // Disable attributes to prevent state leakage
+        disableVertexAttribs(gl, particleAttribs);
     }
 
     // ─────────────────────────────────────────────────────────────
