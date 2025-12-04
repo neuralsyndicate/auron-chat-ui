@@ -171,7 +171,7 @@
     justify-content: center;
     padding: 24px 40px 40px;
     position: relative;
-    overflow-y: auto;
+    overflow: hidden;  /* NO SCROLL on page */
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -202,6 +202,8 @@
     border: 1px solid var(--v7-glass-border);
     border-radius: 28px;
     padding: 36px;
+    max-height: 500px;  /* Hard limit - only card content scrolls */
+    overflow-y: auto;   /* Card content scrolls if needed */
     box-shadow:
         0 0 80px rgba(0, 217, 255, 0.06),
         0 24px 60px rgba(0, 0, 0, 0.5),

@@ -1,36 +1,79 @@
 // ============================================================
 // V7 NEURAL HELIX - Canvas 2D Fallback Renderer
-// Used when WebGL is not available or for mobile devices
+// Horizontal DNA double helix - matches WebGL implementation
+// NO rotation - soft breathing oscillation only
 // ============================================================
 
+// ═══════════════════════════════════════════════════════════════
+// CONFIGURATION (matches WebGL)
+// ═══════════════════════════════════════════════════════════════
+
 const CANVAS2D_CONFIG = {
-    width: 2.0,       // Horizontal span (-1 to 1)
-    radius: 0.32,     // Circular cross-section radius
-    frequency: 3,     // Number of turns
-    segments: 100,    // Points per strand
-    depthScale: 0.25  // Perspective depth factor
+    horizontalStretch: 1.3,    // ~65% viewport mapped to NDC
+    amplitude: 0.28,           // Subtle Y/Z amplitude
+    frequency: 4.5,            // 4-5 complete twists
+    segments: 100,             // Points per strand
+    nodeCount: 11
 };
+
+const CANVAS2D_NODE_KEYS = [
+    'sound_description',
+    'genre_fusion',
+    'neural_spectrum',
+    'sound_palette',
+    'tonal_identity',
+    'rhythmic_dna',
+    'timbre_dna',
+    'emotional_fingerprint',
+    'processing_signature',
+    'sonic_architecture',
+    'inspirational_triggers'
+];
+
+const CANVAS2D_NODE_LABELS = [
+    'Sound Description',
+    'Genre Fusion',
+    'Neural Spectrum',
+    'Sound Palette',
+    'Tonal DNA',
+    'Rhythmic DNA',
+    'Timbre DNA',
+    'Emotional Fingerprint',
+    'Processing Signature',
+    'Sonic Architecture',
+    'Inspirational Triggers'
+];
 
 const CANVAS2D_COLORS = {
-    primary: '#00D9FF',
-    secondary: '#0066FF',
-    selected: '#00FFFF',
-    particle: 'rgba(0, 217, 255, 0.08)'
+    front: '#00D9FF',      // Neon cyan
+    back: '#002C55',       // Deep blue
+    selected: '#00FFFF'    // Bright cyan
 };
 
-const CANVAS2D_NODES = [
-    { key: 'sound_description', label: 'Sound Description', xPercent: 8 },
-    { key: 'genre_fusion', label: 'Genre Fusion', xPercent: 16 },
-    { key: 'neural_spectrum', label: 'Neural Spectrum', xPercent: 24 },
-    { key: 'sound_palette', label: 'Sound Palette', xPercent: 32 },
-    { key: 'tonal_identity', label: 'Tonal DNA', xPercent: 40 },
-    { key: 'rhythmic_dna', label: 'Rhythmic DNA', xPercent: 48 },
-    { key: 'timbre_dna', label: 'Timbre DNA', xPercent: 56 },
-    { key: 'emotional_fingerprint', label: 'Emotional Fingerprint', xPercent: 64 },
-    { key: 'processing_signature', label: 'Processing Signature', xPercent: 72 },
-    { key: 'sonic_architecture', label: 'Sonic Architecture', xPercent: 80 },
-    { key: 'inspirational_triggers', label: 'Inspirational Triggers', xPercent: 88 }
-];
+// ═══════════════════════════════════════════════════════════════
+// PARAMETRIC HELIX FUNCTIONS (matches WebGL)
+// ═══════════════════════════════════════════════════════════════
+
+function strandA2D(t) {
+    return {
+        x: (t - 0.5) * CANVAS2D_CONFIG.horizontalStretch,
+        y: CANVAS2D_CONFIG.amplitude * Math.sin(t * CANVAS2D_CONFIG.frequency * Math.PI * 2),
+        z: CANVAS2D_CONFIG.amplitude * Math.cos(t * CANVAS2D_CONFIG.frequency * Math.PI * 2)
+    };
+}
+
+function strandB2D(t) {
+    // Phase shift by π for second strand
+    return {
+        x: (t - 0.5) * CANVAS2D_CONFIG.horizontalStretch,
+        y: CANVAS2D_CONFIG.amplitude * Math.sin(t * CANVAS2D_CONFIG.frequency * Math.PI * 2 + Math.PI),
+        z: CANVAS2D_CONFIG.amplitude * Math.cos(t * CANVAS2D_CONFIG.frequency * Math.PI * 2 + Math.PI)
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MAIN RENDERER
+// ═══════════════════════════════════════════════════════════════
 
 function createCanvas2DRenderer(canvas, callbacks = {}) {
     const { onHover, onClick } = callbacks;
@@ -41,41 +84,47 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         return null;
     }
 
-    const config = CANVAS2D_CONFIG;
-
-    // Calculate node positions (horizontal: spine on X axis)
-    const nodePositions = CANVAS2D_NODES.map((node, i) => {
-        const t = node.xPercent / 100;
-        // Horizontal: spine position along X axis
-        const x = (t - 0.5) * config.width;
-        const strandPhase = (i % 2) * Math.PI;
-        const angle = t * config.frequency * Math.PI * 2 + strandPhase;
-
-        return {
-            ...node,
-            x: x,                           // Spine position (horizontal)
-            y: Math.cos(angle) * config.radius,  // Circular Y component
-            z: Math.sin(angle) * config.radius,  // Circular Z component
+    // Calculate node positions ON the helix curve (matches WebGL)
+    const nodePositions = [];
+    for (let i = 0; i < 11; i++) {
+        const t = i / 10;  // 0, 0.1, 0.2, ... 1.0
+        // Alternate nodes between strands
+        const strand = i % 2 === 0 ? strandA2D : strandB2D;
+        const pos = strand(t);
+        nodePositions.push({
+            key: CANVAS2D_NODE_KEYS[i],
+            label: CANVAS2D_NODE_LABELS[i],
+            t: t,
+            x: pos.x,
+            y: pos.y,
+            z: pos.z,
             index: i
-        };
-    });
+        });
+    }
 
-    // Generate particles (horizontal: wider on X, narrower on Y)
-    const particles = Array.from({ length: 15 }, () => ({
-        x: (Math.random() - 0.5) * 2.2,  // Wider spread along horizontal spine
-        y: (Math.random() - 0.5) * 1.4,  // Narrower spread for circular component
-        z: (Math.random() - 0.5) * 0.5,
-        size: 2 + Math.random() * 3,
-        alpha: 0.05 + Math.random() * 0.08,
-        phase: Math.random() * Math.PI * 2
-    }));
+    // ─────────────────────────────────────────────────────────────
+    // ANIMATION STATE (No rotation - breathing only)
+    // ─────────────────────────────────────────────────────────────
 
-    // State
+    const animation = {
+        // Breathing oscillation
+        yDrift: 0,
+        zDrift: 0,
+        yDriftSpeed: 0.3,
+        zDriftSpeed: 0.2,
+        yDriftAmplitude: 0.008,
+        zDriftAmplitude: 0.005,
+
+        // Selection zoom
+        zoom: 1.0,
+        targetZoom: 1.0,
+        zoomSpeed: 0.08,
+
+        // Time
+        time: 0
+    };
+
     const state = {
-        rotation: 0,
-        rotationSpeed: 0.005,
-        targetRotationSpeed: 0.005,
-        time: 0,
         selectedIndex: -1,
         hoveredIndex: -1,
         rafId: null,
@@ -93,32 +142,39 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         canvas.width = rect.width * dpr;
         canvas.height = rect.height * dpr;
 
-        ctx.scale(dpr, dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     resize();
 
     // ─────────────────────────────────────────────────────────────
-    // COORDINATE TRANSFORMS
+    // COORDINATE TRANSFORMS (matches WebGL shader)
     // ─────────────────────────────────────────────────────────────
 
-    function project(x, y, z, rotation) {
-        const c = Math.cos(rotation);
-        const s = Math.sin(rotation);
-        const rx = x * c - z * s;
-        const rz = x * s + z * c;
+    function project(x, y, z) {
+        // Apply breathing drift
+        y += animation.yDrift;
+        z += animation.zDrift;
 
-        const p = 1 / (1 + rz * config.depthScale);
+        // Apply zoom
+        x *= animation.zoom;
+        y *= animation.zoom;
+        z *= animation.zoom;
+
+        // Perspective (matches WebGL)
+        const p = 1.0 / (1.0 + z * 0.3);
+
         const rect = canvas.getBoundingClientRect();
-        const scale = Math.min(rect.width, rect.height) * 0.4;
+        const aspect = rect.width / rect.height;
+        const scale = Math.min(rect.width, rect.height) * 0.45;
         const cx = rect.width / 2;
         const cy = rect.height / 2;
 
         return {
-            sx: cx + rx * p * scale,
-            sy: cy - y * p * scale,
+            sx: cx + (x * p / aspect) * scale,
+            sy: cy - (y * p) * scale,
             scale: p,
-            depth: rz
+            depth: z
         };
     }
 
@@ -132,17 +188,15 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         const my = clientY - rect.top;
 
         let closest = null;
-        let minDist = 30; // Pixel hit radius
+        let minDist = 25; // Pixel hit radius
 
         for (const node of nodePositions) {
-            const proj = project(node.x, node.y, node.z, state.rotation);
+            const proj = project(node.x, node.y, node.z);
             const dist = Math.hypot(mx - proj.sx, my - proj.sy);
+            const adjustedRadius = minDist * proj.scale;
 
-            // Prefer front nodes
-            if (dist < minDist * proj.scale) {
-                if (!closest || proj.depth > closest.depth) {
-                    closest = { ...node, ...proj, dist };
-                }
+            if (dist < adjustedRadius && (!closest || dist < closest.dist)) {
+                closest = { ...node, ...proj, dist };
             }
         }
 
@@ -153,96 +207,103 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
     // RENDER FUNCTIONS
     // ─────────────────────────────────────────────────────────────
 
-    function renderParticles() {
-        const rect = canvas.getBoundingClientRect();
+    function interpolateColor(depth) {
+        // Depth-based color (front cyan, back blue)
+        const factor = (depth + 0.3) / 0.6;
+        const t = Math.max(0, Math.min(1, factor));
 
-        particles.forEach(p => {
-            // Update position
-            p.x += Math.sin(state.time * 0.5 + p.phase) * 0.001;
-            p.y += Math.cos(state.time * 0.3 + p.phase) * 0.0008;
+        // #002C55 to #00D9FF
+        const r = Math.round(0 + (0 - 0) * t);
+        const g = Math.round(44 + (217 - 44) * t);
+        const b = Math.round(85 + (255 - 85) * t);
 
-            // Wrap (horizontal: wrap on X, clamp Y)
-            if (Math.abs(p.x) > 1.1) p.x *= -0.9;
-            if (Math.abs(p.y) > 0.8) p.y *= 0.95;
-
-            const proj = project(p.x, p.y, p.z, state.rotation);
-            const size = p.size * proj.scale;
-            const alpha = p.alpha * (proj.depth + 1) * 0.5;
-
-            ctx.beginPath();
-            ctx.arc(proj.sx, proj.sy, size, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(0, 217, 255, ${alpha})`;
-            ctx.fill();
-        });
+        return `rgb(${r}, ${g}, ${b})`;
     }
 
     function renderHelix() {
         const rect = canvas.getBoundingClientRect();
 
-        // Draw both strands (horizontal: spine on X axis)
-        for (let strand = 0; strand < 2; strand++) {
-            const phase = strand * Math.PI;
-            const color = strand === 0 ? CANVAS2D_COLORS.primary : CANVAS2D_COLORS.secondary;
+        // Draw strand A
+        ctx.beginPath();
+        ctx.lineWidth = 2;
 
-            ctx.beginPath();
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 2;
+        for (let i = 0; i <= CANVAS2D_CONFIG.segments; i++) {
+            const t = i / CANVAS2D_CONFIG.segments;
+            const pos = strandA2D(t);
+            const proj = project(pos.x, pos.y, pos.z);
 
-            for (let i = 0; i <= config.segments; i++) {
-                const t = i / config.segments;
-                // Horizontal: spine runs along X axis
-                const x = (t - 0.5) * config.width;
-                const angle = t * config.frequency * Math.PI * 2 + phase;
-                const y = Math.cos(angle) * config.radius;  // Circular Y
-                const z = Math.sin(angle) * config.radius;  // Circular Z
+            // Depth-based color
+            ctx.strokeStyle = interpolateColor(proj.depth);
 
-                const proj = project(x, y, z, state.rotation);
+            // Edge fade
+            const edgeFade = Math.min(t / 0.05, (1 - t) / 0.05, 1);
+            ctx.globalAlpha = (0.7 + (proj.depth + 0.3) * 0.5) * edgeFade;
 
-                // Depth-based alpha
-                ctx.globalAlpha = 0.3 + (proj.depth + 1) * 0.35;
-
-                if (i === 0) {
-                    ctx.moveTo(proj.sx, proj.sy);
-                } else {
-                    ctx.lineTo(proj.sx, proj.sy);
-                }
+            if (i === 0) {
+                ctx.moveTo(proj.sx, proj.sy);
+            } else {
+                ctx.lineTo(proj.sx, proj.sy);
             }
-
-            ctx.stroke();
-            ctx.globalAlpha = 1;
         }
+        ctx.stroke();
 
-        // Add glow effect using shadow
+        // Draw strand B
+        ctx.beginPath();
+
+        for (let i = 0; i <= CANVAS2D_CONFIG.segments; i++) {
+            const t = i / CANVAS2D_CONFIG.segments;
+            const pos = strandB2D(t);
+            const proj = project(pos.x, pos.y, pos.z);
+
+            ctx.strokeStyle = interpolateColor(proj.depth);
+
+            const edgeFade = Math.min(t / 0.05, (1 - t) / 0.05, 1);
+            ctx.globalAlpha = (0.7 + (proj.depth + 0.3) * 0.5) * edgeFade;
+
+            if (i === 0) {
+                ctx.moveTo(proj.sx, proj.sy);
+            } else {
+                ctx.lineTo(proj.sx, proj.sy);
+            }
+        }
+        ctx.stroke();
+
+        // Add glow effect
         ctx.shadowBlur = 15;
-        ctx.shadowColor = CANVAS2D_COLORS.primary;
+        ctx.shadowColor = CANVAS2D_COLORS.front;
+        ctx.globalAlpha = 0.3;
+        ctx.lineWidth = 1;
 
-        for (let strand = 0; strand < 2; strand++) {
-            const phase = strand * Math.PI;
+        // Glow pass for strand A
+        ctx.beginPath();
+        for (let i = 0; i <= CANVAS2D_CONFIG.segments; i++) {
+            const t = i / CANVAS2D_CONFIG.segments;
+            const pos = strandA2D(t);
+            const proj = project(pos.x, pos.y, pos.z);
 
-            ctx.beginPath();
-            ctx.strokeStyle = strand === 0 ? CANVAS2D_COLORS.primary : CANVAS2D_COLORS.secondary;
-            ctx.lineWidth = 1;
-            ctx.globalAlpha = 0.3;
-
-            for (let i = 0; i <= config.segments; i++) {
-                const t = i / config.segments;
-                // Horizontal: spine runs along X axis
-                const x = (t - 0.5) * config.width;
-                const angle = t * config.frequency * Math.PI * 2 + phase;
-                const y = Math.cos(angle) * config.radius;  // Circular Y
-                const z = Math.sin(angle) * config.radius;  // Circular Z
-
-                const proj = project(x, y, z, state.rotation);
-
-                if (i === 0) {
-                    ctx.moveTo(proj.sx, proj.sy);
-                } else {
-                    ctx.lineTo(proj.sx, proj.sy);
-                }
+            if (i === 0) {
+                ctx.moveTo(proj.sx, proj.sy);
+            } else {
+                ctx.lineTo(proj.sx, proj.sy);
             }
-
-            ctx.stroke();
         }
+        ctx.strokeStyle = CANVAS2D_COLORS.front;
+        ctx.stroke();
+
+        // Glow pass for strand B
+        ctx.beginPath();
+        for (let i = 0; i <= CANVAS2D_CONFIG.segments; i++) {
+            const t = i / CANVAS2D_CONFIG.segments;
+            const pos = strandB2D(t);
+            const proj = project(pos.x, pos.y, pos.z);
+
+            if (i === 0) {
+                ctx.moveTo(proj.sx, proj.sy);
+            } else {
+                ctx.lineTo(proj.sx, proj.sy);
+            }
+        }
+        ctx.stroke();
 
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
@@ -251,7 +312,7 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
     function renderNodes() {
         // Sort nodes by depth (back to front)
         const sortedNodes = nodePositions.map(node => {
-            const proj = project(node.x, node.y, node.z, state.rotation);
+            const proj = project(node.x, node.y, node.z);
             return { ...node, ...proj };
         }).sort((a, b) => a.depth - b.depth);
 
@@ -261,17 +322,17 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
             const isDimmed = state.selectedIndex >= 0 && !isSelected;
 
             // Base size with depth scaling
-            let size = 10 * node.scale;
-            if (isSelected) size *= 1.4;
-            else if (isHovered) size *= 1.2;
+            let size = 12 * node.scale;
+            if (isSelected) size *= 1.5;
+            else if (isHovered) size *= 1.3;
 
             // Depth-based alpha
-            let alpha = 0.4 + (node.depth + 1) * 0.3;
-            if (isDimmed) alpha *= 0.3;
+            let alpha = 0.6 + (node.depth + 0.3) * 0.67;
+            if (isDimmed) alpha *= 0.4;
 
-            // Glow
+            // Selection/hover glow
             if (isSelected || isHovered) {
-                ctx.shadowBlur = isSelected ? 25 : 15;
+                ctx.shadowBlur = isSelected ? 30 : 20;
                 ctx.shadowColor = CANVAS2D_COLORS.selected;
             }
 
@@ -281,23 +342,46 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
 
             if (isSelected) {
                 // Pulsing glow for selected
-                const pulse = Math.sin(state.time * 4) * 0.2 + 0.8;
+                const pulse = Math.sin(animation.time * 4) * 0.2 + 0.8;
                 ctx.fillStyle = CANVAS2D_COLORS.selected;
                 ctx.globalAlpha = alpha * pulse;
             } else if (isHovered) {
-                ctx.fillStyle = CANVAS2D_COLORS.primary;
+                ctx.fillStyle = CANVAS2D_COLORS.front;
                 ctx.globalAlpha = alpha * 1.3;
             } else {
-                ctx.fillStyle = CANVAS2D_COLORS.primary;
+                ctx.fillStyle = interpolateColor(node.depth);
                 ctx.globalAlpha = alpha;
             }
 
             ctx.fill();
 
+            // Draw halo
+            if (!isDimmed) {
+                ctx.beginPath();
+                ctx.arc(node.sx, node.sy, size * 1.6, 0, Math.PI * 2);
+                ctx.globalAlpha = alpha * 0.2;
+                ctx.fill();
+            }
+
             // Reset
             ctx.shadowBlur = 0;
             ctx.globalAlpha = 1;
         });
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // UPDATE ANIMATION
+    // ─────────────────────────────────────────────────────────────
+
+    function updateAnimation(time) {
+        // Soft breathing
+        animation.yDrift = Math.sin(time * animation.yDriftSpeed) * animation.yDriftAmplitude;
+        animation.zDrift = Math.sin(time * animation.zDriftSpeed) * animation.zDriftAmplitude;
+
+        // Smooth zoom transition
+        animation.zoom += (animation.targetZoom - animation.zoom) * animation.zoomSpeed;
+
+        animation.time = time;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -308,17 +392,15 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         if (!state.running) return;
 
         const rect = canvas.getBoundingClientRect();
+        const time = timestamp * 0.001;
 
-        // Smooth rotation speed transition
-        state.rotationSpeed += (state.targetRotationSpeed - state.rotationSpeed) * 0.05;
-        state.rotation += state.rotationSpeed;
-        state.time = timestamp * 0.001;
+        // Update animation
+        updateAnimation(time);
 
         // Clear
         ctx.clearRect(0, 0, rect.width, rect.height);
 
         // Render layers
-        renderParticles();
         renderHelix();
         renderNodes();
 
@@ -335,9 +417,6 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
 
         if (newHoveredIndex !== state.hoveredIndex) {
             state.hoveredIndex = newHoveredIndex;
-            state.targetRotationSpeed = newHoveredIndex >= 0 ? 0.001 :
-                                        state.selectedIndex >= 0 ? 0.002 : 0.005;
-
             canvas.style.cursor = newHoveredIndex >= 0 ? 'pointer' : 'default';
 
             if (onHover) {
@@ -355,7 +434,6 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
 
     function handleMouseLeave() {
         state.hoveredIndex = -1;
-        state.targetRotationSpeed = state.selectedIndex >= 0 ? 0.002 : 0.005;
         canvas.style.cursor = 'default';
 
         if (onHover) {
@@ -393,7 +471,8 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
 
         setSelectedIndex(index) {
             state.selectedIndex = index;
-            state.targetRotationSpeed = index >= 0 ? 0.002 : 0.005;
+            // Zoom on selection
+            animation.targetZoom = index >= 0 ? 1.06 : 1.0;
         },
 
         getNodePositions() {
@@ -418,5 +497,6 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
 // Export for global access
 window.HelixCanvas2D = {
     createRenderer: createCanvas2DRenderer,
-    NODE_CONFIG: CANVAS2D_NODES
+    NODE_KEYS: CANVAS2D_NODE_KEYS,
+    NODE_LABELS: CANVAS2D_NODE_LABELS
 };
