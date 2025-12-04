@@ -13,7 +13,8 @@ const CANVAS2D_CONFIG = {
     amplitude: 0.38,            // +36% taller oscillations
     frequency: 3.0,             // Fewer waves for smoother DNA curves
     segments: 100,
-    nodeCount: 11,
+    nodeCount: 10,              // 10 nodes (sound_description moved to header)
+    rungCount: 18,              // DNA rungs connecting strands
     // Diagonal offset (top-left to bottom-right flow)
     diagonalOffsetX: -0.4,      // Shift left more
     diagonalOffsetY: 0.25,      // Slightly higher start
@@ -21,8 +22,8 @@ const CANVAS2D_CONFIG = {
     diagonalSlopeY: -0.5        // Steeper diagonal
 };
 
+// Node keys (sound_description moved to header)
 const CANVAS2D_NODE_KEYS = [
-    'sound_description',
     'genre_fusion',
     'neural_spectrum',
     'sound_palette',
@@ -36,7 +37,6 @@ const CANVAS2D_NODE_KEYS = [
 ];
 
 const CANVAS2D_NODE_LABELS = [
-    'Sound Description',
     'Genre Fusion',
     'Neural Spectrum',
     'Sound Palette',
@@ -50,10 +50,10 @@ const CANVAS2D_NODE_LABELS = [
 ];
 
 const CANVAS2D_COLORS = {
-    front: '#00D9FF',      // Neon cyan
-    back: '#002C55',       // Deep blue
+    front: '#3FE3FF',      // Soft cyan (matches WebGL)
+    back: '#0088cc',       // Brighter back strand
     selected: '#00FFFF',   // Bright cyan
-    particle: 'rgba(0, 217, 255, 0.15)'
+    rung: '#1a8caa'        // Muted cyan for DNA rungs
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -75,35 +75,36 @@ function strandA2D(t) {
 
 function strandB2D(t) {
     const baseX = (t - 0.5) * CANVAS2D_CONFIG.horizontalStretch;
-    const baseY = CANVAS2D_CONFIG.amplitude * Math.sin(t * CANVAS2D_CONFIG.frequency * Math.PI * 2 + Math.PI);
+    // Add slight vertical phase offset (0.05) for organic asymmetry
+    const phaseOffset = 0.05;
+    const baseY = CANVAS2D_CONFIG.amplitude * Math.sin(t * CANVAS2D_CONFIG.frequency * Math.PI * 2 + Math.PI + phaseOffset);
     const baseZ = CANVAS2D_CONFIG.amplitude * Math.cos(t * CANVAS2D_CONFIG.frequency * Math.PI * 2 + Math.PI);
 
-    // Apply diagonal transformation
+    // Add slight horizontal offset for visual separation
+    const horizontalSeparation = 0.02;
+
     return {
-        x: baseX + CANVAS2D_CONFIG.diagonalOffsetX + t * CANVAS2D_CONFIG.diagonalSlopeX,
+        x: baseX + CANVAS2D_CONFIG.diagonalOffsetX + t * CANVAS2D_CONFIG.diagonalSlopeX + horizontalSeparation,
         y: baseY + CANVAS2D_CONFIG.diagonalOffsetY + t * CANVAS2D_CONFIG.diagonalSlopeY,
-        z: baseZ
+        z: baseZ * 0.9  // Slightly reduced depth for brightness difference
     };
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PARTICLE GENERATOR
+// RUNG GENERATOR (DNA rungs connecting strands)
 // ═══════════════════════════════════════════════════════════════
 
-function generateParticles(count = 7) {
-    // Subtle neural dust clustered around helix (not fullscreen)
-    const particles = [];
-    for (let i = 0; i < count; i++) {
-        particles.push({
-            x: (Math.random() - 0.5) * 1.2,   // Tighter X range (clustered)
-            y: (Math.random() - 0.5) * 0.6,   // Tighter Y range
-            z: (Math.random() - 0.5) * 0.3,   // Tighter Z range
-            size: 2.0,                         // Uniform size (no variation)
-            alpha: 0.03 + Math.random() * 0.03, // Very subtle (0.03-0.06)
-            phase: Math.random() * Math.PI * 2
-        });
+function generateRungs() {
+    const rungs = [];
+    const rungCount = CANVAS2D_CONFIG.rungCount;  // 18 rungs
+
+    for (let i = 0; i < rungCount; i++) {
+        const t = (i + 0.5) / rungCount;  // Evenly distributed, offset by half
+        const posA = strandA2D(t);
+        const posB = strandB2D(t);
+        rungs.push({ t, posA, posB });
     }
-    return particles;
+    return rungs;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -119,13 +120,14 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         return null;
     }
 
-    // Generate particles (subtle neural dust)
-    const particles = generateParticles(7);
+    // Generate DNA rungs (connecting strands)
+    const rungs = generateRungs();
 
     // Calculate node positions ON the helix curve (diagonal)
+    const nodeCount = CANVAS2D_CONFIG.nodeCount;  // 10 nodes
     const nodePositions = [];
-    for (let i = 0; i < 11; i++) {
-        const t = i / 10;
+    for (let i = 0; i < nodeCount; i++) {
+        const t = i / (nodeCount - 1);  // Distribute evenly across full helix
         const strand = i % 2 === 0 ? strandA2D : strandB2D;
         const pos = strand(t);
         nodePositions.push({
@@ -168,6 +170,12 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         motionScale: 1.0,
         targetMotionScale: 1.0,
 
+        // Parallax (cursor-based)
+        parallaxX: 0,
+        parallaxY: 0,
+        targetParallaxX: 0,
+        targetParallaxY: 0,
+
         // Time
         time: 0
     };
@@ -203,6 +211,10 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         // Apply drift
         x += animation.xDrift;
         y += animation.yDrift;
+
+        // Apply parallax
+        x += animation.parallaxX;
+        y += animation.parallaxY;
 
         // Apply breathing scale
         x *= animation.breathScale;
@@ -264,33 +276,41 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         const factor = (depth + 0.3) / 0.6;
         const t = Math.max(0, Math.min(1, factor));
 
-        // #002C55 to #00D9FF
-        const r = Math.round(0);
-        const g = Math.round(44 + (217 - 44) * t);
-        const b = Math.round(85 + (255 - 85) * t);
+        // #0088cc to #3FE3FF (matches new WebGL colors)
+        const r = Math.round(0 + (63 - 0) * t);
+        const g = Math.round(136 + (227 - 136) * t);
+        const b = Math.round(204 + (255 - 204) * t);
 
         return `rgb(${r}, ${g}, ${b})`;
     }
 
-    function renderParticles() {
-        particles.forEach(p => {
-            // Very slow drift (50% slower than before)
-            const driftX = Math.sin(animation.time * 0.15 + p.phase) * 0.015;
-            const driftY = Math.sin(animation.time * 0.1 + p.phase * 1.5) * 0.015;
-            const px = p.x + animation.xDrift * 0.5 + driftX;
-            const py = p.y + animation.yDrift * 0.5 + driftY;
-            const proj = project(px, py, p.z);
+    function renderRungs() {
+        rungs.forEach(rung => {
+            const projA = project(rung.posA.x, rung.posA.y, rung.posA.z);
+            const projB = project(rung.posB.x, rung.posB.y, rung.posB.z);
 
-            // Subtle twinkle effect (slower)
-            const twinkle = 0.8 + 0.2 * Math.sin(animation.time * 1.0 + p.phase * 3.0);
-            const alpha = p.alpha * twinkle;
+            // Average depth for color
+            const avgDepth = (projA.depth + projB.depth) / 2;
+            const depthFactor = (avgDepth + 0.3) / 0.6;
 
-            // Draw smaller particle
+            // Create gradient along rung
+            const gradient = ctx.createLinearGradient(projA.sx, projA.sy, projB.sx, projB.sy);
+            gradient.addColorStop(0, 'rgba(26, 140, 170, 0)');
+            gradient.addColorStop(0.2, 'rgba(26, 140, 170, 0.3)');
+            gradient.addColorStop(0.5, 'rgba(26, 140, 170, 0.4)');
+            gradient.addColorStop(0.8, 'rgba(26, 140, 170, 0.3)');
+            gradient.addColorStop(1, 'rgba(26, 140, 170, 0)');
+
             ctx.beginPath();
-            ctx.arc(proj.sx, proj.sy, p.size * proj.scale * 1.5, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(0, 217, 255, ${alpha})`;
-            ctx.fill();
+            ctx.moveTo(projA.sx, projA.sy);
+            ctx.lineTo(projB.sx, projB.sy);
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 1.5;
+            ctx.globalAlpha = 0.3 + depthFactor * 0.3;
+            ctx.stroke();
         });
+
+        ctx.globalAlpha = 1;
     }
 
     function renderHelix() {
@@ -451,6 +471,14 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
     // ─────────────────────────────────────────────────────────────
 
     function updateAnimation(time) {
+        // Smooth transitions
+        animation.zoom += (animation.targetZoom - animation.zoom) * 0.08;
+        animation.motionScale += (animation.targetMotionScale - animation.motionScale) * 0.05;
+
+        // Smooth parallax interpolation
+        animation.parallaxX += (animation.targetParallaxX - animation.parallaxX) * 0.1;
+        animation.parallaxY += (animation.targetParallaxY - animation.parallaxY) * 0.1;
+
         // Soft drift (with motion scale)
         animation.xDrift = Math.sin(time * animation.xDriftSpeed) * animation.xDriftAmplitude * animation.motionScale;
         animation.yDrift = Math.sin(time * animation.yDriftSpeed + 2.0) * animation.yDriftAmplitude * animation.motionScale;
@@ -466,10 +494,6 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
 
         // Traveling wave
         animation.waveOffset = time * animation.waveSpeed * animation.motionScale;
-
-        // Smooth transitions
-        animation.zoom += (animation.targetZoom - animation.zoom) * 0.08;
-        animation.motionScale += (animation.targetMotionScale - animation.motionScale) * 0.05;
 
         animation.time = time;
     }
@@ -490,7 +514,7 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         ctx.clearRect(0, 0, rect.width, rect.height);
 
         // Render layers (back to front)
-        renderParticles();
+        renderRungs();
         renderHelix();
         renderNodes();
 
@@ -593,6 +617,13 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
                 animation.targetMotionScale = 1.0;
                 animation.targetZoom = 1.0;
             }
+        },
+
+        setParallax(normalizedX, normalizedY) {
+            // normalizedX/Y are 0-1, center at 0.5
+            // Convert to offset: ±0.06 for X, ±0.04 for Y
+            animation.targetParallaxX = (normalizedX - 0.5) * 0.12;  // ±0.06
+            animation.targetParallaxY = (normalizedY - 0.5) * 0.08;  // ±0.04
         },
 
         getNodePositions() {

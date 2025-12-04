@@ -13,7 +13,8 @@ const HELIX_CONFIG = {
     amplitude: 0.38,            // +36% taller oscillations
     frequency: 3.0,             // Fewer waves for smoother DNA curves
     segments: 200,
-    nodeCount: 11,
+    nodeCount: 10,              // 10 nodes (sound_description moved to header)
+    rungCount: 18,              // DNA rungs connecting strands
     // Diagonal offset (top-left to bottom-right flow)
     diagonalOffsetX: -0.4,      // Shift left more
     diagonalOffsetY: 0.25,      // Slightly higher start
@@ -21,8 +22,8 @@ const HELIX_CONFIG = {
     diagonalSlopeY: -0.5        // Steeper diagonal
 };
 
+// Node keys (sound_description moved to header)
 const NODE_KEYS = [
-    'sound_description',
     'genre_fusion',
     'neural_spectrum',
     'sound_palette',
@@ -36,7 +37,6 @@ const NODE_KEYS = [
 ];
 
 const NODE_LABELS = [
-    'Sound Description',
     'Genre Fusion',
     'Neural Spectrum',
     'Sound Palette',
@@ -67,13 +67,18 @@ function strandA(t) {
 
 function strandB(t) {
     const baseX = (t - 0.5) * HELIX_CONFIG.horizontalStretch;
-    const baseY = HELIX_CONFIG.amplitude * Math.sin(t * HELIX_CONFIG.frequency * Math.PI * 2 + Math.PI);
+    // Add slight vertical phase offset (0.05) for organic asymmetry
+    const phaseOffset = 0.05;
+    const baseY = HELIX_CONFIG.amplitude * Math.sin(t * HELIX_CONFIG.frequency * Math.PI * 2 + Math.PI + phaseOffset);
     const baseZ = HELIX_CONFIG.amplitude * Math.cos(t * HELIX_CONFIG.frequency * Math.PI * 2 + Math.PI);
 
+    // Add slight horizontal offset for visual separation
+    const horizontalSeparation = 0.02;
+
     return {
-        x: baseX + HELIX_CONFIG.diagonalOffsetX + t * HELIX_CONFIG.diagonalSlopeX,
+        x: baseX + HELIX_CONFIG.diagonalOffsetX + t * HELIX_CONFIG.diagonalSlopeX + horizontalSeparation,
         y: baseY + HELIX_CONFIG.diagonalOffsetY + t * HELIX_CONFIG.diagonalSlopeY,
-        z: baseZ
+        z: baseZ * 0.9  // Slightly reduced depth for brightness difference
     };
 }
 
@@ -92,6 +97,7 @@ uniform float u_yDrift;
 uniform float u_breathScale;
 uniform float u_zoom;
 uniform vec2 u_resolution;
+uniform vec2 u_parallax;
 
 varying float v_progress;
 varying float v_depth;
@@ -103,6 +109,10 @@ void main() {
     // Apply drift animation
     pos.x += u_xDrift;
     pos.y += u_yDrift;
+
+    // Apply parallax
+    pos.x += u_parallax.x;
+    pos.y += u_parallax.y;
 
     // Apply breathing scale
     pos *= u_breathScale;
@@ -186,6 +196,7 @@ uniform float u_yDrift;
 uniform float u_breathScale;
 uniform float u_zoom;
 uniform vec2 u_resolution;
+uniform vec2 u_parallax;
 uniform float u_baseSize;
 
 varying float v_depth;
@@ -200,6 +211,10 @@ void main() {
     // Apply drift animation
     pos.x += u_xDrift;
     pos.y += u_yDrift;
+
+    // Apply parallax
+    pos.x += u_parallax.x;
+    pos.y += u_parallax.y;
 
     // Apply breathing scale
     pos *= u_breathScale;
@@ -327,37 +342,45 @@ void main() {
 `;
 
 // ═══════════════════════════════════════════════════════════════
-// PARTICLE SHADERS
+// RUNG SHADERS (DNA rungs connecting strands)
 // ═══════════════════════════════════════════════════════════════
 
-const PARTICLE_VERT = `
+const RUNG_VERT = `
 attribute vec3 a_position;
-attribute float a_size;
-attribute float a_alpha;
-attribute float a_phase;
+attribute float a_progress;
 
 uniform float u_time;
 uniform float u_xDrift;
 uniform float u_yDrift;
+uniform float u_breathScale;
+uniform float u_zoom;
 uniform vec2 u_resolution;
+uniform vec2 u_parallax;
 
-varying float v_alpha;
+varying float v_progress;
+varying float v_depth;
 
 void main() {
     vec3 pos = a_position;
 
-    // Follow helix drift at half rate
-    pos.x += u_xDrift * 0.5;
-    pos.y += u_yDrift * 0.5;
+    // Apply drift animation
+    pos.x += u_xDrift;
+    pos.y += u_yDrift;
 
-    // Very slow particle drift (50% slower)
-    pos.x += sin(u_time * 0.15 + a_phase) * 0.015;
-    pos.y += sin(u_time * 0.1 + a_phase * 1.5) * 0.015;
+    // Apply parallax
+    pos.x += u_parallax.x;
+    pos.y += u_parallax.y;
 
+    // Apply breathing scale
+    pos *= u_breathScale;
+
+    // Apply selection zoom
+    pos *= u_zoom;
+
+    // Perspective
     float perspective = 1.0 / (1.0 + pos.z * 0.3);
     float aspect = u_resolution.x / u_resolution.y;
 
-    gl_PointSize = a_size * perspective * min(u_resolution.x, u_resolution.y) * 0.006;
     gl_Position = vec4(
         pos.x * perspective / aspect,
         pos.y * perspective,
@@ -365,23 +388,32 @@ void main() {
         1.0
     );
 
-    // Subtle twinkle effect (slower)
-    float twinkle = 0.8 + sin(u_time * 1.0 + a_phase * 3.0) * 0.2;
-    v_alpha = a_alpha * twinkle;
+    v_progress = a_progress;
+    v_depth = pos.z;
 }
 `;
 
-const PARTICLE_FRAG = `
+const RUNG_FRAG = `
 precision highp float;
 
-varying float v_alpha;
+uniform vec3 u_rungColor;
+uniform float u_time;
+uniform float u_alpha;
+
+varying float v_progress;
+varying float v_depth;
 
 void main() {
-    vec2 center = gl_PointCoord - 0.5;
-    float dist = length(center);
-    float circle = 1.0 - smoothstep(0.3, 0.5, dist);
-    if (circle < 0.01) discard;
-    gl_FragColor = vec4(0.0, 0.85, 1.0, v_alpha * circle);
+    // Depth-based opacity
+    float depthFactor = smoothstep(-0.3, 0.3, v_depth);
+
+    // Subtle pulse along progress
+    float pulse = 0.7 + 0.3 * sin(v_progress * 36.0 + u_time * 2.0);
+
+    vec3 color = u_rungColor * pulse * mix(0.5, 1.0, depthFactor);
+    float alpha = u_alpha * mix(0.3, 0.6, depthFactor);
+
+    gl_FragColor = vec4(color, alpha);
 }
 `;
 
@@ -423,8 +455,9 @@ function generateHelixGeometry() {
 
 function calculateNodePositions() {
     const nodes = [];
-    for (let i = 0; i < 11; i++) {
-        const t = i / 10;
+    const nodeCount = HELIX_CONFIG.nodeCount;  // 10 nodes
+    for (let i = 0; i < nodeCount; i++) {
+        const t = i / (nodeCount - 1);  // Distribute evenly across full helix
         const strand = i % 2 === 0 ? strandA : strandB;
         const pos = strand(t);
         nodes.push({
@@ -440,20 +473,27 @@ function calculateNodePositions() {
     return nodes;
 }
 
-function generateParticles(count = 7) {
-    // Subtle neural dust clustered around helix (not fullscreen)
-    const particles = [];
-    for (let i = 0; i < count; i++) {
-        particles.push({
-            x: (Math.random() - 0.5) * 1.2,   // Tighter X range (clustered)
-            y: (Math.random() - 0.5) * 0.6,   // Tighter Y range
-            z: (Math.random() - 0.5) * 0.3,   // Tighter Z range
-            size: 2.0,                         // Uniform size (no variation)
-            alpha: 0.03 + Math.random() * 0.03, // Very subtle (0.03-0.06)
-            phase: Math.random() * Math.PI * 2
-        });
+function generateRungGeometry() {
+    const rungCount = HELIX_CONFIG.rungCount;  // 18 rungs
+    const positions = [];
+    const progress = [];
+
+    for (let i = 0; i < rungCount; i++) {
+        const t = (i + 0.5) / rungCount;  // Evenly distributed, offset by half
+        const posA = strandA(t);
+        const posB = strandB(t);
+
+        // Each rung needs 2 vertices (start and end points)
+        positions.push(posA.x, posA.y, posA.z);
+        positions.push(posB.x, posB.y, posB.z);
+        progress.push(t, t);
     }
-    return particles;
+
+    return {
+        positions: new Float32Array(positions),
+        progress: new Float32Array(progress),
+        vertexCount: rungCount * 2
+    };
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -539,10 +579,11 @@ function hexToGL(hex) {
 }
 
 const COLORS = {
-    front: hexToGL('#00D9FF'),
-    back: hexToGL('#002C55'),
+    front: hexToGL('#3FE3FF'),    // Soft cyan (primary helix)
+    back: hexToGL('#0088cc'),     // Brighter back strand
     selected: hexToGL('#00FFFF'),
-    halo: [0.0, 0.2, 0.4]  // Deep blue halo rgba(0, 50, 100)
+    halo: [0.0, 0.2, 0.4],        // Deep blue halo rgba(0, 50, 100)
+    rung: hexToGL('#1a8caa')      // Muted cyan for DNA rungs
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -625,9 +666,9 @@ function createHelixRenderer(canvas, callbacks = {}) {
     // Create shader programs
     const helixProgram = createProgram(gl, HELIX_VERT, HELIX_FRAG);
     const nodeProgram = createProgram(gl, NODE_VERT, NODE_FRAG);
-    const particleProgram = createProgram(gl, PARTICLE_VERT, PARTICLE_FRAG);
+    const rungProgram = createProgram(gl, RUNG_VERT, RUNG_FRAG);
 
-    if (!helixProgram || !nodeProgram || !particleProgram) {
+    if (!helixProgram || !nodeProgram || !rungProgram) {
         console.error('Failed to create shader programs');
         return null;
     }
@@ -635,7 +676,7 @@ function createHelixRenderer(canvas, callbacks = {}) {
     // Generate geometry
     const helixGeometry = generateHelixGeometry();
     const nodePositions = calculateNodePositions();
-    const particles = generateParticles(7);  // Subtle neural dust
+    const rungGeometry = generateRungGeometry();  // 18 DNA rungs
 
     // ─────────────────────────────────────────────────────────────
     // ANIMATION STATE
@@ -670,6 +711,12 @@ function createHelixRenderer(canvas, callbacks = {}) {
         motionScale: 1.0,
         targetMotionScale: 1.0,
 
+        // Parallax (cursor-based)
+        parallaxX: 0,
+        parallaxY: 0,
+        targetParallaxX: 0,
+        targetParallaxY: 0,
+
         time: 0
     };
 
@@ -694,7 +741,7 @@ function createHelixRenderer(canvas, callbacks = {}) {
     const helixAttribs = getAttribLocations(gl, helixProgram, ['a_position', 'a_progress', 'a_strand']);
     const helixUniforms = getUniformLocations(gl, helixProgram, [
         'u_time', 'u_xDrift', 'u_yDrift', 'u_breathScale', 'u_zoom', 'u_resolution',
-        'u_colorFront', 'u_colorBack', 'u_waveOffset', 'u_glowIntensity',
+        'u_parallax', 'u_colorFront', 'u_colorBack', 'u_waveOffset', 'u_glowIntensity',
         'u_depthShimmer', 'u_alpha', 'u_colorScale'
     ]);
 
@@ -746,50 +793,26 @@ function createHelixRenderer(canvas, callbacks = {}) {
         'a_position', 'a_size', 'a_selected', 'a_hovered', 'a_dimmed', 'a_index'
     ]);
     const nodeUniforms = getUniformLocations(gl, nodeProgram, [
-        'u_time', 'u_xDrift', 'u_yDrift', 'u_breathScale', 'u_zoom', 'u_resolution', 'u_baseSize',
-        'u_colorPrimary', 'u_colorSelected', 'u_colorHalo'
+        'u_time', 'u_xDrift', 'u_yDrift', 'u_breathScale', 'u_zoom', 'u_resolution',
+        'u_parallax', 'u_baseSize', 'u_colorPrimary', 'u_colorSelected', 'u_colorHalo'
     ]);
 
     // ─────────────────────────────────────────────────────────────
-    // PARTICLE BUFFERS
+    // RUNG BUFFERS (DNA rungs connecting strands)
     // ─────────────────────────────────────────────────────────────
 
-    const particleCount = particles.length;
-    const particlePosData = new Float32Array(particleCount * 3);
-    const particleSizeData = new Float32Array(particleCount);
-    const particleAlphaData = new Float32Array(particleCount);
-    const particlePhaseData = new Float32Array(particleCount);
+    const rungPosBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, rungPosBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, rungGeometry.positions, gl.STATIC_DRAW);
 
-    particles.forEach((p, i) => {
-        particlePosData[i * 3] = p.x;
-        particlePosData[i * 3 + 1] = p.y;
-        particlePosData[i * 3 + 2] = p.z;
-        particleSizeData[i] = p.size;
-        particleAlphaData[i] = p.alpha;
-        particlePhaseData[i] = p.phase;
-    });
+    const rungProgressBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, rungProgressBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, rungGeometry.progress, gl.STATIC_DRAW);
 
-    const particlePosBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, particlePosBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, particlePosData, gl.STATIC_DRAW);
-
-    const particleSizeBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, particleSizeBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, particleSizeData, gl.STATIC_DRAW);
-
-    const particleAlphaBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, particleAlphaBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, particleAlphaData, gl.STATIC_DRAW);
-
-    const particlePhaseBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, particlePhaseBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, particlePhaseData, gl.STATIC_DRAW);
-
-    const particleAttribs = getAttribLocations(gl, particleProgram, [
-        'a_position', 'a_size', 'a_alpha', 'a_phase'
-    ]);
-    const particleUniforms = getUniformLocations(gl, particleProgram, [
-        'u_time', 'u_xDrift', 'u_yDrift', 'u_resolution'
+    const rungAttribs = getAttribLocations(gl, rungProgram, ['a_position', 'a_progress']);
+    const rungUniforms = getUniformLocations(gl, rungProgram, [
+        'u_time', 'u_xDrift', 'u_yDrift', 'u_breathScale', 'u_zoom',
+        'u_resolution', 'u_parallax', 'u_rungColor', 'u_alpha'
     ]);
 
     // ─────────────────────────────────────────────────────────────
@@ -828,6 +851,10 @@ function createHelixRenderer(canvas, callbacks = {}) {
         animation.zoom += (animation.targetZoom - animation.zoom) * 0.08;
         animation.motionScale += (animation.targetMotionScale - animation.motionScale) * 0.05;
 
+        // Smooth parallax interpolation
+        animation.parallaxX += (animation.targetParallaxX - animation.parallaxX) * 0.1;
+        animation.parallaxY += (animation.targetParallaxY - animation.parallaxY) * 0.1;
+
         // Soft drift
         animation.xDrift = Math.sin(time * animation.xDriftSpeed) * animation.xDriftAmplitude * animation.motionScale;
         animation.yDrift = Math.sin(time * animation.yDriftSpeed + 2.0) * animation.yDriftAmplitude * animation.motionScale;
@@ -853,22 +880,25 @@ function createHelixRenderer(canvas, callbacks = {}) {
     // RENDER FUNCTIONS
     // ─────────────────────────────────────────────────────────────
 
-    function renderParticles() {
-        gl.useProgram(particleProgram);
+    function renderRungs() {
+        gl.useProgram(rungProgram);
 
-        gl.uniform1f(particleUniforms.u_time, animation.time);
-        gl.uniform1f(particleUniforms.u_xDrift, animation.xDrift);
-        gl.uniform1f(particleUniforms.u_yDrift, animation.yDrift);
-        gl.uniform2f(particleUniforms.u_resolution, canvas.width, canvas.height);
+        gl.uniform1f(rungUniforms.u_time, animation.time);
+        gl.uniform1f(rungUniforms.u_xDrift, animation.xDrift);
+        gl.uniform1f(rungUniforms.u_yDrift, animation.yDrift);
+        gl.uniform1f(rungUniforms.u_breathScale, animation.breathScale);
+        gl.uniform1f(rungUniforms.u_zoom, animation.zoom);
+        gl.uniform2f(rungUniforms.u_resolution, canvas.width, canvas.height);
+        gl.uniform2f(rungUniforms.u_parallax, animation.parallaxX, animation.parallaxY);
+        gl.uniform3fv(rungUniforms.u_rungColor, COLORS.rung);
+        gl.uniform1f(rungUniforms.u_alpha, 0.4);
 
-        bindVertexAttrib(gl, particleAttribs.a_position, particlePosBuffer, 3);
-        bindVertexAttrib(gl, particleAttribs.a_size, particleSizeBuffer, 1);
-        bindVertexAttrib(gl, particleAttribs.a_alpha, particleAlphaBuffer, 1);
-        bindVertexAttrib(gl, particleAttribs.a_phase, particlePhaseBuffer, 1);
+        bindVertexAttrib(gl, rungAttribs.a_position, rungPosBuffer, 3);
+        bindVertexAttrib(gl, rungAttribs.a_progress, rungProgressBuffer, 1);
 
-        gl.drawArrays(gl.POINTS, 0, particleCount);
+        gl.drawArrays(gl.LINES, 0, rungGeometry.vertexCount);
 
-        disableVertexAttribs(gl, particleAttribs);
+        disableVertexAttribs(gl, rungAttribs);
     }
 
     function renderHelix() {
@@ -881,6 +911,7 @@ function createHelixRenderer(canvas, callbacks = {}) {
         gl.uniform1f(helixUniforms.u_breathScale, animation.breathScale);
         gl.uniform1f(helixUniforms.u_zoom, animation.zoom);
         gl.uniform2f(helixUniforms.u_resolution, canvas.width, canvas.height);
+        gl.uniform2f(helixUniforms.u_parallax, animation.parallaxX, animation.parallaxY);
         gl.uniform3fv(helixUniforms.u_colorFront, COLORS.front);
         gl.uniform3fv(helixUniforms.u_colorBack, COLORS.back);
         gl.uniform1f(helixUniforms.u_waveOffset, animation.waveOffset);
@@ -937,6 +968,7 @@ function createHelixRenderer(canvas, callbacks = {}) {
         gl.uniform1f(nodeUniforms.u_breathScale, animation.breathScale);
         gl.uniform1f(nodeUniforms.u_zoom, animation.zoom);
         gl.uniform2f(nodeUniforms.u_resolution, canvas.width, canvas.height);
+        gl.uniform2f(nodeUniforms.u_parallax, animation.parallaxX, animation.parallaxY);
         gl.uniform1f(nodeUniforms.u_baseSize, 1.3);  // 30% larger
         gl.uniform3fv(nodeUniforms.u_colorPrimary, COLORS.front);
         gl.uniform3fv(nodeUniforms.u_colorSelected, COLORS.selected);
@@ -972,8 +1004,8 @@ function createHelixRenderer(canvas, callbacks = {}) {
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
-        // Render particles (background)
-        renderParticles();
+        // Render DNA rungs (behind strands)
+        renderRungs();
 
         // Render helix strands
         renderHelix();
@@ -1073,6 +1105,13 @@ function createHelixRenderer(canvas, callbacks = {}) {
             }
         },
 
+        setParallax(normalizedX, normalizedY) {
+            // normalizedX/Y are 0-1, center at 0.5
+            // Convert to offset: ±0.06 for X, ±0.04 for Y
+            animation.targetParallaxX = (normalizedX - 0.5) * 0.12;  // ±0.06
+            animation.targetParallaxY = (normalizedY - 0.5) * 0.08;  // ±0.04
+        },
+
         getNodePositions() {
             return nodePositions;
         },
@@ -1094,12 +1133,12 @@ function createHelixRenderer(canvas, callbacks = {}) {
                 helixPosBuffer, helixProgressBuffer, helixStrandBuffer,
                 nodePosBuffer, nodeSizeBuffer, nodeSelectedBuffer,
                 nodeHoveredBuffer, nodeDimmedBuffer, nodeIndexBuffer,
-                particlePosBuffer, particleSizeBuffer, particleAlphaBuffer, particlePhaseBuffer
+                rungPosBuffer, rungProgressBuffer
             ];
             buffers.forEach(b => gl.deleteBuffer(b));
 
             // Delete programs
-            [helixProgram, nodeProgram, particleProgram].forEach(program => {
+            [helixProgram, nodeProgram, rungProgram].forEach(program => {
                 if (program) {
                     if (program.vertShader) {
                         gl.detachShader(program, program.vertShader);

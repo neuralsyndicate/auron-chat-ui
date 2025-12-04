@@ -8,6 +8,14 @@
 ═══════════════════════════════════════════════════════════════ */
 
 :root {
+    /* Neural DNA Cyberpunk Palette */
+    --nm-bg-deep: #020816;
+    --nm-bg-mid: #031427;
+    --nm-bg-glow: #062f54;
+    --nm-cyan: #00d9ff;
+    --nm-cyan-soft: #3fe3ff;
+
+    /* V7 Core Variables */
     --v7-primary: #00D9FF;
     --v7-secondary: #0066FF;
     --v7-accent: #FF6B00;
@@ -103,10 +111,9 @@
     width: 100%;
     height: 100%;
     background:
-        radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.18) 0%, transparent 45%),
-        radial-gradient(circle at 10% 80%, rgba(0, 80, 160, 0.35) 0%, transparent 55%),
-        radial-gradient(circle at 90% 60%, rgba(0, 40, 120, 0.28) 0%, transparent 55%),
-        #020611;
+        radial-gradient(circle at 15% -10%, rgba(6, 47, 84, 0.7), transparent 55%),
+        radial-gradient(circle at 85% 110%, rgba(6, 47, 84, 0.6), transparent 55%),
+        radial-gradient(circle at 50% 40%, rgba(3, 20, 39, 0.9), var(--nm-bg-deep));
     overflow: hidden;
 }
 
@@ -133,6 +140,41 @@
     width: 100%;
     height: 100%;
     display: block;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NEURAL HELIX HEADER (Sonic Title + Description)
+═══════════════════════════════════════════════════════════════ */
+
+.neural-helix-header {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 20;
+    pointer-events: none;
+    max-width: 80%;
+}
+
+.neural-helix-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--nm-cyan-soft);
+    text-shadow: 0 0 40px rgba(63, 227, 255, 0.4);
+    margin: 0 0 12px 0;
+}
+
+.neural-helix-subtitle {
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: var(--v7-text-dim);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0.7;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -213,16 +255,17 @@
 .detail-panel-v7 {
     position: fixed;
     /* left/top set via inline style for node-anchored positioning */
+    /* Card opens ABOVE node by default, transform-origin set inline */
     opacity: 0;
     pointer-events: none;
     z-index: 100;
     width: 90%;
     max-width: 500px;
     transition:
-        opacity 220ms ease,
-        transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
-        left 300ms ease-out,
-        top 300ms ease-out;
+        opacity 200ms ease-out,
+        transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+        left 320ms cubic-bezier(0.4, 0, 0.2, 1),
+        top 320ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .detail-panel-v7.visible {
@@ -436,6 +479,21 @@
         font-size: 0.8rem;
     }
 
+    /* Mobile header adjustments */
+    .neural-helix-header {
+        top: 70px;
+        max-width: 90%;
+    }
+
+    .neural-helix-title {
+        font-size: 1.15rem;
+        letter-spacing: 0.08em;
+    }
+
+    .neural-helix-subtitle {
+        font-size: 0.85rem;
+    }
+
     /* Mobile: Panel slides up from bottom - 55/45 split */
     .detail-panel-v7 {
         top: auto;
@@ -509,6 +567,24 @@
 
     .panel-title-v7 {
         font-size: 22px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WIDE SCREEN MARGINS
+═══════════════════════════════════════════════════════════════ */
+
+@media (min-width: 1400px) {
+    .helix-column-v7 {
+        margin-left: 5%;
+        margin-right: 5%;
+    }
+}
+
+@media (min-width: 1920px) {
+    .helix-column-v7 {
+        margin-left: 10%;
+        margin-right: 10%;
     }
 }
 

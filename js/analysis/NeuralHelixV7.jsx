@@ -65,6 +65,30 @@ function detectRenderMode() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// NEURAL HELIX HEADER (Sonic Title + Description)
+// ═══════════════════════════════════════════════════════════════
+
+function NeuralHelixHeader({ profile }) {
+    const soundDesc = profile?.sound_description;
+
+    if (!soundDesc) return null;
+
+    const sonicTitle = soundDesc.sonic_title ||
+                       soundDesc.characteristics?.sonic_title ||
+                       'Neural Profile';
+    const synthesis = soundDesc.synthesis || '';
+
+    return (
+        <div className="neural-helix-header">
+            <div className="neural-helix-title">{sonicTitle}</div>
+            {synthesis && (
+                <div className="neural-helix-subtitle">{synthesis}</div>
+            )}
+        </div>
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // HELIX CANVAS COMPONENT (WebGL or Canvas2D)
 // ═══════════════════════════════════════════════════════════════
 
@@ -73,7 +97,8 @@ function HelixCanvasV7({
     selectedModule,
     hoveredModule,
     onNodeClick,
-    onNodeHover
+    onNodeHover,
+    parallaxOffset  // { x: 0-1, y: 0-1 } normalized pointer position
 }) {
     const canvasRef = useRef(null);
     const rendererRef = useRef(null);
@@ -126,6 +151,13 @@ function HelixCanvasV7({
         }
     }, [selectedModule]);
 
+    // Update parallax
+    useEffect(() => {
+        if (rendererRef.current && parallaxOffset && rendererRef.current.setParallax) {
+            rendererRef.current.setParallax(parallaxOffset.x, parallaxOffset.y);
+        }
+    }, [parallaxOffset]);
+
     return (
         <canvas
             ref={canvasRef}
@@ -144,7 +176,7 @@ function HelixCanvasV7({
 // DETAIL PANEL V7 - Floating Glass Card
 // ═══════════════════════════════════════════════════════════════
 
-function DetailPanelV7({ visible, moduleKey, anchorX, anchorY, isMobile = false, profile, audioUrl, onClose }) {
+function DetailPanelV7({ visible, moduleKey, anchorX, anchorY, flipBelow = false, isMobile = false, profile, audioUrl, onClose }) {
     const moduleInfo = HELIX_MODULES_V7.find(m => m.key === moduleKey);
     const data = profile?.[moduleKey];
 
@@ -255,13 +287,18 @@ function DetailPanelV7({ visible, moduleKey, anchorX, anchorY, isMobile = false,
     }, [displayedKey, displayedData, displayedModuleInfo]);
 
     // Anchored positioning style for desktop (mobile uses CSS bottom sheet)
+    // Card opens ABOVE node by default, flips BELOW if not enough space
     const panelStyle = isMobile ? {} : {
         left: anchorX,
         top: anchorY,
         transform: visible
-            ? 'translate(-50%, 16px) scale(1)'
-            : 'translate(-50%, -8px) scale(0.95)',
-        transformOrigin: 'top center'
+            ? (flipBelow
+                ? 'translate(-50%, 0) scale(1)'           // Below: top of card at anchorY
+                : 'translate(-50%, -100%) scale(1)')      // Above: bottom of card at anchorY
+            : (flipBelow
+                ? 'translate(-50%, -12px) scale(0.92)'    // Below entry: slide down
+                : 'translate(-50%, calc(-100% + 12px)) scale(0.92)'), // Above entry: slide up
+        transformOrigin: flipBelow ? 'top center' : 'bottom center'
     };
 
     return (
@@ -357,6 +394,9 @@ function MobileLayoutV7({
 
     return (
         <div className="neural-helix-v7-container mobile">
+            {/* Neural Helix Header (Sonic Title + Description) */}
+            <NeuralHelixHeader profile={profile} />
+
             {/* Fullscreen helix canvas */}
             <div className="helix-column-v7">
                 {renderMode === 'svg' ? (
@@ -413,30 +453,42 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
     const [isMobile, setIsMobile] = useState(
         typeof window !== 'undefined' && window.innerWidth < 769
     );
+    const [pointerPos, setPointerPos] = useState({ x: 0.5, y: 0.5 });
 
     // Compute anchor position with bounds checking
+    // Card opens ABOVE the node, so anchor is at bottom-center of card
     const anchorPosition = useMemo(() => {
         if (!selectedNode) {
             return {
                 x: typeof window !== 'undefined' ? window.innerWidth / 2 : 500,
-                y: typeof window !== 'undefined' ? window.innerHeight * 0.6 : 400
+                y: typeof window !== 'undefined' ? window.innerHeight * 0.4 : 300,
+                flipBelow: false
             };
         }
 
         const padding = 20;
         const panelWidth = 500;
-        const panelHeight = 400;
+        const panelHeight = 420;
+        const gapFromNode = 28; // Gap between node and card
 
         let x = selectedNode.screenX;
-        let y = selectedNode.screenY;
+        let y = selectedNode.screenY - gapFromNode; // Position above node
+        let flipBelow = false;
 
         // Keep panel within viewport
         if (typeof window !== 'undefined') {
+            // Horizontal: center card on node X, clamp to viewport
             x = Math.max(padding + panelWidth / 2, Math.min(x, window.innerWidth - padding - panelWidth / 2));
-            y = Math.min(y, window.innerHeight - panelHeight - padding);
+
+            // Vertical: check if enough space above for card
+            if (y < panelHeight + padding) {
+                // Not enough space above → flip to below node
+                flipBelow = true;
+                y = selectedNode.screenY + gapFromNode;
+            }
         }
 
-        return { x, y };
+        return { x, y, flipBelow };
     }, [selectedNode]);
 
     // Detect renderer on mount
@@ -460,6 +512,21 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
+    }, [isMobile]);
+
+    // Pointer tracking for parallax effect (desktop only)
+    useEffect(() => {
+        if (isMobile) return;
+
+        const handlePointerMove = (e) => {
+            setPointerPos({
+                x: e.clientX / window.innerWidth,
+                y: e.clientY / window.innerHeight
+            });
+        };
+
+        window.addEventListener('pointermove', handlePointerMove);
+        return () => window.removeEventListener('pointermove', handlePointerMove);
     }, [isMobile]);
 
     // Node click handler - now receives { key, screenX, screenY, index }
@@ -503,8 +570,8 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
             <MobileLayoutV7
                 profile={profile}
                 audioUrl={audioUrl}
-                selectedModule={selectedModule}
-                setSelectedModule={setSelectedModule}
+                selectedModule={selectedNode?.key || null}
+                setSelectedModule={(key) => setSelectedNode(key ? { key, screenX: 0, screenY: 0, index: -1 } : null)}
                 renderMode={renderMode}
             />
         );
@@ -513,6 +580,9 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
     // Desktop layout - Fullscreen cinematic mode
     return (
         <div className="neural-helix-v7-container">
+            {/* Neural Helix Header (Sonic Title + Description) */}
+            <NeuralHelixHeader profile={profile} />
+
             {/* Fullscreen helix canvas */}
             <div className="helix-column-v7">
                 {renderMode === 'svg' ? (
@@ -522,7 +592,7 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                             modules={HELIX_MODULES_V7}
                             selectedModule={selectedNode?.key}
                             onNodeClick={handleNodeClick}
-                            parallaxOffset={{ x: 0, y: 0 }}
+                            parallaxOffset={pointerPos}
                         />
                     )
                 ) : (
@@ -532,6 +602,7 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                         hoveredModule={hoveredNode?.key}
                         onNodeClick={handleNodeClick}
                         onNodeHover={handleNodeHover}
+                        parallaxOffset={pointerPos}
                     />
                 )}
 
@@ -550,12 +621,19 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                         }}
                     >
                         <defs>
-                            <linearGradient id="anchorGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stopColor="rgba(0, 217, 255, 0.6)" />
+                            {/* Gradient direction: bright at node, fades toward card */}
+                            <linearGradient
+                                id="anchorGradient"
+                                x1="0%"
+                                y1={anchorPosition.flipBelow ? '0%' : '100%'}
+                                x2="0%"
+                                y2={anchorPosition.flipBelow ? '100%' : '0%'}
+                            >
+                                <stop offset="0%" stopColor="rgba(0, 217, 255, 0.5)" />
                                 <stop offset="100%" stopColor="rgba(0, 217, 255, 0)" />
                             </linearGradient>
                             <filter id="anchorGlow">
-                                <feGaussianBlur stdDeviation="2" result="blur" />
+                                <feGaussianBlur stdDeviation="1.5" result="blur" />
                                 <feMerge>
                                     <feMergeNode in="blur" />
                                     <feMergeNode in="SourceGraphic" />
@@ -568,7 +646,7 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                             x2={anchorPosition.x}
                             y2={anchorPosition.y}
                             stroke="url(#anchorGradient)"
-                            strokeWidth="2"
+                            strokeWidth="1.5"
                             filter="url(#anchorGlow)"
                         />
                     </svg>
@@ -602,6 +680,7 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                 moduleKey={selectedNode?.key}
                 anchorX={anchorPosition.x}
                 anchorY={anchorPosition.y}
+                flipBelow={anchorPosition.flipBelow}
                 isMobile={false}
                 profile={profile}
                 audioUrl={audioUrl}
