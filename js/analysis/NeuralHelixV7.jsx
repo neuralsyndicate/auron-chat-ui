@@ -11,7 +11,6 @@ const { useState, useEffect, useRef, useCallback, useMemo } = React;
 // ═══════════════════════════════════════════════════════════════
 
 const HELIX_MODULES_V7 = [
-    { key: 'sound_description', label: 'Sound Description' },
     { key: 'genre_fusion', label: 'Genre Fusion' },
     { key: 'neural_spectrum', label: 'Neural Spectrum' },
     { key: 'sound_palette', label: 'Sound Palette' },
@@ -23,6 +22,15 @@ const HELIX_MODULES_V7 = [
     { key: 'sonic_architecture', label: 'Sonic Architecture' },
     { key: 'inspirational_triggers', label: 'Inspirational Triggers' }
 ];
+
+// V7.5 Layout Constants
+const LAYOUT_V75 = {
+    MARGIN_X: 32,
+    MARGIN_Y: 32,
+    PANEL_WIDTH: 500,
+    PANEL_HEIGHT: 420,
+    GAP_FROM_NODE: 28
+};
 
 // ═══════════════════════════════════════════════════════════════
 // RENDERER DETECTION
@@ -65,10 +73,10 @@ function detectRenderMode() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// NEURAL HELIX HEADER (Sonic Title + Description)
+// V7.5 NEURAL HELIX HEADER (Sonic Title + Audio Player + Viewing)
 // ═══════════════════════════════════════════════════════════════
 
-function NeuralHelixHeader({ profile }) {
+function NeuralHelixHeader({ profile, audioUrl, viewingModule, panelVisible }) {
     const soundDesc = profile?.sound_description;
 
     if (!soundDesc) return null;
@@ -78,12 +86,33 @@ function NeuralHelixHeader({ profile }) {
                        'Neural Profile';
     const synthesis = soundDesc.synthesis || '';
 
+    // Get viewing module label
+    const viewingLabel = viewingModule
+        ? HELIX_MODULES_V7.find(m => m.key === viewingModule)?.label
+        : null;
+
     return (
         <div className="neural-helix-header">
             <div className="neural-helix-title">{sonicTitle}</div>
             {synthesis && (
                 <div className="neural-helix-subtitle">{synthesis}</div>
             )}
+
+            {/* V7.5: Header controls with audio player */}
+            <div className="neural-helix-header-controls">
+                {audioUrl && typeof MicroPlayer !== 'undefined' && (
+                    <div className="header-player-container">
+                        <MicroPlayer audioUrl={audioUrl} />
+                    </div>
+                )}
+
+                {panelVisible && viewingLabel && (
+                    <div className="header-viewing-indicator">
+                        <span className="viewing-label">Viewing</span>
+                        <span className="viewing-module">{viewingLabel}</span>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
@@ -98,7 +127,8 @@ function HelixCanvasV7({
     hoveredModule,
     onNodeClick,
     onNodeHover,
-    parallaxOffset  // { x: 0-1, y: 0-1 } normalized pointer position
+    parallaxOffset,  // { x: 0-1, y: 0-1 } normalized pointer position
+    visitedNodes     // V7.5: Set of visited node keys
 }) {
     const canvasRef = useRef(null);
     const rendererRef = useRef(null);
@@ -158,6 +188,13 @@ function HelixCanvasV7({
         }
     }, [parallaxOffset]);
 
+    // V7.5: Update visited state
+    useEffect(() => {
+        if (rendererRef.current && visitedNodes && rendererRef.current.setVisitedNodes) {
+            rendererRef.current.setVisitedNodes(visitedNodes);
+        }
+    }, [visitedNodes]);
+
     return (
         <canvas
             ref={canvasRef}
@@ -176,7 +213,7 @@ function HelixCanvasV7({
 // DETAIL PANEL V7 - Floating Glass Card
 // ═══════════════════════════════════════════════════════════════
 
-function DetailPanelV7({ visible, moduleKey, anchorX, anchorY, flipBelow = false, isMobile = false, profile, audioUrl, onClose }) {
+function DetailPanelV7({ visible, moduleKey, left, top, flipBelow = false, isMobile = false, profile, onClose }) {
     const moduleInfo = HELIX_MODULES_V7.find(m => m.key === moduleKey);
     const data = profile?.[moduleKey];
 
@@ -286,18 +323,14 @@ function DetailPanelV7({ visible, moduleKey, anchorX, anchorY, flipBelow = false
         return { label, title, description };
     }, [displayedKey, displayedData, displayedModuleInfo]);
 
-    // Anchored positioning style for desktop (mobile uses CSS bottom sheet)
-    // Card opens ABOVE node by default, flips BELOW if not enough space
+    // V7.5: Explicit left/top positioning (already clamped by parent)
     const panelStyle = isMobile ? {} : {
-        left: anchorX,
-        top: anchorY,
+        left: `${left}px`,
+        top: `${top}px`,
+        width: `${LAYOUT_V75.PANEL_WIDTH}px`,
         transform: visible
-            ? (flipBelow
-                ? 'translate(-50%, 0) scale(1)'           // Below: top of card at anchorY
-                : 'translate(-50%, -100%) scale(1)')      // Above: bottom of card at anchorY
-            : (flipBelow
-                ? 'translate(-50%, -12px) scale(0.92)'    // Below entry: slide down
-                : 'translate(-50%, calc(-100% + 12px)) scale(0.92)'), // Above entry: slide up
+            ? 'scale(1)'
+            : (flipBelow ? 'translateY(-12px) scale(0.94)' : 'translateY(12px) scale(0.94)'),
         transformOrigin: flipBelow ? 'top center' : 'bottom center'
     };
 
@@ -346,13 +379,6 @@ function DetailPanelV7({ visible, moduleKey, anchorX, anchorY, flipBelow = false
                                     <MicroVisualization moduleKey={displayedKey} data={displayedData} />
                                 )}
                             </div>
-
-                            {/* Audio player (reuse from V6) */}
-                            {audioUrl && typeof MicroPlayer !== 'undefined' && (
-                                <div className="panel-player-v7">
-                                    <MicroPlayer audioUrl={audioUrl} />
-                                </div>
-                            )}
                         </div>
                     </div>
                 )}
@@ -370,7 +396,9 @@ function MobileLayoutV7({
     audioUrl,
     selectedModule,
     setSelectedModule,
-    renderMode
+    renderMode,
+    visitedNodes,       // V7.5
+    onNodeVisited       // V7.5: callback to track visited nodes
 }) {
     const [panelVisible, setPanelVisible] = useState(false);
 
@@ -384,8 +412,10 @@ function MobileLayoutV7({
         } else {
             setSelectedModule(moduleKey);
             setPanelVisible(true);
+            // V7.5: Track as visited
+            if (onNodeVisited) onNodeVisited(moduleKey);
         }
-    }, [selectedModule, setSelectedModule]);
+    }, [selectedModule, setSelectedModule, onNodeVisited]);
 
     const handleClosePanel = useCallback(() => {
         setPanelVisible(false);
@@ -394,8 +424,13 @@ function MobileLayoutV7({
 
     return (
         <div className="neural-helix-v7-container mobile">
-            {/* Neural Helix Header (Sonic Title + Description) */}
-            <NeuralHelixHeader profile={profile} />
+            {/* V7.5: Neural Helix Header with Audio Player */}
+            <NeuralHelixHeader
+                profile={profile}
+                audioUrl={audioUrl}
+                viewingModule={selectedModule}
+                panelVisible={panelVisible}
+            />
 
             {/* Fullscreen helix canvas */}
             <div className="helix-column-v7">
@@ -416,6 +451,7 @@ function MobileLayoutV7({
                         hoveredModule={null}
                         onNodeClick={handleNodeClick}
                         onNodeHover={() => {}}
+                        visitedNodes={visitedNodes}
                     />
                 )}
 
@@ -433,7 +469,6 @@ function MobileLayoutV7({
                 moduleKey={selectedModule}
                 isMobile={true}
                 profile={profile}
-                audioUrl={audioUrl}
                 onClose={handleClosePanel}
             />
         </div>
@@ -455,40 +490,60 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
     );
     const [pointerPos, setPointerPos] = useState({ x: 0.5, y: 0.5 });
 
-    // Compute anchor position with bounds checking
-    // Card opens ABOVE the node, so anchor is at bottom-center of card
+    // V7.5: Track visited nodes (session-only)
+    const [visitedNodes, setVisitedNodes] = useState(new Set());
+
+    // V7.5: Compute anchor position with two-pass clamping and pointer offset
     const anchorPosition = useMemo(() => {
+        const { MARGIN_X, MARGIN_Y, PANEL_WIDTH, PANEL_HEIGHT, GAP_FROM_NODE } = LAYOUT_V75;
+        const vw = typeof window !== 'undefined' ? window.innerWidth : 1000;
+        const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
+
         if (!selectedNode) {
             return {
-                x: typeof window !== 'undefined' ? window.innerWidth / 2 : 500,
-                y: typeof window !== 'undefined' ? window.innerHeight * 0.4 : 300,
-                flipBelow: false
+                left: (vw - PANEL_WIDTH) / 2,
+                top: vh * 0.3,
+                flipBelow: false,
+                pointerOffsetX: 0,
+                nodeX: vw / 2,
+                nodeY: vh * 0.5
             };
         }
 
-        const padding = 20;
-        const panelWidth = 500;
-        const panelHeight = 420;
-        const gapFromNode = 28; // Gap between node and card
-
-        let x = selectedNode.screenX;
-        let y = selectedNode.screenY - gapFromNode; // Position above node
+        // Initial position: card above node, centered horizontally on node
+        let left = selectedNode.screenX - PANEL_WIDTH / 2;
+        let top = selectedNode.screenY - GAP_FROM_NODE - PANEL_HEIGHT;
         let flipBelow = false;
 
-        // Keep panel within viewport
-        if (typeof window !== 'undefined') {
-            // Horizontal: center card on node X, clamp to viewport
-            x = Math.max(padding + panelWidth / 2, Math.min(x, window.innerWidth - padding - panelWidth / 2));
-
-            // Vertical: check if enough space above for card
-            if (y < panelHeight + padding) {
-                // Not enough space above → flip to below node
-                flipBelow = true;
-                y = selectedNode.screenY + gapFromNode;
-            }
+        // Pass 1: Check vertical fit above node
+        if (top < MARGIN_Y) {
+            // Not enough space above → flip to below
+            flipBelow = true;
+            top = selectedNode.screenY + GAP_FROM_NODE;
         }
 
-        return { x, y, flipBelow };
+        // Pass 2: Clamp vertical to viewport
+        if (flipBelow) {
+            // Below: ensure bottom edge doesn't exceed viewport
+            top = Math.min(top, vh - MARGIN_Y - PANEL_HEIGHT);
+        }
+        top = Math.max(MARGIN_Y, top);
+
+        // Horizontal clamping with safe margins
+        left = Math.max(MARGIN_X, Math.min(left, vw - MARGIN_X - PANEL_WIDTH));
+
+        // Calculate pointer offset for connector line alignment
+        const panelCenterX = left + PANEL_WIDTH / 2;
+        const pointerOffsetX = selectedNode.screenX - panelCenterX;
+
+        return {
+            left,
+            top,
+            flipBelow,
+            pointerOffsetX,
+            nodeX: selectedNode.screenX,
+            nodeY: selectedNode.screenY
+        };
     }, [selectedNode]);
 
     // Detect renderer on mount
@@ -539,6 +594,9 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
             // Select new node with position
             setSelectedNode(clickData);
             setPanelVisible(true);
+
+            // V7.5: Track as visited
+            setVisitedNodes(prev => new Set([...prev, clickData.key]));
         }
     }, [selectedNode]);
 
@@ -573,6 +631,8 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                 selectedModule={selectedNode?.key || null}
                 setSelectedModule={(key) => setSelectedNode(key ? { key, screenX: 0, screenY: 0, index: -1 } : null)}
                 renderMode={renderMode}
+                visitedNodes={visitedNodes}
+                onNodeVisited={(key) => setVisitedNodes(prev => new Set([...prev, key]))}
             />
         );
     }
@@ -580,8 +640,13 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
     // Desktop layout - Fullscreen cinematic mode
     return (
         <div className="neural-helix-v7-container">
-            {/* Neural Helix Header (Sonic Title + Description) */}
-            <NeuralHelixHeader profile={profile} />
+            {/* V7.5: Neural Helix Header with Audio Player */}
+            <NeuralHelixHeader
+                profile={profile}
+                audioUrl={audioUrl}
+                viewingModule={selectedNode?.key}
+                panelVisible={panelVisible}
+            />
 
             {/* Fullscreen helix canvas */}
             <div className="helix-column-v7">
@@ -603,10 +668,11 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                         onNodeClick={handleNodeClick}
                         onNodeHover={handleNodeHover}
                         parallaxOffset={pointerPos}
+                        visitedNodes={visitedNodes}
                     />
                 )}
 
-                {/* Anchor connector line (node → card) */}
+                {/* V7.5: Anchor connector line with pointer offset */}
                 {selectedNode && panelVisible && (
                     <svg
                         className="node-anchor-connector"
@@ -629,11 +695,11 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                                 x2="0%"
                                 y2={anchorPosition.flipBelow ? '100%' : '0%'}
                             >
-                                <stop offset="0%" stopColor="rgba(0, 217, 255, 0.5)" />
+                                <stop offset="0%" stopColor="rgba(0, 217, 255, 0.6)" />
                                 <stop offset="100%" stopColor="rgba(0, 217, 255, 0)" />
                             </linearGradient>
                             <filter id="anchorGlow">
-                                <feGaussianBlur stdDeviation="1.5" result="blur" />
+                                <feGaussianBlur stdDeviation="2" result="blur" />
                                 <feMerge>
                                     <feMergeNode in="blur" />
                                     <feMergeNode in="SourceGraphic" />
@@ -641,10 +707,12 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                             </filter>
                         </defs>
                         <line
-                            x1={selectedNode.screenX}
-                            y1={selectedNode.screenY}
-                            x2={anchorPosition.x}
-                            y2={anchorPosition.y}
+                            x1={anchorPosition.nodeX}
+                            y1={anchorPosition.nodeY}
+                            x2={anchorPosition.left + LAYOUT_V75.PANEL_WIDTH / 2 + anchorPosition.pointerOffsetX}
+                            y2={anchorPosition.flipBelow
+                                ? anchorPosition.top
+                                : anchorPosition.top + LAYOUT_V75.PANEL_HEIGHT}
                             stroke="url(#anchorGradient)"
                             strokeWidth="1.5"
                             filter="url(#anchorGlow)"
@@ -674,16 +742,15 @@ function NeuralIdentityMapV7({ profile, audioUrl, messages, input, setInput, sen
                 )}
             </div>
 
-            {/* Floating panel OVER helix - anchored to node */}
+            {/* V7.5: Floating panel with explicit positioning */}
             <DetailPanelV7
                 visible={panelVisible}
                 moduleKey={selectedNode?.key}
-                anchorX={anchorPosition.x}
-                anchorY={anchorPosition.y}
+                left={anchorPosition.left}
+                top={anchorPosition.top}
                 flipBelow={anchorPosition.flipBelow}
                 isMobile={false}
                 profile={profile}
-                audioUrl={audioUrl}
                 onClose={handleClosePanel}
             />
         </div>

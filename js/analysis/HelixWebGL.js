@@ -189,6 +189,7 @@ attribute float a_selected;
 attribute float a_hovered;
 attribute float a_dimmed;
 attribute float a_index;
+attribute float a_visited;  // V7.5: visited state
 
 uniform float u_time;
 uniform float u_xDrift;
@@ -204,6 +205,7 @@ varying float v_selected;
 varying float v_hovered;
 varying float v_dimmed;
 varying float v_index;
+varying float v_visited;  // V7.5: visited state
 
 void main() {
     vec3 pos = a_position;
@@ -234,9 +236,9 @@ void main() {
     float nodePulse = 1.0 + sin(u_time * 2.5 + a_index * 0.7) * 0.06;
     finalSize *= nodePulse;
 
-    // Selection/hover size boost
+    // V7.5: Selection/hover size boost
     if (a_selected > 0.5) {
-        finalSize *= 1.5;
+        finalSize *= 1.62;  // V7.5: +12% more (was 1.5)
     } else if (a_hovered > 0.5) {
         finalSize *= 1.18;  // 18% hover scale boost
     }
@@ -256,6 +258,7 @@ void main() {
     v_hovered = a_hovered;
     v_dimmed = a_dimmed;
     v_index = a_index;
+    v_visited = a_visited;  // V7.5
 }
 `;
 
@@ -272,6 +275,7 @@ varying float v_selected;
 varying float v_hovered;
 varying float v_dimmed;
 varying float v_index;
+varying float v_visited;  // V7.5
 
 void main() {
     vec2 center = gl_PointCoord - 0.5;
@@ -303,20 +307,20 @@ void main() {
     vec3 haloColor = u_colorHalo;
 
     if (v_selected > 0.5) {
-        // Selection: brightest state + ring ripple effect
+        // V7.5: Selection - enhanced glow
         float selectionPulse = sin(u_time * 5.0) * 0.15 + 0.9;
         coreColor = u_colorSelected;
-        coreIntensity = 1.5 * selectionPulse;
+        coreIntensity = 1.8 * selectionPulse;  // V7.5: was 1.5
 
         // Ring ripple (expanding ring animation)
         float rippleTime = fract(u_time * 0.8);
-        float rippleRadius = 0.2 + rippleTime * 0.3;
-        float rippleRing = smoothstep(rippleRadius - 0.05, rippleRadius, dist) *
-                          (1.0 - smoothstep(rippleRadius, rippleRadius + 0.08, dist));
+        float rippleRadius = 0.2 + rippleTime * 0.35;  // V7.5: larger ripple
+        float rippleRing = smoothstep(rippleRadius - 0.06, rippleRadius, dist) *
+                          (1.0 - smoothstep(rippleRadius, rippleRadius + 0.1, dist));
         rippleRing *= (1.0 - rippleTime);  // Fade out as it expands
 
-        haloIntensity = 2.5;
-        ringIntensity = 1.5 + rippleRing * 2.0;
+        haloIntensity = 3.2;  // V7.5: was 2.5
+        ringIntensity = 1.8 + rippleRing * 2.5;  // V7.5: stronger ring
 
     } else if (v_hovered > 0.5) {
         // Hover: increased brightness
@@ -329,6 +333,12 @@ void main() {
     vec3 color = coreColor * core * coreIntensity;
     color += ringColor * innerRing * ringIntensity;
     color += haloColor * halo * haloIntensity;
+
+    // V7.5: Visited state ring (subtle cyan outline when not selected)
+    if (v_visited > 0.5 && v_selected < 0.5) {
+        float visitedRing = smoothstep(0.32, 0.36, dist) * (1.0 - smoothstep(0.38, 0.42, dist));
+        color += vec3(0.0, 0.6, 0.8) * visitedRing * 0.35;
+    }
 
     // Dimming when another node is selected
     float dim = v_dimmed > 0.5 ? 0.35 : 1.0;
@@ -756,6 +766,7 @@ function createHelixRenderer(canvas, callbacks = {}) {
     const nodeHoveredData = new Float32Array(nodeCount);
     const nodeDimmedData = new Float32Array(nodeCount);
     const nodeIndexData = new Float32Array(nodeCount);
+    const nodeVisitedData = new Float32Array(nodeCount);  // V7.5
 
     nodePositions.forEach((node, i) => {
         nodePosData[i * 3] = node.x;
@@ -789,8 +800,13 @@ function createHelixRenderer(canvas, callbacks = {}) {
     gl.bindBuffer(gl.ARRAY_BUFFER, nodeIndexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, nodeIndexData, gl.STATIC_DRAW);
 
+    // V7.5: Visited state buffer
+    const nodeVisitedBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, nodeVisitedBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, nodeVisitedData, gl.DYNAMIC_DRAW);
+
     const nodeAttribs = getAttribLocations(gl, nodeProgram, [
-        'a_position', 'a_size', 'a_selected', 'a_hovered', 'a_dimmed', 'a_index'
+        'a_position', 'a_size', 'a_selected', 'a_hovered', 'a_dimmed', 'a_index', 'a_visited'
     ]);
     const nodeUniforms = getUniformLocations(gl, nodeProgram, [
         'u_time', 'u_xDrift', 'u_yDrift', 'u_breathScale', 'u_zoom', 'u_resolution',
@@ -980,6 +996,7 @@ function createHelixRenderer(canvas, callbacks = {}) {
         bindVertexAttrib(gl, nodeAttribs.a_hovered, nodeHoveredBuffer, 1);
         bindVertexAttrib(gl, nodeAttribs.a_dimmed, nodeDimmedBuffer, 1);
         bindVertexAttrib(gl, nodeAttribs.a_index, nodeIndexBuffer, 1);
+        bindVertexAttrib(gl, nodeAttribs.a_visited, nodeVisitedBuffer, 1);
 
         gl.drawArrays(gl.POINTS, 0, nodeCount);
 
@@ -1095,9 +1112,9 @@ function createHelixRenderer(canvas, callbacks = {}) {
             state.selectedIndex = index;
 
             if (index >= 0) {
-                // Selection: slow motion by 50%, zoom OUT 10%
-                animation.targetMotionScale = 0.5;
-                animation.targetZoom = 0.9;  // Zoom OUT to make room for card
+                // V7.5: Slow motion by 60% (was 50%), zoom OUT 10%
+                animation.targetMotionScale = 0.4;
+                animation.targetZoom = 0.9;
             } else {
                 // Deselection: restore full speed
                 animation.targetMotionScale = 1.0;
@@ -1106,10 +1123,19 @@ function createHelixRenderer(canvas, callbacks = {}) {
         },
 
         setParallax(normalizedX, normalizedY) {
-            // normalizedX/Y are 0-1, center at 0.5
-            // Convert to offset: ±0.06 for X, ±0.04 for Y
-            animation.targetParallaxX = (normalizedX - 0.5) * 0.12;  // ±0.06
-            animation.targetParallaxY = (normalizedY - 0.5) * 0.08;  // ±0.04
+            // V7.5: Increased parallax amplitude (+15%)
+            animation.targetParallaxX = (normalizedX - 0.5) * 0.14;  // was 0.12
+            animation.targetParallaxY = (normalizedY - 0.5) * 0.10;  // was 0.08
+        },
+
+        // V7.5: Update visited state for nodes
+        setVisitedNodes(visitedSet) {
+            for (let i = 0; i < nodeCount; i++) {
+                const key = nodePositions[i].key;
+                nodeVisitedData[i] = visitedSet.has(key) ? 1.0 : 0.0;
+            }
+            gl.bindBuffer(gl.ARRAY_BUFFER, nodeVisitedBuffer);
+            gl.bufferSubData(gl.ARRAY_BUFFER, 0, nodeVisitedData);
         },
 
         getNodePositions() {
@@ -1133,6 +1159,7 @@ function createHelixRenderer(canvas, callbacks = {}) {
                 helixPosBuffer, helixProgressBuffer, helixStrandBuffer,
                 nodePosBuffer, nodeSizeBuffer, nodeSelectedBuffer,
                 nodeHoveredBuffer, nodeDimmedBuffer, nodeIndexBuffer,
+                nodeVisitedBuffer,  // V7.5
                 rungPosBuffer, rungProgressBuffer
             ];
             buffers.forEach(b => gl.deleteBuffer(b));

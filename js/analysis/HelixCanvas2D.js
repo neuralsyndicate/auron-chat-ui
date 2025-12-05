@@ -183,6 +183,7 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
     const state = {
         selectedIndex: -1,
         hoveredIndex: -1,
+        visitedNodes: new Set(),  // V7.5: Track visited nodes
         rafId: null,
         running: false
     };
@@ -388,8 +389,8 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
             const nodePulse = 1.0 + Math.sin(animation.time * 2.5 + node.index * 0.5) * 0.06;
             baseSize *= nodePulse;
 
-            // Hover/selection scaling (matches WebGL: 18% hover, 50% selected)
-            if (isSelected) baseSize *= 1.5;
+            // V7.5: Hover/selection scaling (18% hover, 62% selected - matches WebGL)
+            if (isSelected) baseSize *= 1.62;
             else if (isHovered) baseSize *= 1.18;
 
             // Depth-based alpha
@@ -441,7 +442,7 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
 
             // Layer 1: Core (brightest, on top)
             const coreSize = baseSize * 0.7;
-            ctx.shadowBlur = isSelected ? 40 : isHovered ? 25 : 15;
+            ctx.shadowBlur = isSelected ? 50 : isHovered ? 25 : 15;  // V7.5: 50 for selected (was 40)
             ctx.shadowColor = isSelected ? CANVAS2D_COLORS.selected : CANVAS2D_COLORS.front;
 
             ctx.beginPath();
@@ -460,6 +461,18 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
             }
 
             ctx.fill();
+
+            // V7.5: Visited state ring (subtle cyan outline when not selected)
+            const isVisited = state.visitedNodes.has(node.key);
+            if (isVisited && !isSelected) {
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.arc(node.sx, node.sy, baseSize * 0.75, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(0, 153, 204, 0.35)';  // Subtle cyan
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = alpha * 0.6;
+                ctx.stroke();
+            }
 
             ctx.shadowBlur = 0;
             ctx.globalAlpha = 1;
@@ -610,8 +623,8 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         setSelectedIndex(index) {
             state.selectedIndex = index;
             if (index >= 0) {
-                // Slow motion by 50% on selection, zoom OUT to show context
-                animation.targetMotionScale = 0.5;
+                // V7.5: Slow motion by 60% on selection (was 50%), zoom OUT to show context
+                animation.targetMotionScale = 0.4;
                 animation.targetZoom = 0.9;  // Zoom OUT (matches WebGL)
             } else {
                 animation.targetMotionScale = 1.0;
@@ -620,10 +633,14 @@ function createCanvas2DRenderer(canvas, callbacks = {}) {
         },
 
         setParallax(normalizedX, normalizedY) {
-            // normalizedX/Y are 0-1, center at 0.5
-            // Convert to offset: ±0.06 for X, ±0.04 for Y
-            animation.targetParallaxX = (normalizedX - 0.5) * 0.12;  // ±0.06
-            animation.targetParallaxY = (normalizedY - 0.5) * 0.08;  // ±0.04
+            // V7.5: Increased parallax amplitude (+15%)
+            animation.targetParallaxX = (normalizedX - 0.5) * 0.14;  // was 0.12
+            animation.targetParallaxY = (normalizedY - 0.5) * 0.10;  // was 0.08
+        },
+
+        // V7.5: Update visited state for nodes
+        setVisitedNodes(visitedSet) {
+            state.visitedNodes = visitedSet;
         },
 
         getNodePositions() {
