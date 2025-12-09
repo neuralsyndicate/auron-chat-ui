@@ -50,7 +50,8 @@ function MemoryView({ user }) {
                 }
             } else {
                 const data = await response.json();
-                setMemoryBlocks(data);
+                // Extract blocks from response - BFF returns {status, user_id, blocks: {...}}
+                setMemoryBlocks(data.blocks || {});
             }
         } catch (err) {
             console.error('Memory fetch error:', err);
