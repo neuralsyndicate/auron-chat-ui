@@ -1,0 +1,422 @@
+/* ============================================================
+   NEURAL MEMORY - Memory Visualization Styles
+   ============================================================
+   Follows the glass morphism design system from base.css
+   Uses CSS variables for consistency
+   ============================================================ */
+
+/* Container */
+.neural-memory-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    animation: fadeIn 0.5s var(--spring-curve);
+}
+
+/* Header */
+.neural-memory-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+}
+
+.memory-title-group {
+    text-align: left;
+}
+
+.memory-main-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--ns-blue-glow);
+    text-shadow: var(--neon-outer);
+    letter-spacing: 0.05em;
+    margin: 0 0 0.5rem 0;
+}
+
+.memory-subtitle-text {
+    font-size: 0.9rem;
+    color: var(--ns-gray);
+    margin: 0;
+    letter-spacing: 0.02em;
+}
+
+.memory-refresh-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(0, 217, 255, 0.08);
+    border: 1px solid rgba(0, 217, 255, 0.15);
+    color: var(--ns-blue-glow);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s var(--spring-curve);
+}
+
+.memory-refresh-btn:hover {
+    background: rgba(0, 217, 255, 0.15);
+    border-color: rgba(0, 217, 255, 0.3);
+    transform: rotate(180deg);
+}
+
+/* Memory Blocks - Shared Styles */
+.memory-block {
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s var(--spring-curve);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.memory-block:hover {
+    transform: translateY(-2px);
+}
+
+.memory-block-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.memory-block-header:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Icon Wrappers */
+.memory-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s var(--spring-curve);
+}
+
+.short-term-icon {
+    background: rgba(0, 217, 255, 0.12);
+    color: var(--ns-blue-glow);
+    animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.conscious-icon {
+    background: rgba(100, 180, 255, 0.12);
+    color: #64B4FF;
+}
+
+.subconscious-icon {
+    background: rgba(140, 100, 255, 0.12);
+    color: #8C64FF;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(0, 217, 255, 0.4);
+    }
+}
+
+/* Titles */
+.memory-titles {
+    flex: 1;
+    min-width: 0;
+}
+
+.memory-block-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 0.25rem 0;
+}
+
+.memory-block-subtitle {
+    font-size: 0.85rem;
+    color: var(--ns-gray);
+}
+
+/* Meta / Status */
+.memory-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.memory-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.memory-status.active {
+    background: rgba(0, 217, 255, 0.15);
+    color: var(--ns-blue-glow);
+    animation: pulse-status 2s ease-in-out infinite;
+}
+
+.memory-status.empty {
+    background: rgba(100, 100, 100, 0.15);
+    color: var(--ns-gray);
+}
+
+@keyframes pulse-status {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.memory-chevron {
+    color: var(--ns-gray);
+    transition: transform 0.3s var(--spring-curve);
+    display: flex;
+}
+
+.memory-chevron.expanded {
+    transform: rotate(180deg);
+}
+
+/* Content Area */
+.memory-content-wrapper {
+    animation: slideDown 0.3s var(--spring-curve);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.memory-content {
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.memory-text {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.85);
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0;
+}
+
+.memory-empty-state {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.memory-empty-state p {
+    color: var(--ns-gray);
+    margin: 0 0 0.5rem 0;
+}
+
+.empty-hint {
+    font-size: 0.8rem;
+    color: var(--ns-gray-dark);
+    font-style: italic;
+}
+
+/* Block-specific borders */
+.memory-block.short-term {
+    border: 1px solid rgba(0, 217, 255, 0.2);
+}
+
+.memory-block.short-term:hover {
+    border-color: rgba(0, 217, 255, 0.35);
+    box-shadow: 0 0 30px rgba(0, 217, 255, 0.1);
+}
+
+.memory-block.conscious {
+    border: 1px solid rgba(100, 180, 255, 0.15);
+}
+
+.memory-block.conscious:hover {
+    border-color: rgba(100, 180, 255, 0.3);
+    box-shadow: 0 0 30px rgba(100, 180, 255, 0.08);
+}
+
+.memory-block.subconscious {
+    border: 1px solid rgba(140, 100, 255, 0.15);
+}
+
+.memory-block.subconscious:hover {
+    border-color: rgba(140, 100, 255, 0.3);
+    box-shadow: 0 0 30px rgba(140, 100, 255, 0.08);
+}
+
+/* Connection Line */
+.memory-connection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.connection-line {
+    width: 2px;
+    height: 30px;
+    background: linear-gradient(to bottom, rgba(0, 217, 255, 0.4), rgba(0, 217, 255, 0.1));
+}
+
+.connection-arrow {
+    color: rgba(0, 217, 255, 0.4);
+    margin-top: -2px;
+}
+
+/* Long-term Container */
+.long-term-container {
+    margin-top: 0.5rem;
+}
+
+.long-term-header {
+    text-align: center;
+    padding: 1rem 0 1.5rem 0;
+}
+
+.long-term-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ns-gray);
+    background: rgba(0, 217, 255, 0.05);
+    padding: 0.5rem 1.25rem;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 217, 255, 0.1);
+}
+
+.long-term-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .long-term-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Skeleton Loading */
+.memory-block.skeleton {
+    pointer-events: none;
+}
+
+.skeleton-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+}
+
+.skeleton-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.skeleton-text {
+    flex: 1;
+}
+
+.skeleton-line {
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.skeleton-line.wide {
+    width: 60%;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-line.narrow {
+    width: 40%;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Error State */
+.memory-error-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 100, 100, 0.2);
+}
+
+.error-icon {
+    color: rgba(255, 100, 100, 0.6);
+    margin-bottom: 1rem;
+}
+
+.error-title {
+    font-size: 1.25rem;
+    color: #fff;
+    margin: 0 0 0.5rem 0;
+}
+
+.error-message {
+    color: var(--ns-gray);
+    margin: 0 0 1.5rem 0;
+}
+
+.error-retry-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    background: rgba(0, 217, 255, 0.1);
+    border: 1px solid rgba(0, 217, 255, 0.25);
+    color: var(--ns-blue-glow);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.error-retry-btn:hover {
+    background: rgba(0, 217, 255, 0.2);
+    border-color: rgba(0, 217, 255, 0.4);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+    }
+}
