@@ -1,11 +1,9 @@
 // ============================================================
 // MEMORY VIEW - Neural Memory Visualization
 // ============================================================
-// Displays the user's Letta memory system:
-// - Short-term Memory (session_context) - Active Recall
-// - Long-term Memory:
-//   - Conscious (fact_block) - What you know
-//   - Subconscious (creative_intuition) - What shapes you
+// Displays the user's persistent Letta memory:
+// - Conscious (fact_block) - What you know (explicit facts)
+// - Subconscious (creative_intuition) - What shapes you (inferred patterns)
 // ============================================================
 
 function MemoryView({ user }) {
@@ -41,7 +39,6 @@ function MemoryView({ user }) {
                 if (response.status === 404) {
                     // No memory agent yet - show empty state
                     setMemoryBlocks({
-                        session_context: '',
                         fact_block: '',
                         creative_intuition: ''
                     });
@@ -77,35 +74,19 @@ function MemoryView({ user }) {
         <div className="neural-memory-container">
             <MemoryHeader onRefresh={fetchMemoryBlocks} />
 
-            {/* Short-term Memory */}
-            <ShortTermMemory
-                content={memoryBlocks?.session_context}
-                expanded={expandedBlock === 'short-term'}
-                onToggle={() => toggleBlock('short-term')}
-            />
+            {/* Memory Blocks Grid */}
+            <div className="memory-grid">
+                <ConsciousMemory
+                    content={memoryBlocks?.fact_block}
+                    expanded={expandedBlock === 'conscious'}
+                    onToggle={() => toggleBlock('conscious')}
+                />
 
-            {/* Connection Line */}
-            <MemoryConnection />
-
-            {/* Long-term Memory Container */}
-            <div className="long-term-container">
-                <div className="long-term-header">
-                    <span className="long-term-label">Long-term Memory</span>
-                </div>
-
-                <div className="long-term-grid">
-                    <ConsciousMemory
-                        content={memoryBlocks?.fact_block}
-                        expanded={expandedBlock === 'conscious'}
-                        onToggle={() => toggleBlock('conscious')}
-                    />
-
-                    <SubconsciousMemory
-                        content={memoryBlocks?.creative_intuition}
-                        expanded={expandedBlock === 'subconscious'}
-                        onToggle={() => toggleBlock('subconscious')}
-                    />
-                </div>
+                <SubconsciousMemory
+                    content={memoryBlocks?.creative_intuition}
+                    expanded={expandedBlock === 'subconscious'}
+                    onToggle={() => toggleBlock('subconscious')}
+                />
             </div>
         </div>
     );
@@ -133,64 +114,6 @@ function MemoryHeader({ onRefresh }) {
                     <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
                 </svg>
             </button>
-        </div>
-    );
-}
-
-function ShortTermMemory({ content, expanded, onToggle }) {
-    const hasContent = content && content.trim().length > 0;
-
-    return (
-        <div className={`memory-block short-term glass ${expanded ? 'expanded' : ''}`}>
-            <div className="memory-block-header" onClick={onToggle}>
-                <div className="memory-icon-wrapper short-term-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                    </svg>
-                </div>
-                <div className="memory-titles">
-                    <h3 className="memory-block-title">Short-term Memory</h3>
-                    <span className="memory-block-subtitle">Active Recall</span>
-                </div>
-                <div className="memory-meta">
-                    <span className={`memory-status ${hasContent ? 'active' : 'empty'}`}>
-                        {hasContent ? 'Active' : 'Empty'}
-                    </span>
-                    <span className={`memory-chevron ${expanded ? 'expanded' : ''}`}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M6 9l6 6 6-6"/>
-                        </svg>
-                    </span>
-                </div>
-            </div>
-
-            {expanded && (
-                <div className="memory-content-wrapper">
-                    <div className="memory-content">
-                        {hasContent ? (
-                            <pre className="memory-text">{content}</pre>
-                        ) : (
-                            <div className="memory-empty-state">
-                                <p>No active conversation context.</p>
-                                <span className="empty-hint">This memory is volatile and clears between sessions.</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
-
-function MemoryConnection() {
-    return (
-        <div className="memory-connection">
-            <div className="connection-line"></div>
-            <div className="connection-arrow">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 16l-6-6h12z"/>
-                </svg>
-            </div>
         </div>
     );
 }
@@ -232,7 +155,7 @@ function ConsciousMemory({ content, expanded, onToggle }) {
                         ) : (
                             <div className="memory-empty-state">
                                 <p>No explicit facts stored yet.</p>
-                                <span className="empty-hint">Your preferences, tools, and profile will appear here.</span>
+                                <span className="empty-hint">Your preferences, tools, and profile will appear here as you chat.</span>
                             </div>
                         )}
                     </div>
@@ -275,7 +198,7 @@ function SubconsciousMemory({ content, expanded, onToggle }) {
                         ) : (
                             <div className="memory-empty-state">
                                 <p>No learned patterns yet.</p>
-                                <span className="empty-hint">Your creative intuitions and associations will emerge here.</span>
+                                <span className="empty-hint">Your creative intuitions and associations will emerge here over time.</span>
                             </div>
                         )}
                     </div>
@@ -295,39 +218,22 @@ function MemoryLoadingSkeleton() {
                 </div>
             </div>
 
-            <div className="memory-block short-term glass skeleton">
-                <div className="skeleton-header">
-                    <div className="skeleton-icon"></div>
-                    <div className="skeleton-text">
-                        <div className="skeleton-line wide"></div>
-                        <div className="skeleton-line narrow"></div>
-                    </div>
-                </div>
-            </div>
-
-            <MemoryConnection />
-
-            <div className="long-term-container">
-                <div className="long-term-header">
-                    <span className="long-term-label">Long-term Memory</span>
-                </div>
-                <div className="long-term-grid">
-                    <div className="memory-block conscious glass skeleton">
-                        <div className="skeleton-header">
-                            <div className="skeleton-icon"></div>
-                            <div className="skeleton-text">
-                                <div className="skeleton-line wide"></div>
-                                <div className="skeleton-line narrow"></div>
-                            </div>
+            <div className="memory-grid">
+                <div className="memory-block conscious glass skeleton">
+                    <div className="skeleton-header">
+                        <div className="skeleton-icon"></div>
+                        <div className="skeleton-text">
+                            <div className="skeleton-line wide"></div>
+                            <div className="skeleton-line narrow"></div>
                         </div>
                     </div>
-                    <div className="memory-block subconscious glass skeleton">
-                        <div className="skeleton-header">
-                            <div className="skeleton-icon"></div>
-                            <div className="skeleton-text">
-                                <div className="skeleton-line wide"></div>
-                                <div className="skeleton-line narrow"></div>
-                            </div>
+                </div>
+                <div className="memory-block subconscious glass skeleton">
+                    <div className="skeleton-header">
+                        <div className="skeleton-icon"></div>
+                        <div className="skeleton-text">
+                            <div className="skeleton-line wide"></div>
+                            <div className="skeleton-line narrow"></div>
                         </div>
                     </div>
                 </div>

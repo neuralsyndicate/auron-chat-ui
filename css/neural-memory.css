@@ -102,12 +102,6 @@
     transition: all 0.3s var(--spring-curve);
 }
 
-.short-term-icon {
-    background: rgba(0, 217, 255, 0.12);
-    color: var(--ns-blue-glow);
-    animation: pulse-glow 3s ease-in-out infinite;
-}
-
 .conscious-icon {
     background: rgba(100, 180, 255, 0.12);
     color: #64B4FF;
@@ -116,15 +110,6 @@
 .subconscious-icon {
     background: rgba(140, 100, 255, 0.12);
     color: #8C64FF;
-}
-
-@keyframes pulse-glow {
-    0%, 100% {
-        box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
-    }
-    50% {
-        box-shadow: 0 0 25px rgba(0, 217, 255, 0.4);
-    }
 }
 
 /* Titles */
@@ -150,35 +135,6 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-}
-
-.memory-status {
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.memory-status.active {
-    background: rgba(0, 217, 255, 0.15);
-    color: var(--ns-blue-glow);
-    animation: pulse-status 2s ease-in-out infinite;
-}
-
-.memory-status.empty {
-    background: rgba(100, 100, 100, 0.15);
-    color: var(--ns-gray);
-}
-
-@keyframes pulse-status {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.7;
-    }
 }
 
 .memory-chevron {
@@ -229,15 +185,6 @@
 }
 
 /* Block-specific borders */
-.memory-block.short-term {
-    border: 1px solid rgba(0, 217, 255, 0.2);
-}
-
-.memory-block.short-term:hover {
-    border-color: rgba(0, 217, 255, 0.35);
-    box-shadow: 0 0 30px rgba(0, 217, 255, 0.1);
-}
-
 .memory-block.conscious {
     border: 1px solid rgba(100, 180, 255, 0.15);
 }
@@ -256,54 +203,15 @@
     box-shadow: 0 0 30px rgba(140, 100, 255, 0.08);
 }
 
-/* Connection Line */
-.memory-connection {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1rem 0;
-}
-
-.connection-line {
-    width: 2px;
-    height: 30px;
-    background: linear-gradient(to bottom, rgba(0, 217, 255, 0.4), rgba(0, 217, 255, 0.1));
-}
-
-.connection-arrow {
-    color: rgba(0, 217, 255, 0.4);
-    margin-top: -2px;
-}
-
-/* Long-term Container */
-.long-term-container {
-    margin-top: 0.5rem;
-}
-
-.long-term-header {
-    text-align: center;
-    padding: 1rem 0 1.5rem 0;
-}
-
-.long-term-label {
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--ns-gray);
-    background: rgba(0, 217, 255, 0.05);
-    padding: 0.5rem 1.25rem;
-    border-radius: 20px;
-    border: 1px solid rgba(0, 217, 255, 0.1);
-}
-
-.long-term-grid {
+/* Memory Grid */
+.memory-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
 }
 
 @media (max-width: 768px) {
-    .long-term-grid {
+    .memory-grid {
         grid-template-columns: 1fr;
     }
 }
