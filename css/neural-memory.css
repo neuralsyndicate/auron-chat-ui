@@ -1,13 +1,21 @@
 /* ============================================================
-   NEURAL MEMORY - Memory Visualization Styles
+   NEURAL MEMORY - Neuroscience-Based Memory Visualization
    ============================================================
-   Follows the glass morphism design system from base.css
-   Uses CSS variables for consistency
+   Based on human long-term memory research:
+
+   EXPLICIT MEMORY (Conscious):
+   - Semantic: Facts & knowledge (blue)
+   - Episodic: Events & experiences (cyan)
+
+   IMPLICIT MEMORY (Unconscious - AI Inferred):
+   - Procedural: Behavioral patterns (purple)
+   - Emotional: Feeling associations (pink)
+   - Priming: Override rules (orange)
    ============================================================ */
 
 /* Container */
 .neural-memory-container {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 2rem 1.5rem;
     animation: fadeIn 0.5s var(--spring-curve);
@@ -18,7 +26,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
     padding-bottom: 1.5rem;
     border-bottom: 1px solid rgba(0, 217, 255, 0.1);
 }
@@ -63,7 +71,86 @@
     transform: rotate(180deg);
 }
 
-/* Memory Blocks - Shared Styles */
+/* ============================================================
+   MEMORY SECTIONS (Explicit / Implicit)
+   ============================================================ */
+
+.memory-section {
+    margin-bottom: 2rem;
+}
+
+.memory-section:last-child {
+    margin-bottom: 0;
+}
+
+.memory-section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-left: 0.25rem;
+}
+
+.memory-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+    letter-spacing: 0.03em;
+}
+
+.memory-section-subtitle {
+    font-size: 0.8rem;
+    color: var(--ns-gray);
+    font-style: italic;
+}
+
+/* Explicit section styling */
+.memory-section.explicit .memory-section-title {
+    color: rgba(100, 200, 255, 0.9);
+}
+
+/* Implicit section styling */
+.memory-section.implicit .memory-section-title {
+    color: rgba(180, 140, 255, 0.9);
+}
+
+/* ============================================================
+   MEMORY GRIDS
+   ============================================================ */
+
+.memory-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+/* Explicit: 2 columns */
+.memory-grid.explicit-grid {
+    grid-template-columns: 1fr 1fr;
+}
+
+/* Implicit: 3 columns */
+.memory-grid.implicit-grid {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 900px) {
+    .memory-grid.implicit-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .memory-grid.explicit-grid,
+    .memory-grid.implicit-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   MEMORY BLOCKS - Shared Styles
+   ============================================================ */
+
 .memory-block {
     border-radius: 16px;
     overflow: hidden;
@@ -80,8 +167,8 @@
 .memory-block-header {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem 1.5rem;
+    gap: 0.875rem;
+    padding: 1rem 1.25rem;
     cursor: pointer;
     transition: background 0.2s ease;
 }
@@ -92,24 +179,14 @@
 
 /* Icon Wrappers */
 .memory-icon-wrapper {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     transition: all 0.3s var(--spring-curve);
-}
-
-.conscious-icon {
-    background: rgba(100, 180, 255, 0.12);
-    color: #64B4FF;
-}
-
-.subconscious-icon {
-    background: rgba(140, 100, 255, 0.12);
-    color: #8C64FF;
 }
 
 /* Titles */
@@ -119,22 +196,37 @@
 }
 
 .memory-block-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #fff;
-    margin: 0 0 0.25rem 0;
+    margin: 0 0 0.2rem 0;
 }
 
 .memory-block-subtitle {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--ns-gray);
 }
 
-/* Meta / Status */
+/* Meta / Status / Badge */
 .memory-meta {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
+}
+
+.memory-badge {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.memory-badge.implicit {
+    background: rgba(180, 140, 255, 0.15);
+    color: rgba(180, 140, 255, 0.9);
+    border: 1px solid rgba(180, 140, 255, 0.25);
 }
 
 .memory-chevron {
@@ -154,13 +246,13 @@
 }
 
 .memory-content {
-    padding: 1.5rem;
+    padding: 1.25rem;
     background: rgba(0, 0, 0, 0.25);
 }
 
 .memory-text {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     line-height: 1.7;
     color: rgba(255, 255, 255, 0.85);
     white-space: pre-wrap;
@@ -170,53 +262,108 @@
 
 .memory-empty-state {
     text-align: center;
-    padding: 1rem 0;
+    padding: 0.75rem 0;
 }
 
 .memory-empty-state p {
     color: var(--ns-gray);
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.4rem 0;
+    font-size: 0.9rem;
 }
 
 .empty-hint {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--ns-gray-dark);
     font-style: italic;
 }
 
-/* Block-specific borders */
-.memory-block.conscious {
+/* ============================================================
+   EXPLICIT MEMORY TYPES (User-stated)
+   ============================================================ */
+
+/* Semantic - Blue (Facts & Knowledge) */
+.semantic-icon {
+    background: rgba(100, 180, 255, 0.12);
+    color: #64B4FF;
+}
+
+.memory-block.semantic {
     border: 1px solid rgba(100, 180, 255, 0.15);
 }
 
-.memory-block.conscious:hover {
+.memory-block.semantic:hover {
     border-color: rgba(100, 180, 255, 0.3);
-    box-shadow: 0 0 30px rgba(100, 180, 255, 0.08);
+    box-shadow: 0 0 25px rgba(100, 180, 255, 0.08);
 }
 
-.memory-block.subconscious {
-    border: 1px solid rgba(140, 100, 255, 0.15);
+/* Episodic - Cyan (Events & Experiences) */
+.episodic-icon {
+    background: rgba(100, 220, 220, 0.12);
+    color: #64DCDC;
 }
 
-.memory-block.subconscious:hover {
-    border-color: rgba(140, 100, 255, 0.3);
-    box-shadow: 0 0 30px rgba(140, 100, 255, 0.08);
+.memory-block.episodic {
+    border: 1px solid rgba(100, 220, 220, 0.15);
 }
 
-/* Memory Grid */
-.memory-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+.memory-block.episodic:hover {
+    border-color: rgba(100, 220, 220, 0.3);
+    box-shadow: 0 0 25px rgba(100, 220, 220, 0.08);
 }
 
-@media (max-width: 768px) {
-    .memory-grid {
-        grid-template-columns: 1fr;
-    }
+/* ============================================================
+   IMPLICIT MEMORY TYPES (AI-inferred)
+   ============================================================ */
+
+/* Procedural - Purple (Behavioral Patterns) */
+.procedural-icon {
+    background: rgba(160, 100, 255, 0.12);
+    color: #A064FF;
 }
 
-/* Skeleton Loading */
+.memory-block.procedural {
+    border: 1px solid rgba(160, 100, 255, 0.15);
+}
+
+.memory-block.procedural:hover {
+    border-color: rgba(160, 100, 255, 0.3);
+    box-shadow: 0 0 25px rgba(160, 100, 255, 0.08);
+}
+
+/* Emotional - Pink (Feeling Associations) */
+.emotional-icon {
+    background: rgba(255, 100, 150, 0.12);
+    color: #FF6496;
+}
+
+.memory-block.emotional {
+    border: 1px solid rgba(255, 100, 150, 0.15);
+}
+
+.memory-block.emotional:hover {
+    border-color: rgba(255, 100, 150, 0.3);
+    box-shadow: 0 0 25px rgba(255, 100, 150, 0.08);
+}
+
+/* Priming - Orange (Override Rules) */
+.priming-icon {
+    background: rgba(255, 180, 100, 0.12);
+    color: #FFB464;
+}
+
+.memory-block.priming {
+    border: 1px solid rgba(255, 180, 100, 0.15);
+}
+
+.memory-block.priming:hover {
+    border-color: rgba(255, 180, 100, 0.3);
+    box-shadow: 0 0 25px rgba(255, 180, 100, 0.08);
+}
+
+/* ============================================================
+   SKELETON LOADING
+   ============================================================ */
+
 .memory-block.skeleton {
     pointer-events: none;
 }
@@ -224,13 +371,13 @@
 .skeleton-header {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem 1.5rem;
+    gap: 0.875rem;
+    padding: 1rem 1.25rem;
 }
 
 .skeleton-icon {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
     background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
     background-size: 200% 100%;
@@ -267,7 +414,10 @@
     }
 }
 
-/* Error State */
+/* ============================================================
+   ERROR STATE
+   ============================================================ */
+
 .memory-error-state {
     text-align: center;
     padding: 3rem 2rem;
@@ -308,7 +458,10 @@
     border-color: rgba(0, 217, 255, 0.4);
 }
 
-/* Animations */
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
 @keyframes fadeIn {
     from {
         opacity: 0;

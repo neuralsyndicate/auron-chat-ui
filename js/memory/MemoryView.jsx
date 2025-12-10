@@ -1,9 +1,16 @@
 // ============================================================
-// MEMORY VIEW - Neural Memory Visualization
+// MEMORY VIEW - Neural Memory Visualization (Neuroscience Model)
 // ============================================================
-// Displays the user's persistent Letta memory:
-// - Conscious (fact_block) - What you know (explicit facts)
-// - Subconscious (creative_intuition) - What shapes you (inferred patterns)
+// Displays the user's persistent Letta memory blocks:
+//
+// EXPLICIT MEMORY (Conscious - User-stated):
+// - Semantic (semantic_memory) - Facts & knowledge
+// - Episodic (episodic_memory) - Events & experiences
+//
+// IMPLICIT MEMORY (Unconscious - AI-inferred):
+// - Procedural (procedural_memory) - Behavioral patterns
+// - Emotional (emotional_memory) - Feeling associations
+// - Priming (priming_memory) - Override rules & associations
 // ============================================================
 
 function MemoryView({ user }) {
@@ -39,8 +46,11 @@ function MemoryView({ user }) {
                 if (response.status === 404) {
                     // No memory agent yet - show empty state
                     setMemoryBlocks({
-                        fact_block: '',
-                        creative_intuition: ''
+                        semantic_memory: '',
+                        episodic_memory: '',
+                        procedural_memory: '',
+                        emotional_memory: '',
+                        priming_memory: ''
                     });
                 } else {
                     throw new Error(`Failed to fetch memory: ${response.status}`);
@@ -74,26 +84,72 @@ function MemoryView({ user }) {
         <div className="neural-memory-container">
             <MemoryHeader onRefresh={fetchMemoryBlocks} />
 
-            {/* Memory Blocks Grid */}
-            <div className="memory-grid">
-                <ConsciousMemory
-                    content={memoryBlocks?.fact_block}
-                    expanded={expandedBlock === 'conscious'}
-                    onToggle={() => toggleBlock('conscious')}
-                />
+            {/* EXPLICIT MEMORY - Conscious, User-stated */}
+            <MemorySection
+                title="Explicit Memory"
+                subtitle="Conscious - What You Know"
+                type="explicit"
+            >
+                <div className="memory-grid explicit-grid">
+                    <SemanticMemory
+                        content={memoryBlocks?.semantic_memory}
+                        expanded={expandedBlock === 'semantic'}
+                        onToggle={() => toggleBlock('semantic')}
+                    />
+                    <EpisodicMemory
+                        content={memoryBlocks?.episodic_memory}
+                        expanded={expandedBlock === 'episodic'}
+                        onToggle={() => toggleBlock('episodic')}
+                    />
+                </div>
+            </MemorySection>
 
-                <SubconsciousMemory
-                    content={memoryBlocks?.creative_intuition}
-                    expanded={expandedBlock === 'subconscious'}
-                    onToggle={() => toggleBlock('subconscious')}
-                />
-            </div>
+            {/* IMPLICIT MEMORY - Unconscious, AI-inferred */}
+            <MemorySection
+                title="Implicit Memory"
+                subtitle="Unconscious - What Shapes You"
+                type="implicit"
+            >
+                <div className="memory-grid implicit-grid">
+                    <ProceduralMemory
+                        content={memoryBlocks?.procedural_memory}
+                        expanded={expandedBlock === 'procedural'}
+                        onToggle={() => toggleBlock('procedural')}
+                    />
+                    <EmotionalMemory
+                        content={memoryBlocks?.emotional_memory}
+                        expanded={expandedBlock === 'emotional'}
+                        onToggle={() => toggleBlock('emotional')}
+                    />
+                    <PrimingMemory
+                        content={memoryBlocks?.priming_memory}
+                        expanded={expandedBlock === 'priming'}
+                        onToggle={() => toggleBlock('priming')}
+                    />
+                </div>
+            </MemorySection>
         </div>
     );
 }
 
 // ============================================================
-// SUB-COMPONENTS
+// SECTION COMPONENT
+// ============================================================
+
+function MemorySection({ title, subtitle, type, children }) {
+    return (
+        <div className={`memory-section ${type}`}>
+            <div className="memory-section-header">
+                <h3 className="memory-section-title">{title}</h3>
+                <span className="memory-section-subtitle">{subtitle}</span>
+            </div>
+            {children}
+        </div>
+    );
+}
+
+// ============================================================
+// HEADER COMPONENT
 // ============================================================
 
 function MemoryHeader({ onRefresh }) {
@@ -118,25 +174,28 @@ function MemoryHeader({ onRefresh }) {
     );
 }
 
-function ConsciousMemory({ content, expanded, onToggle }) {
+// ============================================================
+// EXPLICIT MEMORY COMPONENTS (User-stated, HIGH confidence)
+// ============================================================
+
+function SemanticMemory({ content, expanded, onToggle }) {
     const hasContent = content && content.trim().length > 0;
 
     return (
-        <div className={`memory-block conscious glass ${expanded ? 'expanded' : ''}`}>
+        <div className={`memory-block semantic glass ${expanded ? 'expanded' : ''}`}>
             <div className="memory-block-header" onClick={onToggle}>
-                <div className="memory-icon-wrapper conscious-icon">
+                <div className="memory-icon-wrapper semantic-icon">
+                    {/* Brain icon */}
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <circle cx="12" cy="12" r="4"/>
-                        <line x1="12" y1="2" x2="12" y2="4"/>
-                        <line x1="12" y1="20" x2="12" y2="22"/>
-                        <line x1="2" y1="12" x2="4" y2="12"/>
-                        <line x1="20" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a9 9 0 0 0-9 9c0 4.17 2.84 7.67 6.69 8.69a.5.5 0 0 0 .31-.95A8 8 0 0 1 4 11a8 8 0 0 1 16 0 8 8 0 0 1-6 7.74.5.5 0 0 0 .31.95A9 9 0 0 0 21 11a9 9 0 0 0-9-9z"/>
+                        <path d="M12 6a5 5 0 0 0-5 5c0 2.05 1.23 3.81 3 4.58V22h4v-6.42c1.77-.77 3-2.53 3-4.58a5 5 0 0 0-5-5z"/>
+                        <circle cx="10" cy="10" r="1"/>
+                        <circle cx="14" cy="10" r="1"/>
                     </svg>
                 </div>
                 <div className="memory-titles">
-                    <h3 className="memory-block-title">Conscious</h3>
-                    <span className="memory-block-subtitle">What you know</span>
+                    <h3 className="memory-block-title">Semantic</h3>
+                    <span className="memory-block-subtitle">Facts & Knowledge</span>
                 </div>
                 <div className="memory-meta">
                     <span className={`memory-chevron ${expanded ? 'expanded' : ''}`}>
@@ -154,8 +213,8 @@ function ConsciousMemory({ content, expanded, onToggle }) {
                             <pre className="memory-text">{content}</pre>
                         ) : (
                             <div className="memory-empty-state">
-                                <p>No explicit facts stored yet.</p>
-                                <span className="empty-hint">Your preferences, tools, and profile will appear here as you chat.</span>
+                                <p>No facts stored yet.</p>
+                                <span className="empty-hint">Your preferences, tools, and declarations will appear here as you chat.</span>
                             </div>
                         )}
                     </div>
@@ -165,23 +224,76 @@ function ConsciousMemory({ content, expanded, onToggle }) {
     );
 }
 
-function SubconsciousMemory({ content, expanded, onToggle }) {
+function EpisodicMemory({ content, expanded, onToggle }) {
     const hasContent = content && content.trim().length > 0;
 
     return (
-        <div className={`memory-block subconscious glass ${expanded ? 'expanded' : ''}`}>
+        <div className={`memory-block episodic glass ${expanded ? 'expanded' : ''}`}>
             <div className="memory-block-header" onClick={onToggle}>
-                <div className="memory-icon-wrapper subconscious-icon">
+                <div className="memory-icon-wrapper episodic-icon">
+                    {/* Calendar/Event icon */}
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M2 12c2-2.67 5.33-4 10-4s8 1.33 10 4c-2 2.67-5.33 4-10 4s-8-1.33-10-4z"/>
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+                    </svg>
+                </div>
+                <div className="memory-titles">
+                    <h3 className="memory-block-title">Episodic</h3>
+                    <span className="memory-block-subtitle">Events & Experiences</span>
+                </div>
+                <div className="memory-meta">
+                    <span className={`memory-chevron ${expanded ? 'expanded' : ''}`}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+
+            {expanded && (
+                <div className="memory-content-wrapper">
+                    <div className="memory-content">
+                        {hasContent ? (
+                            <pre className="memory-text">{content}</pre>
+                        ) : (
+                            <div className="memory-empty-state">
+                                <p>No events recorded yet.</p>
+                                <span className="empty-hint">Your sessions, projects, and experiences will appear here.</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ============================================================
+// IMPLICIT MEMORY COMPONENTS (AI-inferred, evolving confidence)
+// ============================================================
+
+function ProceduralMemory({ content, expanded, onToggle }) {
+    const hasContent = content && content.trim().length > 0;
+
+    return (
+        <div className={`memory-block procedural glass ${expanded ? 'expanded' : ''}`}>
+            <div className="memory-block-header" onClick={onToggle}>
+                <div className="memory-icon-wrapper procedural-icon">
+                    {/* Cog/Workflow icon */}
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                     </svg>
                 </div>
                 <div className="memory-titles">
-                    <h3 className="memory-block-title">Subconscious</h3>
-                    <span className="memory-block-subtitle">What shapes you</span>
+                    <h3 className="memory-block-title">Procedural</h3>
+                    <span className="memory-block-subtitle">Behavioral Patterns</span>
                 </div>
                 <div className="memory-meta">
+                    <span className="memory-badge implicit">AI Inferred</span>
                     <span className={`memory-chevron ${expanded ? 'expanded' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M6 9l6 6 6-6"/>
@@ -197,8 +309,8 @@ function SubconsciousMemory({ content, expanded, onToggle }) {
                             <pre className="memory-text">{content}</pre>
                         ) : (
                             <div className="memory-empty-state">
-                                <p>No learned patterns yet.</p>
-                                <span className="empty-hint">Your creative intuitions and associations will emerge here over time.</span>
+                                <p>No patterns observed yet.</p>
+                                <span className="empty-hint">Your workflow habits and behaviors will be inferred over time.</span>
                             </div>
                         )}
                     </div>
@@ -207,6 +319,98 @@ function SubconsciousMemory({ content, expanded, onToggle }) {
         </div>
     );
 }
+
+function EmotionalMemory({ content, expanded, onToggle }) {
+    const hasContent = content && content.trim().length > 0;
+
+    return (
+        <div className={`memory-block emotional glass ${expanded ? 'expanded' : ''}`}>
+            <div className="memory-block-header" onClick={onToggle}>
+                <div className="memory-icon-wrapper emotional-icon">
+                    {/* Heart icon */}
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </div>
+                <div className="memory-titles">
+                    <h3 className="memory-block-title">Emotional</h3>
+                    <span className="memory-block-subtitle">Feeling Associations</span>
+                </div>
+                <div className="memory-meta">
+                    <span className="memory-badge implicit">AI Inferred</span>
+                    <span className={`memory-chevron ${expanded ? 'expanded' : ''}`}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+
+            {expanded && (
+                <div className="memory-content-wrapper">
+                    <div className="memory-content">
+                        {hasContent ? (
+                            <pre className="memory-text">{content}</pre>
+                        ) : (
+                            <div className="memory-empty-state">
+                                <p>No emotional patterns yet.</p>
+                                <span className="empty-hint">Your feeling-based responses will be learned over time.</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function PrimingMemory({ content, expanded, onToggle }) {
+    const hasContent = content && content.trim().length > 0;
+
+    return (
+        <div className={`memory-block priming glass ${expanded ? 'expanded' : ''}`}>
+            <div className="memory-block-header" onClick={onToggle}>
+                <div className="memory-icon-wrapper priming-icon">
+                    {/* Lightning/Zap icon */}
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                </div>
+                <div className="memory-titles">
+                    <h3 className="memory-block-title">Priming</h3>
+                    <span className="memory-block-subtitle">Override Rules</span>
+                </div>
+                <div className="memory-meta">
+                    <span className="memory-badge implicit">AI Inferred</span>
+                    <span className={`memory-chevron ${expanded ? 'expanded' : ''}`}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+
+            {expanded && (
+                <div className="memory-content-wrapper">
+                    <div className="memory-content">
+                        {hasContent ? (
+                            <pre className="memory-text">{content}</pre>
+                        ) : (
+                            <div className="memory-empty-state">
+                                <p>No associations learned yet.</p>
+                                <span className="empty-hint">Your personal definitions and override rules will emerge here.</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ============================================================
+// LOADING & ERROR STATES
+// ============================================================
 
 function MemoryLoadingSkeleton() {
     return (
@@ -218,22 +422,64 @@ function MemoryLoadingSkeleton() {
                 </div>
             </div>
 
-            <div className="memory-grid">
-                <div className="memory-block conscious glass skeleton">
-                    <div className="skeleton-header">
-                        <div className="skeleton-icon"></div>
-                        <div className="skeleton-text">
-                            <div className="skeleton-line wide"></div>
-                            <div className="skeleton-line narrow"></div>
+            {/* Explicit Memory Section Skeleton */}
+            <div className="memory-section explicit">
+                <div className="memory-section-header">
+                    <div className="skeleton-line" style={{width: '120px', height: '16px'}}></div>
+                </div>
+                <div className="memory-grid explicit-grid">
+                    <div className="memory-block semantic glass skeleton">
+                        <div className="skeleton-header">
+                            <div className="skeleton-icon"></div>
+                            <div className="skeleton-text">
+                                <div className="skeleton-line wide"></div>
+                                <div className="skeleton-line narrow"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="memory-block episodic glass skeleton">
+                        <div className="skeleton-header">
+                            <div className="skeleton-icon"></div>
+                            <div className="skeleton-text">
+                                <div className="skeleton-line wide"></div>
+                                <div className="skeleton-line narrow"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div className="memory-block subconscious glass skeleton">
-                    <div className="skeleton-header">
-                        <div className="skeleton-icon"></div>
-                        <div className="skeleton-text">
-                            <div className="skeleton-line wide"></div>
-                            <div className="skeleton-line narrow"></div>
+            </div>
+
+            {/* Implicit Memory Section Skeleton */}
+            <div className="memory-section implicit">
+                <div className="memory-section-header">
+                    <div className="skeleton-line" style={{width: '120px', height: '16px'}}></div>
+                </div>
+                <div className="memory-grid implicit-grid">
+                    <div className="memory-block procedural glass skeleton">
+                        <div className="skeleton-header">
+                            <div className="skeleton-icon"></div>
+                            <div className="skeleton-text">
+                                <div className="skeleton-line wide"></div>
+                                <div className="skeleton-line narrow"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="memory-block emotional glass skeleton">
+                        <div className="skeleton-header">
+                            <div className="skeleton-icon"></div>
+                            <div className="skeleton-text">
+                                <div className="skeleton-line wide"></div>
+                                <div className="skeleton-line narrow"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="memory-block priming glass skeleton">
+                        <div className="skeleton-header">
+                            <div className="skeleton-icon"></div>
+                            <div className="skeleton-text">
+                                <div className="skeleton-line wide"></div>
+                                <div className="skeleton-line narrow"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
