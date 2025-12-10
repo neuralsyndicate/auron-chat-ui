@@ -18,6 +18,7 @@ function MemoryView({ user }) {
     const [memoryDisplay, setMemoryDisplay] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [pending, setPending] = useState(false);
     const [expandedBlock, setExpandedBlock] = useState(null);
 
     useEffect(() => {
@@ -30,13 +31,14 @@ function MemoryView({ user }) {
         try {
             setLoading(true);
             setError(null);
+            setPending(false);
 
             const token = await getAuthToken();
             if (!token) {
                 throw new Error('Not authenticated');
             }
 
-            // Use the new /memory/display endpoint for human-readable format
+            // Use the /memory/display endpoint for pre-computed human-readable format
             const response = await fetch(`${BFF_API_BASE}/memory/display/${user.id}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -59,6 +61,12 @@ function MemoryView({ user }) {
                 }
             } else {
                 const data = await response.json();
+
+                // Handle "pending" status - sleep-time agent hasn't generated display yet
+                if (data.status === 'pending') {
+                    setPending(true);
+                }
+
                 // Response contains {status, user_id, cached, semantic_memory: {...}, ...}
                 setMemoryDisplay({
                     semantic_memory: data.semantic_memory || { label: 'Facts & Knowledge', type: 'explicit', items: [] },
@@ -91,6 +99,19 @@ function MemoryView({ user }) {
     return (
         <div className="neural-memory-container">
             <MemoryHeader onRefresh={fetchMemoryDisplay} />
+
+            {/* Pending Banner - Sleep-time agent hasn't processed yet */}
+            {pending && (
+                <div className="memory-pending-banner glass">
+                    <div className="pending-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <span>Memories are being processed in the background. Refresh in a moment.</span>
+                </div>
+            )}
 
             {/* EXPLICIT MEMORY - Conscious, User-stated */}
             <MemorySection
