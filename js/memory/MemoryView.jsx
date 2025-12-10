@@ -1,7 +1,8 @@
 // ============================================================
 // MEMORY VIEW - Neural Memory Visualization (Neuroscience Model)
 // ============================================================
-// Displays the user's persistent Letta memory blocks:
+// Displays the user's persistent Letta memory blocks with
+// LLM-transformed human-readable display and confidence indicators.
 //
 // EXPLICIT MEMORY (Conscious - User-stated):
 // - Semantic (semantic_memory) - Facts & knowledge
@@ -14,18 +15,18 @@
 // ============================================================
 
 function MemoryView({ user }) {
-    const [memoryBlocks, setMemoryBlocks] = useState(null);
+    const [memoryDisplay, setMemoryDisplay] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [expandedBlock, setExpandedBlock] = useState(null);
 
     useEffect(() => {
         if (user) {
-            fetchMemoryBlocks();
+            fetchMemoryDisplay();
         }
     }, [user]);
 
-    const fetchMemoryBlocks = async () => {
+    const fetchMemoryDisplay = async () => {
         try {
             setLoading(true);
             setError(null);
@@ -35,7 +36,8 @@ function MemoryView({ user }) {
                 throw new Error('Not authenticated');
             }
 
-            const response = await fetch(`${BFF_API_BASE}/memory/blocks/${user.id}`, {
+            // Use the new /memory/display endpoint for human-readable format
+            const response = await fetch(`${BFF_API_BASE}/memory/display/${user.id}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -45,20 +47,26 @@ function MemoryView({ user }) {
             if (!response.ok) {
                 if (response.status === 404) {
                     // No memory agent yet - show empty state
-                    setMemoryBlocks({
-                        semantic_memory: '',
-                        episodic_memory: '',
-                        procedural_memory: '',
-                        emotional_memory: '',
-                        priming_memory: ''
+                    setMemoryDisplay({
+                        semantic_memory: { label: 'Facts & Knowledge', type: 'explicit', items: [] },
+                        episodic_memory: { label: 'Events & Experiences', type: 'explicit', items: [] },
+                        procedural_memory: { label: 'Behavioral Patterns', type: 'implicit', items: [] },
+                        emotional_memory: { label: 'Emotional Associations', type: 'implicit', items: [] },
+                        priming_memory: { label: 'Override Rules', type: 'implicit', items: [] }
                     });
                 } else {
                     throw new Error(`Failed to fetch memory: ${response.status}`);
                 }
             } else {
                 const data = await response.json();
-                // Extract blocks from response - BFF returns {status, user_id, blocks: {...}}
-                setMemoryBlocks(data.blocks || {});
+                // Response contains {status, user_id, cached, semantic_memory: {...}, ...}
+                setMemoryDisplay({
+                    semantic_memory: data.semantic_memory || { label: 'Facts & Knowledge', type: 'explicit', items: [] },
+                    episodic_memory: data.episodic_memory || { label: 'Events & Experiences', type: 'explicit', items: [] },
+                    procedural_memory: data.procedural_memory || { label: 'Behavioral Patterns', type: 'implicit', items: [] },
+                    emotional_memory: data.emotional_memory || { label: 'Emotional Associations', type: 'implicit', items: [] },
+                    priming_memory: data.priming_memory || { label: 'Override Rules', type: 'implicit', items: [] }
+                });
             }
         } catch (err) {
             console.error('Memory fetch error:', err);
@@ -77,12 +85,12 @@ function MemoryView({ user }) {
     }
 
     if (error) {
-        return <MemoryError message={error} onRetry={fetchMemoryBlocks} />;
+        return <MemoryError message={error} onRetry={fetchMemoryDisplay} />;
     }
 
     return (
         <div className="neural-memory-container">
-            <MemoryHeader onRefresh={fetchMemoryBlocks} />
+            <MemoryHeader onRefresh={fetchMemoryDisplay} />
 
             {/* EXPLICIT MEMORY - Conscious, User-stated */}
             <MemorySection
@@ -92,12 +100,12 @@ function MemoryView({ user }) {
             >
                 <div className="memory-grid explicit-grid">
                     <SemanticMemory
-                        content={memoryBlocks?.semantic_memory}
+                        data={memoryDisplay?.semantic_memory}
                         expanded={expandedBlock === 'semantic'}
                         onToggle={() => toggleBlock('semantic')}
                     />
                     <EpisodicMemory
-                        content={memoryBlocks?.episodic_memory}
+                        data={memoryDisplay?.episodic_memory}
                         expanded={expandedBlock === 'episodic'}
                         onToggle={() => toggleBlock('episodic')}
                     />
@@ -112,17 +120,17 @@ function MemoryView({ user }) {
             >
                 <div className="memory-grid implicit-grid">
                     <ProceduralMemory
-                        content={memoryBlocks?.procedural_memory}
+                        data={memoryDisplay?.procedural_memory}
                         expanded={expandedBlock === 'procedural'}
                         onToggle={() => toggleBlock('procedural')}
                     />
                     <EmotionalMemory
-                        content={memoryBlocks?.emotional_memory}
+                        data={memoryDisplay?.emotional_memory}
                         expanded={expandedBlock === 'emotional'}
                         onToggle={() => toggleBlock('emotional')}
                     />
                     <PrimingMemory
-                        content={memoryBlocks?.priming_memory}
+                        data={memoryDisplay?.priming_memory}
                         expanded={expandedBlock === 'priming'}
                         onToggle={() => toggleBlock('priming')}
                     />
@@ -175,11 +183,115 @@ function MemoryHeader({ onRefresh }) {
 }
 
 // ============================================================
+// MEMORY ITEM WITH CONFIDENCE DOT
+// ============================================================
+
+function MemoryItem({ item }) {
+    const [showTooltip, setShowTooltip] = useState(false);
+
+    const confidenceDots = {
+        'HIGH': '\u25CF',   // ●
+        'MEDIUM': '\u25D0', // ◐
+        'LOW': '\u25CB'     // ○
+    };
+
+    const confidence = item.confidence || 'HIGH';
+    const dot = confidenceDots[confidence] || confidenceDots['HIGH'];
+
+    return (
+        <div className="memory-item">
+            <span className="memory-item-text">{item.display}</span>
+            <span
+                className={`confidence-dot ${confidence.toLowerCase()}`}
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+            >
+                {dot}
+                {showTooltip && <ConfidenceTooltip item={item} />}
+            </span>
+        </div>
+    );
+}
+
+// ============================================================
+// CONFIDENCE TOOLTIP
+// ============================================================
+
+function ConfidenceTooltip({ item }) {
+    const confidence = item.confidence || 'HIGH';
+
+    const explanations = {
+        'HIGH': "You explicitly told AURON this.",
+        'MEDIUM': `Pattern observed ${item.observations || '3+'}x in conversations.`,
+        'LOW': "Early inference - AURON is still learning this about you."
+    };
+
+    const sourceLabels = {
+        'user-stated': 'You stated this directly',
+        'user-recalled': 'You recalled this experience',
+        'observed': 'Observed from your behavior',
+        'raw': 'Raw memory data'
+    };
+
+    return (
+        <div className="confidence-tooltip">
+            <div className="tooltip-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <span>Confidence: {confidence}</span>
+            </div>
+            <div className="tooltip-body">
+                <p className="tooltip-explanation">{explanations[confidence]}</p>
+
+                <div className="tooltip-legend">
+                    <span className="legend-title">What confidence means:</span>
+                    <div className="legend-item"><span className="dot high">{'\u25CF'}</span> HIGH = You stated this directly</div>
+                    <div className="legend-item"><span className="dot medium">{'\u25D0'}</span> MEDIUM = Pattern observed 3+ times</div>
+                    <div className="legend-item"><span className="dot low">{'\u25CB'}</span> LOW = Early inference, needs confirmation</div>
+                </div>
+
+                <div className="tooltip-meta">
+                    <span>Source: {sourceLabels[item.source] || item.source}</span>
+                    {item.raw && <code>{item.raw}</code>}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
+// MEMORY ITEMS LIST
+// ============================================================
+
+function MemoryItemsList({ items, emptyMessage, emptyHint }) {
+    if (!items || items.length === 0) {
+        return (
+            <div className="memory-empty-state">
+                <p>{emptyMessage}</p>
+                <span className="empty-hint">{emptyHint}</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="memory-items-list">
+            {items.map((item, index) => (
+                <MemoryItem key={index} item={item} />
+            ))}
+        </div>
+    );
+}
+
+// ============================================================
 // EXPLICIT MEMORY COMPONENTS (User-stated, HIGH confidence)
 // ============================================================
 
-function SemanticMemory({ content, expanded, onToggle }) {
-    const hasContent = content && content.trim().length > 0;
+function SemanticMemory({ data, expanded, onToggle }) {
+    const items = data?.items || [];
+    const hasContent = items.length > 0;
 
     return (
         <div className={`memory-block semantic glass ${expanded ? 'expanded' : ''}`}>
@@ -195,9 +307,10 @@ function SemanticMemory({ content, expanded, onToggle }) {
                 </div>
                 <div className="memory-titles">
                     <h3 className="memory-block-title">Semantic</h3>
-                    <span className="memory-block-subtitle">Facts & Knowledge</span>
+                    <span className="memory-block-subtitle">{data?.label || 'Facts & Knowledge'}</span>
                 </div>
                 <div className="memory-meta">
+                    {hasContent && <span className="memory-count">{items.length}</span>}
                     <span className={`memory-chevron ${expanded ? 'expanded' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M6 9l6 6 6-6"/>
@@ -209,14 +322,11 @@ function SemanticMemory({ content, expanded, onToggle }) {
             {expanded && (
                 <div className="memory-content-wrapper">
                     <div className="memory-content">
-                        {hasContent ? (
-                            <pre className="memory-text">{content}</pre>
-                        ) : (
-                            <div className="memory-empty-state">
-                                <p>No facts stored yet.</p>
-                                <span className="empty-hint">Your preferences, tools, and declarations will appear here as you chat.</span>
-                            </div>
-                        )}
+                        <MemoryItemsList
+                            items={items}
+                            emptyMessage="No facts stored yet."
+                            emptyHint="Your preferences, tools, and declarations will appear here as you chat."
+                        />
                     </div>
                 </div>
             )}
@@ -224,8 +334,9 @@ function SemanticMemory({ content, expanded, onToggle }) {
     );
 }
 
-function EpisodicMemory({ content, expanded, onToggle }) {
-    const hasContent = content && content.trim().length > 0;
+function EpisodicMemory({ data, expanded, onToggle }) {
+    const items = data?.items || [];
+    const hasContent = items.length > 0;
 
     return (
         <div className={`memory-block episodic glass ${expanded ? 'expanded' : ''}`}>
@@ -242,9 +353,10 @@ function EpisodicMemory({ content, expanded, onToggle }) {
                 </div>
                 <div className="memory-titles">
                     <h3 className="memory-block-title">Episodic</h3>
-                    <span className="memory-block-subtitle">Events & Experiences</span>
+                    <span className="memory-block-subtitle">{data?.label || 'Events & Experiences'}</span>
                 </div>
                 <div className="memory-meta">
+                    {hasContent && <span className="memory-count">{items.length}</span>}
                     <span className={`memory-chevron ${expanded ? 'expanded' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M6 9l6 6 6-6"/>
@@ -256,14 +368,11 @@ function EpisodicMemory({ content, expanded, onToggle }) {
             {expanded && (
                 <div className="memory-content-wrapper">
                     <div className="memory-content">
-                        {hasContent ? (
-                            <pre className="memory-text">{content}</pre>
-                        ) : (
-                            <div className="memory-empty-state">
-                                <p>No events recorded yet.</p>
-                                <span className="empty-hint">Your sessions, projects, and experiences will appear here.</span>
-                            </div>
-                        )}
+                        <MemoryItemsList
+                            items={items}
+                            emptyMessage="No events recorded yet."
+                            emptyHint="Your sessions, projects, and experiences will appear here."
+                        />
                     </div>
                 </div>
             )}
@@ -275,8 +384,9 @@ function EpisodicMemory({ content, expanded, onToggle }) {
 // IMPLICIT MEMORY COMPONENTS (AI-inferred, evolving confidence)
 // ============================================================
 
-function ProceduralMemory({ content, expanded, onToggle }) {
-    const hasContent = content && content.trim().length > 0;
+function ProceduralMemory({ data, expanded, onToggle }) {
+    const items = data?.items || [];
+    const hasContent = items.length > 0;
 
     return (
         <div className={`memory-block procedural glass ${expanded ? 'expanded' : ''}`}>
@@ -290,10 +400,11 @@ function ProceduralMemory({ content, expanded, onToggle }) {
                 </div>
                 <div className="memory-titles">
                     <h3 className="memory-block-title">Procedural</h3>
-                    <span className="memory-block-subtitle">Behavioral Patterns</span>
+                    <span className="memory-block-subtitle">{data?.label || 'Behavioral Patterns'}</span>
                 </div>
                 <div className="memory-meta">
                     <span className="memory-badge implicit">AI Inferred</span>
+                    {hasContent && <span className="memory-count">{items.length}</span>}
                     <span className={`memory-chevron ${expanded ? 'expanded' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M6 9l6 6 6-6"/>
@@ -305,14 +416,11 @@ function ProceduralMemory({ content, expanded, onToggle }) {
             {expanded && (
                 <div className="memory-content-wrapper">
                     <div className="memory-content">
-                        {hasContent ? (
-                            <pre className="memory-text">{content}</pre>
-                        ) : (
-                            <div className="memory-empty-state">
-                                <p>No patterns observed yet.</p>
-                                <span className="empty-hint">Your workflow habits and behaviors will be inferred over time.</span>
-                            </div>
-                        )}
+                        <MemoryItemsList
+                            items={items}
+                            emptyMessage="No patterns observed yet."
+                            emptyHint="Your workflow habits and behaviors will be inferred over time."
+                        />
                     </div>
                 </div>
             )}
@@ -320,8 +428,9 @@ function ProceduralMemory({ content, expanded, onToggle }) {
     );
 }
 
-function EmotionalMemory({ content, expanded, onToggle }) {
-    const hasContent = content && content.trim().length > 0;
+function EmotionalMemory({ data, expanded, onToggle }) {
+    const items = data?.items || [];
+    const hasContent = items.length > 0;
 
     return (
         <div className={`memory-block emotional glass ${expanded ? 'expanded' : ''}`}>
@@ -334,10 +443,11 @@ function EmotionalMemory({ content, expanded, onToggle }) {
                 </div>
                 <div className="memory-titles">
                     <h3 className="memory-block-title">Emotional</h3>
-                    <span className="memory-block-subtitle">Feeling Associations</span>
+                    <span className="memory-block-subtitle">{data?.label || 'Feeling Associations'}</span>
                 </div>
                 <div className="memory-meta">
                     <span className="memory-badge implicit">AI Inferred</span>
+                    {hasContent && <span className="memory-count">{items.length}</span>}
                     <span className={`memory-chevron ${expanded ? 'expanded' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M6 9l6 6 6-6"/>
@@ -349,14 +459,11 @@ function EmotionalMemory({ content, expanded, onToggle }) {
             {expanded && (
                 <div className="memory-content-wrapper">
                     <div className="memory-content">
-                        {hasContent ? (
-                            <pre className="memory-text">{content}</pre>
-                        ) : (
-                            <div className="memory-empty-state">
-                                <p>No emotional patterns yet.</p>
-                                <span className="empty-hint">Your feeling-based responses will be learned over time.</span>
-                            </div>
-                        )}
+                        <MemoryItemsList
+                            items={items}
+                            emptyMessage="No emotional patterns yet."
+                            emptyHint="Your feeling-based responses will be learned over time."
+                        />
                     </div>
                 </div>
             )}
@@ -364,8 +471,9 @@ function EmotionalMemory({ content, expanded, onToggle }) {
     );
 }
 
-function PrimingMemory({ content, expanded, onToggle }) {
-    const hasContent = content && content.trim().length > 0;
+function PrimingMemory({ data, expanded, onToggle }) {
+    const items = data?.items || [];
+    const hasContent = items.length > 0;
 
     return (
         <div className={`memory-block priming glass ${expanded ? 'expanded' : ''}`}>
@@ -378,10 +486,11 @@ function PrimingMemory({ content, expanded, onToggle }) {
                 </div>
                 <div className="memory-titles">
                     <h3 className="memory-block-title">Priming</h3>
-                    <span className="memory-block-subtitle">Override Rules</span>
+                    <span className="memory-block-subtitle">{data?.label || 'Override Rules'}</span>
                 </div>
                 <div className="memory-meta">
                     <span className="memory-badge implicit">AI Inferred</span>
+                    {hasContent && <span className="memory-count">{items.length}</span>}
                     <span className={`memory-chevron ${expanded ? 'expanded' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M6 9l6 6 6-6"/>
@@ -393,14 +502,11 @@ function PrimingMemory({ content, expanded, onToggle }) {
             {expanded && (
                 <div className="memory-content-wrapper">
                     <div className="memory-content">
-                        {hasContent ? (
-                            <pre className="memory-text">{content}</pre>
-                        ) : (
-                            <div className="memory-empty-state">
-                                <p>No associations learned yet.</p>
-                                <span className="empty-hint">Your personal definitions and override rules will emerge here.</span>
-                            </div>
-                        )}
+                        <MemoryItemsList
+                            items={items}
+                            emptyMessage="No associations learned yet."
+                            emptyHint="Your personal definitions and override rules will emerge here."
+                        />
                     </div>
                 </div>
             )}
