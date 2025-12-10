@@ -25,6 +25,15 @@ function Dashboard() {
     const [sessionId, setSessionId] = useState(null);
     const [syncing, setSyncing] = useState(false);
 
+    // Memory modal state
+    const [showMemoryModal, setShowMemoryModal] = useState(false);
+
+    // Handler for "Open Full View" from memory modal
+    const handleOpenFullMemoryView = () => {
+        setShowMemoryModal(false);
+        setCurrentView('memory');
+    };
+
     useEffect(() => {
         // Check Logto authentication
         async function checkAuth() {
@@ -269,7 +278,11 @@ function Dashboard() {
                         </button>
 
                         {/* User Avatar with Dropdown */}
-                        <UserAvatarDropdown username={user.username || 'user'} />
+                        <UserAvatarDropdown
+                            username={user.username || 'user'}
+                            onOpenMemory={() => setShowMemoryModal(true)}
+                            onNavigate={(view) => setCurrentView(view)}
+                        />
 
                         <button
                             onClick={handleLogout}
@@ -306,6 +319,15 @@ function Dashboard() {
                     conversationId={loadedSessionId}
                     onClose={() => setLoadedSessionId(null)}
                     setSessionId={setSessionId}
+                />
+            )}
+
+            {/* Memory Modal (from avatar dropdown) */}
+            {showMemoryModal && (
+                <MemoryModal
+                    user={user}
+                    onClose={() => setShowMemoryModal(false)}
+                    onOpenFullView={handleOpenFullMemoryView}
                 />
             )}
         </div>

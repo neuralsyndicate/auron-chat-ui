@@ -741,3 +741,177 @@
         left: auto;
     }
 }
+
+/* ============================================================
+   MEMORY MODAL (Avatar dropdown quick view)
+   ============================================================ */
+
+.memory-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: modalFadeIn 0.2s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.memory-modal-container {
+    width: 95%;
+    max-width: 900px;
+    max-height: 85vh;
+    background: rgba(10, 10, 31, 0.65);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 2px solid rgba(0, 217, 255, 0.4);
+    box-shadow:
+        0 0 40px rgba(0, 217, 255, 0.6),
+        0 0 80px rgba(0, 217, 255, 0.4),
+        0 20px 60px rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: modalSlideIn 0.25s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.memory-modal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 217, 255, 0.03);
+    flex-shrink: 0;
+}
+
+.memory-modal-title-group {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+
+.memory-modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--ns-blue-glow);
+    margin: 0;
+    text-shadow: 0 0 20px rgba(0, 217, 255, 0.4);
+}
+
+.memory-modal-subtitle {
+    font-size: 0.8rem;
+    color: var(--ns-gray);
+}
+
+.memory-modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.memory-modal-full-view-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.875rem;
+    background: rgba(0, 217, 255, 0.1);
+    border: 1px solid rgba(0, 217, 255, 0.3);
+    border-radius: 8px;
+    color: rgba(0, 217, 255, 0.9);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.memory-modal-full-view-btn:hover {
+    background: rgba(0, 217, 255, 0.15);
+    border-color: rgba(0, 217, 255, 0.5);
+    box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
+}
+
+.memory-modal-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.memory-modal-close-btn:hover {
+    background: rgba(255, 100, 100, 0.15);
+    border-color: rgba(255, 100, 100, 0.3);
+    color: rgba(255, 100, 100, 0.9);
+}
+
+.memory-modal-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+/* Override neural-memory-container padding inside modal */
+.memory-modal-content .neural-memory-container {
+    padding: 0.5rem;
+    max-width: none;
+    margin: 0;
+}
+
+/* Hide the header inside modal (we have our own) */
+.memory-modal-content .neural-memory-header {
+    display: none;
+}
+
+/* Mobile adjustments for modal */
+@media (max-width: 768px) {
+    .memory-modal-container {
+        width: 98%;
+        max-height: 90vh;
+    }
+
+    .memory-modal-header {
+        padding: 0.875rem 1rem;
+    }
+
+    .memory-modal-title {
+        font-size: 1.1rem;
+    }
+
+    .memory-modal-full-view-btn span {
+        display: none;
+    }
+
+    .memory-modal-content {
+        padding: 0.5rem;
+    }
+}

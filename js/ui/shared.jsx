@@ -205,9 +205,17 @@ function LoadingScreen() {
 }
 
 // UserAvatarDropdown - Top-right user menu with avatar initial
-function UserAvatarDropdown({ username }) {
+function UserAvatarDropdown({ username, onOpenMemory, onNavigate }) {
     const [isOpen, setIsOpen] = React.useState(false);
     const dropdownRef = React.useRef(null);
+
+    // Menu items with click handlers
+    const menuItems = [
+        { label: '👤 Profile', action: () => onNavigate?.('profile') },
+        { label: '🧠 Memory', action: () => onOpenMemory?.() },
+        { label: '⚙️ Settings', action: null },
+        { label: '📚 Reflections', action: () => onNavigate?.('reflections') }
+    ];
 
     // Get first letter of username (uppercase)
     const initial = username.charAt(0).toUpperCase();
@@ -299,34 +307,42 @@ function UserAvatarDropdown({ username }) {
                     </div>
 
                     {/* Menu Items */}
-                    {['👤 Profile', '⚙️ Settings', '📚 Reflections'].map((item, idx) => (
+                    {menuItems.map((item, idx) => (
                         <button
                             key={idx}
+                            onClick={() => {
+                                if (item.action) {
+                                    item.action();
+                                    setIsOpen(false);
+                                }
+                            }}
                             style={{
                                 width: '100%',
                                 padding: '0.75rem',
                                 background: 'transparent',
                                 border: 'none',
                                 borderRadius: '8px',
-                                color: 'rgba(255, 255, 255, 0.7)',
+                                color: item.action ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.4)',
                                 fontSize: '0.875rem',
                                 textAlign: 'left',
-                                cursor: 'pointer',
+                                cursor: item.action ? 'pointer' : 'not-allowed',
                                 transition: 'all 0.2s ease',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '0.75rem'
                             }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(0, 217, 255, 0.08)';
-                                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)';
+                                if (item.action) {
+                                    e.currentTarget.style.background = 'rgba(0, 217, 255, 0.08)';
+                                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)';
+                                }
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.background = 'transparent';
-                                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                                e.currentTarget.style.color = item.action ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.4)';
                             }}
                         >
-                            {item}
+                            {item.label}
                         </button>
                     ))}
 
