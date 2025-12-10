@@ -237,16 +237,6 @@ function Dashboard() {
                             Profile {profileUnlocked ? '' : ''}
                         </button>
 
-                        <button
-                            className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                                currentView === 'memory'
-                                    ? 'bg-white/5 text-white'
-                                    : 'text-gray-400 hover:text-white'
-                            }`}
-                            onClick={() => setCurrentView('memory')}>
-                            Memory
-                        </button>
-
                         {/* Progress Indicator */}
                         <div className="flex items-center gap-3 px-5 py-2 rounded-full bg-white/5 border border-white/5">
                             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
