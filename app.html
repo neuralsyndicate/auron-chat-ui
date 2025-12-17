@@ -21,10 +21,15 @@
             theme: {
                 extend: {
                     colors: {
-                        // Minimal professional palette
+                        // Neural Music Bioluminescent Palette v0.5
                         'ns-black': '#000000',
                         'ns-white': '#FFFFFF',
-                        'ns-blue': '#000DFF',  // Used sparingly
+                        'ns-blue': '#3B82F6',
+                        'neural-blue': '#3B82F6',
+                        'neural-blue-soft': '#60A5FA',
+                        'neural-blue-deep': '#2563EB',
+                        'primary': '#60A5FA',
+                        'primary-dark': '#3B82F6',
                     },
                     fontFamily: {
                         sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
@@ -53,25 +58,25 @@
             letter-spacing: -0.01em;
         }
 
-        /* Professional Liquid Glass Surface */
+        /* Professional Liquid Glass Surface - Neural Music v0.5 */
         .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(60px);
-            -webkit-backdrop-filter: blur(60px);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             box-shadow:
-                0 0 0 0.5px rgba(255, 255, 255, 0.05) inset,
+                0 0 0 0.5px rgba(255, 255, 255, 0.04) inset,
                 0 0 0 1px rgba(0, 0, 0, 0.5),
-                0 8px 32px rgba(0, 0, 0, 0.6),
-                0 0 80px rgba(0, 13, 255, 0.02);
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                0 0 60px rgba(59, 130, 246, 0.02);
         }
 
         .glass-border {
-            border: 0.5px solid rgba(255, 255, 255, 0.05);
+            border: 0.5px solid rgba(255, 255, 255, 0.04);
         }
 
-        /* Subtle Blue Glow (used sparingly) */
+        /* Subtle Blue Glow (bioluminescent) */
         .glow-blue {
-            box-shadow: 0 0 60px rgba(0, 13, 255, 0.06);
+            box-shadow: 0 0 60px rgba(59, 130, 246, 0.04);
         }
 
         /* Professional Transitions */
@@ -79,23 +84,22 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* === PROFESSIONAL LIQUID GLASS - NEURAL SYNDICATE === */
-        
-        /* Glass Surface (Apple-inspired) */
-        .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(60px);
-            -webkit-backdrop-filter: blur(60px);
+        /* === NEURAL MUSIC BIOLUMINESCENT GLASS v0.5 === */
+
+        /* Glass Surface (Organic Neural) */
+        .glass-neural {
+            background: rgba(15, 20, 30, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(59, 130, 246, 0.06);
             box-shadow:
-                0 0 0 0.5px rgba(255, 255, 255, 0.05) inset,
-                0 0 0 1px rgba(0, 0, 0, 0.5),
-                0 8px 32px rgba(0, 0, 0, 0.6),
-                0 0 80px rgba(0, 13, 255, 0.02);
+                0 0 60px rgba(59, 130, 246, 0.04),
+                0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         /* Smooth transitions */
         .transition-smooth {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         /* Hidden utility */

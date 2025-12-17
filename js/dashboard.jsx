@@ -196,8 +196,8 @@ function Dashboard() {
                     {/* Logo */}
                     <div className="flex items-center gap-4">
                         <h1 className="text-2xl font-bold tracking-tight" style={{
-                            color: '#00D9FF',
-                            textShadow: '0 0 20px rgba(0, 217, 255, 0.8), 0 0 40px rgba(0, 191, 255, 0.6), 0 0 60px rgba(0, 153, 255, 0.4)'
+                            color: '#60A5FA',
+                            textShadow: '0 0 40px rgba(59, 130, 246, 0.3)'
                         }}>
                             AURON
                         </h1>
@@ -247,7 +247,7 @@ function Dashboard() {
                                     className="h-full rounded-full transition-all duration-500"
                                     style={{
                                         width: `${Math.min((conversationCount / UNLOCK_THRESHOLD) * 100, 100)}%`,
-                                        background: 'linear-gradient(90deg, #00D9FF 0%, #00BFFF 100%)'
+                                        background: 'linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%)'
                                     }}
                                 />
                             </div>
@@ -259,9 +259,9 @@ function Dashboard() {
                             disabled={!sessionId || syncing}
                             className="px-4 py-2 rounded-full text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                             style={{
-                                background: sessionId && !syncing ? 'rgba(0, 217, 255, 0.1)' : 'rgba(100, 100, 100, 0.1)',
-                                color: sessionId && !syncing ? '#00D9FF' : '#666',
-                                border: `1px solid ${sessionId && !syncing ? 'rgba(0, 217, 255, 0.3)' : 'rgba(100, 100, 100, 0.2)'}`
+                                background: sessionId && !syncing ? 'rgba(59, 130, 246, 0.08)' : 'rgba(100, 100, 100, 0.08)',
+                                color: sessionId && !syncing ? '#60A5FA' : '#666',
+                                border: `1px solid ${sessionId && !syncing ? 'rgba(59, 130, 246, 0.15)' : 'rgba(100, 100, 100, 0.15)'}`
                             }}
                             title={!sessionId ? 'No conversation to sync' : syncing ? 'Syncing...' : 'Save conversation to Reflections'}>
                             {syncing ? 'Syncing...' : 'Sync'}

@@ -1,4 +1,4 @@
-// ===== SHARED UI COMPONENTS =====
+// ===== SHARED UI COMPONENTS - Neural Music v0.5 =====
 // LoadingScreen, ThinkingPanel, UserAvatarDropdown, Blueprint panels
 
 /* React Hooks (UMD) */
@@ -17,14 +17,14 @@ const {
 const UI_STAGE_CONFIG = {
     'complexity': {
         label: 'Deep Structure',
-        color: 'rgba(0, 217, 255, 0.6)',
+        color: 'rgba(59, 130, 246, 0.5)',
         particleCount: 30,
         connectionDistance: 100,
         speed: 0.6
     },
     'emotion': {
         label: 'Resonant Flow',
-        color: 'rgba(138, 43, 226, 0.6)',
+        color: 'rgba(138, 43, 226, 0.5)',
         particleCount: 20,
         connectionDistance: 110,
         speed: 0.4,
@@ -32,7 +32,7 @@ const UI_STAGE_CONFIG = {
     },
     'domain': {
         label: 'Spatial Context',
-        color: 'rgba(0, 217, 255, 0.6)',
+        color: 'rgba(59, 130, 246, 0.5)',
         particleCount: 25,
         connectionDistance: 90,
         speed: 0.5,
@@ -40,7 +40,7 @@ const UI_STAGE_CONFIG = {
     },
     'trigger': {
         label: 'Pattern Trace',
-        color: 'rgba(0, 150, 255, 0.6)',
+        color: 'rgba(37, 99, 235, 0.5)',
         particleCount: 28,
         connectionDistance: 105,
         speed: 0.45,
@@ -48,7 +48,7 @@ const UI_STAGE_CONFIG = {
     },
     'blueprint': {
         label: 'Framework Retrieval',
-        color: 'rgba(147, 51, 234, 0.6)',
+        color: 'rgba(147, 51, 234, 0.5)',
         particleCount: 22,
         connectionDistance: 95,
         speed: 0.55,
@@ -56,7 +56,7 @@ const UI_STAGE_CONFIG = {
     },
     'web_search': {
         label: 'Knowledge Archive',
-        color: 'rgba(0, 217, 255, 0.6)',
+        color: 'rgba(59, 130, 246, 0.5)',
         particleCount: 25,
         connectionDistance: 120,
         speed: 1.0,
@@ -64,7 +64,7 @@ const UI_STAGE_CONFIG = {
     },
     'auron': {
         label: 'Neural Synthesis',
-        color: 'rgba(0, 217, 255, 0.8)',
+        color: 'rgba(96, 165, 250, 0.6)',
         particleCount: 30,
         connectionDistance: 100,
         speed: 0.6,
@@ -90,14 +90,14 @@ function LoadingScreen() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0, 0, 0, 0.92)',
+            background: 'rgba(0, 0, 0, 0.95)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             zIndex: 2000,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            animation: 'fadeIn 0.3s ease'
+            animation: 'fadeIn 0.4s ease'
         }}>
             <div style={{
                 position: 'relative',
@@ -106,7 +106,7 @@ function LoadingScreen() {
                 alignItems: 'center',
                 gap: '2rem'
             }}>
-                {/* Orbital Rings */}
+                {/* Orbital Rings - Softer glow */}
                 <div style={{
                     position: 'relative',
                     width: '200px',
@@ -116,31 +116,31 @@ function LoadingScreen() {
                     <div style={{
                         position: 'absolute',
                         inset: 0,
-                        border: '2px solid rgba(0, 217, 255, 0.3)',
+                        border: '1px solid rgba(59, 130, 246, 0.2)',
                         borderRadius: '50%',
-                        animation: 'spin 3s linear infinite'
+                        animation: 'spin 4s linear infinite'
                     }} />
 
                     {/* Middle Ring */}
                     <div style={{
                         position: 'absolute',
                         inset: '20px',
-                        border: '2px solid rgba(0, 217, 255, 0.5)',
+                        border: '1px solid rgba(59, 130, 246, 0.3)',
                         borderRadius: '50%',
                         borderTopColor: 'transparent',
                         borderLeftColor: 'transparent',
-                        animation: 'spin 2s linear infinite reverse'
+                        animation: 'spin 3s linear infinite reverse'
                     }} />
 
                     {/* Inner Ring */}
                     <div style={{
                         position: 'absolute',
                         inset: '40px',
-                        border: '2px solid rgba(0, 217, 255, 0.7)',
+                        border: '1px solid rgba(96, 165, 250, 0.4)',
                         borderRadius: '50%',
                         borderRightColor: 'transparent',
                         borderBottomColor: 'transparent',
-                        animation: 'spin 1.5s linear infinite'
+                        animation: 'spin 2s linear infinite'
                     }} />
 
                     {/* Center Brain Icon */}
@@ -151,8 +151,8 @@ function LoadingScreen() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: '4rem',
-                        animation: 'pulse 2s ease-in-out infinite',
-                        filter: 'drop-shadow(0 0 30px rgba(0, 217, 255, 0.8))'
+                        animation: 'pulse 3s ease-in-out infinite',
+                        filter: 'drop-shadow(0 0 40px rgba(59, 130, 246, 0.3))'
                     }}>
                         🧠
                     </div>
@@ -162,8 +162,8 @@ function LoadingScreen() {
                 <h2 style={{
                     fontSize: '2.5rem',
                     fontWeight: '900',
-                    color: '#00D9FF',
-                    textShadow: '0 0 30px rgba(0, 217, 255, 0.8), 0 0 60px rgba(0, 191, 255, 0.6)',
+                    color: '#60A5FA',
+                    textShadow: '0 0 40px rgba(59, 130, 246, 0.4)',
                     letterSpacing: '0.2em',
                     margin: 0
                 }}>
@@ -173,8 +173,8 @@ function LoadingScreen() {
                 {/* Processing Text */}
                 <p style={{
                     fontSize: '1.2rem',
-                    color: '#00BFFF',
-                    textShadow: '0 0 20px rgba(0, 217, 255, 0.6)',
+                    color: '#3B82F6',
+                    textShadow: '0 0 30px rgba(59, 130, 246, 0.3)',
                     fontWeight: '600',
                     margin: 0
                 }}>
@@ -192,8 +192,8 @@ function LoadingScreen() {
                             width: '12px',
                             height: '12px',
                             borderRadius: '50%',
-                            background: '#00D9FF',
-                            boxShadow: '0 0 20px rgba(0, 217, 255, 0.8)',
+                            background: '#60A5FA',
+                            boxShadow: '0 0 30px rgba(59, 130, 246, 0.4)',
                             animation: `bounce 1.5s ease-in-out infinite`,
                             animationDelay: `${i * 0.2}s`
                         }} />
@@ -240,25 +240,25 @@ function UserAvatarDropdown({ username, onOpenMemory, onNavigate }) {
                     width: '40px',
                     height: '40px',
                     borderRadius: '50%',
-                    background: 'rgba(0, 217, 255, 0.1)',
-                    border: '1px solid rgba(0, 217, 255, 0.3)',
-                    color: '#00D9FF',
+                    background: 'rgba(59, 130, 246, 0.08)',
+                    border: '1px solid rgba(59, 130, 246, 0.15)',
+                    color: '#60A5FA',
                     fontSize: '1rem',
                     fontWeight: '600',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    boxShadow: isOpen ? '0 0 20px rgba(0, 217, 255, 0.4)' : 'none'
+                    transition: 'all 0.3s ease',
+                    boxShadow: isOpen ? '0 0 30px rgba(59, 130, 246, 0.15)' : 'none'
                 }}
                 onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(0, 217, 255, 0.15)';
-                    e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 217, 255, 0.4)';
+                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.12)';
+                    e.currentTarget.style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.15)';
                 }}
                 onMouseLeave={(e) => {
                     if (!isOpen) {
-                        e.currentTarget.style.background = 'rgba(0, 217, 255, 0.1)';
+                        e.currentTarget.style.background = 'rgba(59, 130, 246, 0.08)';
                         e.currentTarget.style.boxShadow = 'none';
                     }
                 }}
@@ -273,20 +273,20 @@ function UserAvatarDropdown({ username, onOpenMemory, onNavigate }) {
                     top: '50px',
                     right: '0',
                     width: '200px',
-                    background: 'rgba(10, 10, 31, 0.75)',
-                    backdropFilter: 'blur(24px)',
-                    WebkitBackdropFilter: 'blur(24px)',
-                    border: '1px solid rgba(0, 217, 255, 0.12)',
+                    background: 'rgba(15, 20, 30, 0.85)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(59, 130, 246, 0.08)',
                     borderRadius: '12px',
                     padding: '0.5rem',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                    boxShadow: '0 0 60px rgba(59, 130, 246, 0.06), 0 8px 32px rgba(0, 0, 0, 0.5)',
                     zIndex: 100,
-                    animation: 'slideDown 0.2s ease'
+                    animation: 'slideDown 0.3s ease'
                 }}>
                     {/* Username Header */}
                     <div style={{
                         padding: '0.75rem',
-                        borderBottom: '1px solid rgba(0, 217, 255, 0.08)',
+                        borderBottom: '1px solid rgba(59, 130, 246, 0.06)',
                         marginBottom: '0.5rem'
                     }}>
                         <p style={{
@@ -326,14 +326,14 @@ function UserAvatarDropdown({ username, onOpenMemory, onNavigate }) {
                                 fontSize: '0.875rem',
                                 textAlign: 'left',
                                 cursor: item.action ? 'pointer' : 'not-allowed',
-                                transition: 'all 0.2s ease',
+                                transition: 'all 0.3s ease',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '0.75rem'
                             }}
                             onMouseEnter={(e) => {
                                 if (item.action) {
-                                    e.currentTarget.style.background = 'rgba(0, 217, 255, 0.08)';
+                                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.06)';
                                     e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)';
                                 }
                             }}
@@ -348,7 +348,7 @@ function UserAvatarDropdown({ username, onOpenMemory, onNavigate }) {
 
                     <div style={{
                         height: '1px',
-                        background: 'rgba(0, 217, 255, 0.08)',
+                        background: 'rgba(59, 130, 246, 0.06)',
                         margin: '0.5rem 0'
                     }}></div>
 
@@ -363,13 +363,13 @@ function UserAvatarDropdown({ username, onOpenMemory, onNavigate }) {
                             fontSize: '0.875rem',
                             textAlign: 'left',
                             cursor: 'pointer',
-                            transition: 'all 0.2s ease',
+                            transition: 'all 0.3s ease',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.75rem'
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(255, 100, 100, 0.1)';
+                            e.currentTarget.style.background = 'rgba(255, 100, 100, 0.08)';
                             e.currentTarget.style.color = 'rgba(255, 100, 100, 0.9)';
                         }}
                         onMouseLeave={(e) => {
@@ -429,12 +429,12 @@ async function fetchRandomQuote() {
         }
         @keyframes breathe {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.005); }
+            50% { transform: scale(1.003); }
         }
         @keyframes shimmerThinking {
-            0% { transform: rotate(0deg) scale(1.5); opacity: 0.2; }
-            50% { opacity: 0.3; }
-            100% { transform: rotate(360deg) scale(1.5); opacity: 0.2; }
+            0% { transform: rotate(0deg) scale(1.5); opacity: 0.15; }
+            50% { opacity: 0.2; }
+            100% { transform: rotate(360deg) scale(1.5); opacity: 0.15; }
         }
         @keyframes shimmerGradient {
             0% { background-position: 0% 50%; }
@@ -442,24 +442,24 @@ async function fetchRandomQuote() {
             100% { background-position: 0% 50%; }
         }
         @keyframes floatingLight1 {
-            0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.18; }
-            50% { transform: translate(12%, -8%) scale(1.08); opacity: 0.26; }
+            0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.1; }
+            50% { transform: translate(12%, -8%) scale(1.08); opacity: 0.15; }
         }
         @keyframes floatingLight2 {
-            0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.22; }
-            50% { transform: translate(-10%, 15%) scale(1.1); opacity: 0.28; }
+            0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.12; }
+            50% { transform: translate(-10%, 15%) scale(1.1); opacity: 0.16; }
         }
         @keyframes floatingLight3 {
-            0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.20; }
-            50% { transform: translate(8%, 10%) scale(1.06); opacity: 0.26; }
+            0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.11; }
+            50% { transform: translate(8%, 10%) scale(1.06); opacity: 0.15; }
         }
         @keyframes floatingLight4 {
-            0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.20; }
-            50% { transform: translate(10%, -12%) scale(1.07); opacity: 0.28; }
+            0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.11; }
+            50% { transform: translate(10%, -12%) scale(1.07); opacity: 0.16; }
         }
         @keyframes floatingLight5 {
-            0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.19; }
-            50% { transform: translate(-8%, 10%) scale(1.09); opacity: 0.27; }
+            0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.10; }
+            50% { transform: translate(-8%, 10%) scale(1.09); opacity: 0.15; }
         }
         @keyframes fadeInDelayed {
             0% { opacity: 0; transform: translateY(10px); }
@@ -493,7 +493,7 @@ function ThinkingPanel({ stage, progress, completedStages, isFading }) {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                background: 'rgba(0, 0, 0, 0.94)',
+                background: 'rgba(0, 0, 0, 0.96)',
                 backdropFilter: isFading ? 'blur(0px)' : 'blur(20px)',
                 WebkitBackdropFilter: isFading ? 'blur(0px)' : 'blur(20px)',
                 zIndex: 2000,
@@ -501,7 +501,7 @@ function ThinkingPanel({ stage, progress, completedStages, isFading }) {
                 transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 1.2s ease'
             }} />
 
-            {/* Animated shimmer gradient */}
+            {/* Animated shimmer gradient - softer, more organic */}
             <div style={{
                 position: 'fixed',
                 top: '50%',
@@ -509,23 +509,23 @@ function ThinkingPanel({ stage, progress, completedStages, isFading }) {
                 width: '180%',
                 height: '180%',
                 transform: isFading ? 'translate(-50%, -50%) scale(1.02)' : 'translate(-50%, -50%) scale(1)',
-                background: 'radial-gradient(circle at center, rgba(0, 13, 255, 0.22) 0%, rgba(0, 15, 255, 0.16) 20%, rgba(0, 13, 255, 0.1) 40%, transparent 60%)',
-                filter: isFading ? 'blur(80px)' : 'blur(60px)',
-                WebkitFilter: isFading ? 'blur(80px)' : 'blur(60px)',
+                background: 'radial-gradient(circle at center, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.08) 20%, rgba(59, 130, 246, 0.04) 40%, transparent 60%)',
+                filter: isFading ? 'blur(100px)' : 'blur(80px)',
+                WebkitFilter: isFading ? 'blur(100px)' : 'blur(80px)',
                 zIndex: 2000,
                 opacity: isFading ? 0 : 1,
-                animation: isFading ? 'none' : 'shimmerThinking 15s linear infinite',
+                animation: isFading ? 'none' : 'shimmerThinking 20s linear infinite',
                 pointerEvents: 'none',
                 transition: 'opacity 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s'
             }} />
 
-            {/* Floating blue tints */}
+            {/* Floating blue tints - softer bioluminescence */}
             {[
-                { top: '20%', left: '15%', size: 400, anim: 'floatingLight1', duration: '18s', delay: '0.7s' },
-                { bottom: '15%', right: '20%', size: 500, anim: 'floatingLight2', duration: '14s', delay: '0.8s' },
-                { top: '40%', right: '10%', size: 350, anim: 'floatingLight3', duration: '22s', delay: '0.9s' },
-                { bottom: '25%', left: '20%', size: 420, anim: 'floatingLight4', duration: '20s', delay: '1.0s' },
-                { top: '50%', left: '40%', size: 380, anim: 'floatingLight5', duration: '16s', delay: '1.1s' }
+                { top: '20%', left: '15%', size: 400, anim: 'floatingLight1', duration: '22s', delay: '0.7s' },
+                { bottom: '15%', right: '20%', size: 500, anim: 'floatingLight2', duration: '18s', delay: '0.8s' },
+                { top: '40%', right: '10%', size: 350, anim: 'floatingLight3', duration: '26s', delay: '0.9s' },
+                { bottom: '25%', left: '20%', size: 420, anim: 'floatingLight4', duration: '24s', delay: '1.0s' },
+                { top: '50%', left: '40%', size: 380, anim: 'floatingLight5', duration: '20s', delay: '1.1s' }
             ].map((tint, idx) => (
                 <div key={idx} style={{
                     position: 'fixed',
@@ -535,8 +535,8 @@ function ThinkingPanel({ stage, progress, completedStages, isFading }) {
                     right: tint.right,
                     width: `${tint.size}px`,
                     height: `${tint.size}px`,
-                    background: `radial-gradient(circle, rgba(0, ${13 + idx * 2}, 255, ${0.22 + idx * 0.01}) 0%, transparent 70%)`,
-                    filter: isFading ? 'blur(100px)' : 'blur(80px)',
+                    background: `radial-gradient(circle, rgba(59, 130, 246, ${0.12 + idx * 0.01}) 0%, transparent 70%)`,
+                    filter: isFading ? 'blur(120px)' : 'blur(100px)',
                     zIndex: 2000,
                     opacity: isFading ? 0 : 1,
                     animation: isFading ? 'none' : `${tint.anim} ${tint.duration} ease-in-out infinite`,
@@ -581,8 +581,8 @@ function ThinkingPanel({ stage, progress, completedStages, isFading }) {
                             letterSpacing: '-0.02em',
                             marginBottom: '2.5rem',
                             fontStyle: 'italic',
-                            textShadow: '0 2px 20px rgba(0, 0, 0, 0.5), 0 0 60px rgba(0, 217, 255, 0.12)',
-                            animation: isFading ? 'none' : 'fadeInDelayed 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both, breathe 8s ease-in-out infinite'
+                            textShadow: '0 2px 20px rgba(0, 0, 0, 0.5), 0 0 60px rgba(59, 130, 246, 0.08)',
+                            animation: isFading ? 'none' : 'fadeInDelayed 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both, breathe 10s ease-in-out infinite'
                         }}>
                             "{quote.quote}"
                         </div>
@@ -590,9 +590,9 @@ function ThinkingPanel({ stage, progress, completedStages, isFading }) {
                             fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif",
                             fontSize: '1.1rem',
                             fontWeight: '500',
-                            color: 'rgba(0, 217, 255, 0.96)',
+                            color: 'rgba(96, 165, 250, 0.9)',
                             letterSpacing: '0.05em',
-                            textShadow: '0 0 24px rgba(0, 217, 255, 0.8), 0 0 12px rgba(0, 217, 255, 0.6)',
+                            textShadow: '0 0 30px rgba(59, 130, 246, 0.4)',
                             animation: isFading ? 'none' : 'fadeInDelayed 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1s both'
                         }}>
                             — {quote.author}{quote.discipline && `, ${quote.discipline}`}
@@ -616,7 +616,7 @@ function ThinkingPanel({ stage, progress, completedStages, isFading }) {
                         position: 'relative',
                         width: '100%',
                         height: '4px',
-                        background: 'rgba(255, 255, 255, 0.06)',
+                        background: 'rgba(255, 255, 255, 0.04)',
                         borderRadius: '2px',
                         overflow: 'hidden',
                         boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.5)'
@@ -627,11 +627,11 @@ function ThinkingPanel({ stage, progress, completedStages, isFading }) {
                             top: 0,
                             height: '100%',
                             width: `${progress}%`,
-                            background: 'linear-gradient(90deg, #000DFF 0%, #00D9FF 60%, #00D9FF 100%)',
+                            background: 'linear-gradient(90deg, #2563EB 0%, #60A5FA 100%)',
                             borderRadius: '2px',
                             transition: 'width 1.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s ease',
-                            boxShadow: '0 0 28px rgba(0, 217, 255, 0.95), 0 0 56px rgba(0, 217, 255, 0.7), 0 0 10px rgba(255, 255, 255, 0.6) inset',
-                            filter: 'brightness(1.1)'
+                            boxShadow: '0 0 40px rgba(59, 130, 246, 0.4), 0 0 80px rgba(59, 130, 246, 0.2)',
+                            filter: 'brightness(1.05)'
                         }} />
                     </div>
 
@@ -641,10 +641,10 @@ function ThinkingPanel({ stage, progress, completedStages, isFading }) {
                         textAlign: 'center',
                         fontSize: '0.875rem',
                         fontWeight: '600',
-                        color: 'rgba(0, 217, 255, 0.92)',
+                        color: 'rgba(96, 165, 250, 0.85)',
                         fontVariantNumeric: 'tabular-nums',
                         letterSpacing: '0.08em',
-                        textShadow: '0 0 20px rgba(0, 217, 255, 0.8), 0 0 10px rgba(0, 217, 255, 0.6)',
+                        textShadow: '0 0 30px rgba(59, 130, 246, 0.4)',
                         transition: 'all 0.3s ease'
                     }}>
                         {Math.round(progress)}%
@@ -859,13 +859,13 @@ function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    background: 'rgba(0, 0, 0, 0.92)',
-                    backdropFilter: 'blur(12px)',
+                    background: 'rgba(0, 0, 0, 0.95)',
+                    backdropFilter: 'blur(16px)',
                     zIndex: 1000,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    animation: 'fadeIn 0.4s ease'
+                    animation: 'fadeIn 0.5s ease'
                 }}
             >
                 <div
@@ -874,14 +874,14 @@ function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
                         width: '600px',
                         maxWidth: '90vw',
                         maxHeight: '85vh',
-                        background: 'rgba(10, 10, 31, 0.65)',
-                        backdropFilter: 'blur(40px)',
-                        WebkitBackdropFilter: 'blur(40px)',
-                        border: '2px solid rgba(0, 217, 255, 0.4)',
-                        borderRadius: '0',
-                        boxShadow: `0 0 0 1px rgba(0, 217, 255, 0.1) inset, 0 24px 60px 0 rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 217, 255, 0.6), 0 0 80px rgba(0, 217, 255, 0.4), 0 0 120px rgba(0, 191, 255, 0.3)`,
+                        background: 'rgba(15, 20, 30, 0.85)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(59, 130, 246, 0.1)',
+                        borderRadius: '16px',
+                        boxShadow: `0 0 100px rgba(59, 130, 246, 0.08), 0 32px 64px rgba(0, 0, 0, 0.5)`,
                         overflow: 'hidden',
-                        animation: 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                        animation: 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
                         display: 'flex',
                         flexDirection: 'column'
                     }}
@@ -892,7 +892,7 @@ function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
                         width: '100%',
                         height: '350px',
                         overflow: 'hidden',
-                        background: 'linear-gradient(180deg, rgba(0, 50, 100, 0.3) 0%, rgba(10, 10, 31, 0.8) 100%)'
+                        background: 'linear-gradient(180deg, rgba(30, 58, 138, 0.2) 0%, rgba(15, 20, 30, 0.8) 100%)'
                     }}>
                         <img
                             src="brain.webp"
@@ -902,7 +902,7 @@ function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
                                 height: '100%',
                                 objectFit: 'cover',
                                 objectPosition: 'center center',
-                                opacity: 0.9
+                                opacity: 0.85
                             }}
                         />
                         <div style={{
@@ -911,7 +911,7 @@ function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
                             left: 0,
                             right: 0,
                             height: '100px',
-                            background: 'linear-gradient(to top, rgba(10, 10, 31, 0.9), transparent)'
+                            background: 'linear-gradient(to top, rgba(15, 20, 30, 0.9), transparent)'
                         }}></div>
                     </div>
 
@@ -922,12 +922,12 @@ function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
                             position: 'absolute',
                             top: '1rem',
                             right: '1rem',
-                            background: 'rgba(0, 0, 0, 0.5)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            background: 'rgba(0, 0, 0, 0.4)',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
                             borderRadius: '50%',
                             width: '36px',
                             height: '36px',
-                            color: 'rgba(255, 255, 255, 0.8)',
+                            color: 'rgba(255, 255, 255, 0.7)',
                             fontSize: '2rem',
                             fontWeight: '200',
                             cursor: 'pointer',
@@ -964,27 +964,26 @@ function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
                                 margin: '0 0 1.5rem 0',
                                 lineHeight: '1.7'
                             }}>
-                                A creative system designed to help artists uncover and express their <strong style={{ color: 'rgba(0, 217, 255, 0.95)' }}>unique sonic identity</strong> using neuroscience, psychology, music, sound and creativity.
+                                A creative system designed to help artists uncover and express their <strong style={{ color: 'rgba(96, 165, 250, 0.95)' }}>unique sonic identity</strong> using neuroscience, psychology, music, sound and creativity.
                             </p>
                             <button style={{
                                 padding: '0.75rem 1.5rem',
-                                background: 'rgba(0, 217, 255, 0.1)',
-                                border: '1px solid rgba(0, 217, 255, 0.4)',
-                                borderRadius: '0',
-                                color: 'rgba(0, 217, 255, 0.95)',
+                                background: 'rgba(59, 130, 246, 0.1)',
+                                border: '1px solid rgba(59, 130, 246, 0.2)',
+                                borderRadius: '8px',
+                                color: 'rgba(96, 165, 250, 0.95)',
                                 fontSize: '0.875rem',
                                 fontWeight: '600',
                                 cursor: 'pointer',
-                                letterSpacing: '0.05em',
-                                textTransform: 'uppercase'
+                                letterSpacing: '0.03em'
                             }}>
                                 Unlock Your Creative Journey
                             </button>
                         </div>
 
                         <div style={{
-                            height: '2px',
-                            background: 'linear-gradient(to right, transparent, rgba(0, 217, 255, 0.4), transparent)',
+                            height: '1px',
+                            background: 'linear-gradient(to right, transparent, rgba(59, 130, 246, 0.2), transparent)',
                             margin: '2rem 0'
                         }}></div>
 
@@ -992,7 +991,7 @@ function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
                             <h3 style={{
                                 fontSize: '1.125rem',
                                 fontWeight: '600',
-                                color: 'rgba(0, 217, 255, 0.9)',
+                                color: 'rgba(96, 165, 250, 0.9)',
                                 margin: '0 0 1.25rem 0',
                                 letterSpacing: '0.02em'
                             }}>
@@ -1007,9 +1006,10 @@ function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
                                             alignItems: 'center',
                                             gap: '1rem',
                                             padding: '1rem 1.25rem',
-                                            background: 'rgba(0, 217, 255, 0.04)',
-                                            borderLeft: '3px solid rgba(0, 217, 255, 0.3)',
-                                            border: '1px solid rgba(0, 217, 255, 0.15)'
+                                            background: 'rgba(59, 130, 246, 0.03)',
+                                            borderLeft: '3px solid rgba(59, 130, 246, 0.2)',
+                                            border: '1px solid rgba(59, 130, 246, 0.08)',
+                                            borderRadius: '8px'
                                         }}
                                     >
                                         <div style={{
@@ -1020,8 +1020,8 @@ function BlueprintFloatingPanel({ sources, isOpen, onClose }) {
                                             justifyContent: 'center',
                                             fontSize: '0.75rem',
                                             fontWeight: '700',
-                                            color: 'rgba(0, 217, 255, 0.7)',
-                                            background: 'rgba(0, 217, 255, 0.1)',
+                                            color: 'rgba(96, 165, 250, 0.7)',
+                                            background: 'rgba(59, 130, 246, 0.08)',
                                             borderRadius: '50%'
                                         }}>
                                             {idx + 1}
@@ -1070,25 +1070,25 @@ function BlueprintCornerRibbon({ sources, onOpenPanel }) {
                 padding: '0.5rem 1.25rem',
                 paddingRight: '1.5rem',
                 background: isHovering
-                    ? 'linear-gradient(135deg, rgba(0, 217, 255, 0.25) 0%, rgba(0, 150, 255, 0.2) 100%)'
-                    : 'linear-gradient(135deg, rgba(0, 217, 255, 0.15) 0%, rgba(0, 150, 255, 0.1) 100%)',
+                    ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.12) 100%)'
+                    : 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.06) 100%)',
                 borderBottomLeftRadius: '12px',
                 borderTopRightRadius: '20px',
                 boxShadow: isHovering
-                    ? '0 4px 12px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 217, 255, 0.2)'
+                    ? '0 4px 12px rgba(0, 0, 0, 0.3), 0 0 30px rgba(59, 130, 246, 0.1)'
                     : '0 2px 8px rgba(0, 0, 0, 0.2)',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.4s ease'
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.875rem', opacity: isHovering ? 1 : 0.9 }}>📘</span>
+                    <span style={{ fontSize: '0.875rem', opacity: isHovering ? 1 : 0.85 }}>📘</span>
                     <span style={{
                         fontSize: '0.7rem',
                         fontWeight: '600',
-                        color: 'rgba(0, 217, 255, 0.95)',
+                        color: 'rgba(96, 165, 250, 0.95)',
                         letterSpacing: '0.05em',
                         textTransform: 'uppercase',
-                        textShadow: isHovering ? '0 0 8px rgba(0, 217, 255, 0.4)' : 'none',
-                        transition: 'all 0.3s ease'
+                        textShadow: isHovering ? '0 0 15px rgba(59, 130, 246, 0.3)' : 'none',
+                        transition: 'all 0.4s ease'
                     }}>
                         Neural Music: Blueprint
                     </span>
@@ -1116,15 +1116,15 @@ function BlueprintSourceHoverSection({ sources, onOpenPanel, onClosePanel }) {
                     alignItems: 'center',
                     gap: '0.75rem',
                     padding: '0.75rem 1rem',
-                    background: isHovering ? 'rgba(0, 217, 255, 0.1)' : 'rgba(0, 217, 255, 0.05)',
-                    border: `1px solid ${isHovering ? 'rgba(0, 217, 255, 0.3)' : 'rgba(0, 217, 255, 0.15)'}`,
+                    background: isHovering ? 'rgba(59, 130, 246, 0.06)' : 'rgba(59, 130, 246, 0.03)',
+                    border: `1px solid ${isHovering ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.08)'}`,
                     borderRadius: '12px',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: isHovering ? '0 0 16px rgba(0, 217, 255, 0.2)' : 'none'
+                    transition: 'all 0.4s ease',
+                    boxShadow: isHovering ? '0 0 30px rgba(59, 130, 246, 0.08)' : 'none'
                 }}
             >
-                <span style={{ fontSize: '1rem', opacity: 0.8 }}>📘</span>
+                <span style={{ fontSize: '1rem', opacity: 0.75 }}>📘</span>
                 <div style={{ flex: 1 }}>
                     <p style={{
                         fontSize: '0.875rem',
@@ -1138,8 +1138,8 @@ function BlueprintSourceHoverSection({ sources, onOpenPanel, onClosePanel }) {
                 </div>
                 <span style={{
                     fontSize: '0.875rem',
-                    color: 'rgba(0, 217, 255, 0.7)',
-                    transition: 'transform 0.3s ease'
+                    color: 'rgba(96, 165, 250, 0.7)',
+                    transition: 'transform 0.4s ease'
                 }}>
                     →
                 </span>
@@ -1154,8 +1154,8 @@ function BlueprintSourceCard({ source, index }) {
 
     return (
         <div style={{
-            background: 'rgba(0, 217, 255, 0.04)',
-            border: '1px solid rgba(0, 217, 255, 0.12)',
+            background: 'rgba(59, 130, 246, 0.03)',
+            border: '1px solid rgba(59, 130, 246, 0.08)',
             borderRadius: '12px',
             padding: '1rem',
             marginBottom: '0.75rem'
@@ -1165,7 +1165,7 @@ function BlueprintSourceCard({ source, index }) {
                 <h5 style={{
                     fontSize: '0.875rem',
                     fontWeight: '600',
-                    color: 'rgba(0, 217, 255, 0.9)',
+                    color: 'rgba(96, 165, 250, 0.9)',
                     margin: 0
                 }}>
                     {source.page_title}
@@ -1173,12 +1173,12 @@ function BlueprintSourceCard({ source, index }) {
                 <div style={{
                     fontSize: '0.75rem',
                     fontWeight: '600',
-                    color: similarityPercent >= 90 ? 'rgba(0, 217, 255, 0.9)'
-                        : similarityPercent >= 80 ? 'rgba(0, 150, 255, 0.8)'
+                    color: similarityPercent >= 90 ? 'rgba(96, 165, 250, 0.9)'
+                        : similarityPercent >= 80 ? 'rgba(59, 130, 246, 0.8)'
                         : 'rgba(255, 255, 255, 0.6)',
                     padding: '0.25rem 0.5rem',
-                    background: similarityPercent >= 90 ? 'rgba(0, 217, 255, 0.1)'
-                        : 'rgba(255, 255, 255, 0.05)',
+                    background: similarityPercent >= 90 ? 'rgba(59, 130, 246, 0.08)'
+                        : 'rgba(255, 255, 255, 0.04)',
                     borderRadius: '6px',
                     marginLeft: 'auto'
                 }}>

@@ -1,40 +1,39 @@
-/* ===== MODAL STYLES ===== */
+/* ===== MODAL STYLES - Neural Music v0.5 ===== */
 
-/* Dialogue Modal - Liquid Glass Cyberpunk Professional */
+/* Dialogue Modal - Organic Bioluminescent Glass */
 .dialogue-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.92);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dialogue-modal {
-    /* Liquid Glass Effect */
-    background: rgba(10, 10, 31, 0.65);
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
+    /* Subtle Glass Effect */
+    background: rgba(15, 20, 30, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 
-    /* HEAVY Blue Glow Border (like 43.png) */
-    border: 2px solid rgba(0, 217, 255, 0.4);
-    border-radius: 0;
+    /* Soft Bioluminescent Border */
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 16px;
 
-    /* INTENSE Blue Glow */
+    /* Diffuse Organic Glow */
     box-shadow:
-        0 0 0 1px rgba(0, 217, 255, 0.1) inset,
-        0 24px 60px 0 rgba(0, 0, 0, 0.8),
-        0 0 40px rgba(0, 217, 255, 0.6),
-        0 0 80px rgba(0, 217, 255, 0.4),
-        0 0 120px rgba(0, 191, 255, 0.3);
-    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        0 0 0 1px rgba(59, 130, 246, 0.04) inset,
+        0 32px 64px rgba(0, 0, 0, 0.5),
+        0 0 100px rgba(59, 130, 246, 0.08),
+        0 0 200px rgba(59, 130, 246, 0.04);
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 
     padding: 3rem;
     width: 100vw;
@@ -43,94 +42,70 @@
     position: relative;
 }
 
-/* Rotating ring shimmer */
-.shimmer-ring {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: inherit;
-    border: 1px solid rgba(0, 13, 255, 0.2);
-    animation: spin 20s linear infinite;
-    pointer-events: none;
-}
-
-.shimmer-ring::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: inherit;
-    background: conic-gradient(
-        from 0deg,
-        transparent 0%,
-        rgba(0, 13, 255, 0.4) 10%,
-        transparent 20%,
-        transparent 100%
-    );
-    animation: spin 8s linear infinite reverse;
-}
-
-/* Sci-fi button with HEAVY blue glow (like 43.png) */
+/* Neural Button - Soft gradient with organic glow */
+.btn-neural,
 .btn-sci-fi {
     position: relative;
     background: linear-gradient(
         135deg,
-        #00D9FF 0%,
-        #00BFFF 50%,
-        #00D9FF 100%
+        #3B82F6 0%,
+        #60A5FA 100%
     );
-    background-size: 200% 200%;
-    animation: gradient-shift 3s ease infinite;
-    transition: all 0.3s ease-out;
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    border-radius: 8px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
-    box-shadow:
-        0 0 20px rgba(0, 217, 255, 0.6),
-        0 0 40px rgba(0, 191, 255, 0.4);
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.15);
 }
 
+.btn-neural:hover,
 .btn-sci-fi:hover {
-    transform: scale(1.05);
+    transform: translateY(-2px);
     box-shadow:
-        0 0 30px rgba(0, 217, 255, 0.8),
-        0 0 60px rgba(0, 191, 255, 0.6),
-        0 0 100px rgba(0, 153, 255, 0.4);
+        0 0 60px rgba(59, 130, 246, 0.25),
+        0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
+.btn-neural::before,
 .btn-sci-fi::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
     background: linear-gradient(
-        45deg,
-        transparent 20%,
-        rgba(255, 255, 255, 0.6) 50%,
-        transparent 80%
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        transparent 100%
     );
-    animation: shimmer 2s linear infinite;
+    transition: left 0.6s ease;
     z-index: 1;
 }
 
+.btn-neural:hover::before,
+.btn-sci-fi:hover::before {
+    left: 100%;
+}
+
+.btn-neural > *,
 .btn-sci-fi > * {
     position: relative;
     z-index: 2;
 }
 
-/* Glass card with hover scale */
+/* Glass card with subtle hover */
 .glass-card {
-    transition: all 0.3s ease-out;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
-    transform: scale(1.02) translateY(-4px);
+    transform: translateY(-2px);
+    border-color: rgba(59, 130, 246, 0.12);
     box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-        0 8px 32px rgba(0, 0, 0, 0.6),
-        0 0 80px rgba(0, 13, 255, 0.2);
+        0 0 60px rgba(59, 130, 246, 0.06),
+        0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 /* Close Button - Minimal Professional */
@@ -138,14 +113,14 @@
     position: absolute;
     top: 1.75rem;
     right: 1.75rem;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.06);
     color: var(--ns-gray);
     font-size: 1.25rem;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     width: 38px;
     height: 38px;
     display: flex;
@@ -156,45 +131,54 @@
 }
 
 .dialogue-modal-close:hover {
-    background: rgba(0, 13, 255, 0.15);
-    border-color: rgba(0, 13, 255, 0.3);
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.2);
     color: var(--ns-white);
-    box-shadow: 0 0 20px rgba(0, 13, 255, 0.3);
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
 }
 
-/* Loading Overlay - Professional Dark Blue */
+/* Loading Overlay - Deep Black with Soft Glow */
 .loading-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.94);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(0, 0, 0, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     z-index: 999;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .loading-spinner {
     width: 64px;
     height: 64px;
-    border: 3px solid rgba(0, 13, 255, 0.1);
-    border-top-color: var(--ns-blue-dark);
+    border: 2px solid rgba(59, 130, 246, 0.1);
+    border-top-color: var(--ns-blue-bright);
     border-radius: 50%;
-    animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
-    box-shadow: 0 0 40px rgba(0, 13, 255, 0.2);
+    animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+    box-shadow: 0 0 60px rgba(59, 130, 246, 0.1);
 }
 
-/* Card Glow Effect */
+/* Card Glow Effect - Subtle */
 .card-glow {
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-glow:hover {
-    box-shadow: 0 0 30px rgba(0, 168, 255, 0.3);
+    box-shadow: 0 0 50px rgba(59, 130, 246, 0.1);
+}
+
+/* Focus ring for accessibility */
+.btn-neural:focus-visible,
+.btn-sci-fi:focus-visible {
+    outline: none;
+    box-shadow:
+        0 0 0 2px rgba(59, 130, 246, 0.3),
+        0 0 60px rgba(59, 130, 246, 0.2);
 }

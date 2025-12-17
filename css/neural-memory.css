@@ -1,5 +1,5 @@
 /* ============================================================
-   NEURAL MEMORY - Neuroscience-Based Memory Visualization
+   NEURAL MEMORY - Neuroscience-Based Memory Visualization v0.5
    ============================================================
    Based on human long-term memory research:
 
@@ -18,7 +18,7 @@
     max-width: 1000px;
     margin: 0 auto;
     padding: 2rem 1.5rem;
-    animation: fadeIn 0.5s var(--spring-curve);
+    animation: fadeIn 0.6s var(--smooth-out);
 }
 
 /* Header */
@@ -28,7 +28,7 @@
     justify-content: space-between;
     margin-bottom: 2rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.08);
 }
 
 .memory-title-group {
@@ -38,9 +38,9 @@
 .memory-main-title {
     font-size: 1.75rem;
     font-weight: 600;
-    color: var(--ns-blue-glow);
-    text-shadow: var(--neon-outer);
-    letter-spacing: 0.05em;
+    color: #60A5FA;
+    text-shadow: 0 0 40px rgba(59, 130, 246, 0.2);
+    letter-spacing: 0.02em;
     margin: 0 0 0.5rem 0;
 }
 
@@ -55,19 +55,19 @@
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: rgba(0, 217, 255, 0.08);
-    border: 1px solid rgba(0, 217, 255, 0.15);
-    color: var(--ns-blue-glow);
+    background: rgba(59, 130, 246, 0.06);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    color: #60A5FA;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s var(--spring-curve);
+    transition: all 0.4s var(--spring-curve);
 }
 
 .memory-refresh-btn:hover {
-    background: rgba(0, 217, 255, 0.15);
-    border-color: rgba(0, 217, 255, 0.3);
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.2);
     transform: rotate(180deg);
 }
 
@@ -107,12 +107,12 @@
 
 /* Explicit section styling */
 .memory-section.explicit .memory-section-title {
-    color: rgba(100, 200, 255, 0.9);
+    color: rgba(100, 180, 255, 0.85);
 }
 
 /* Implicit section styling */
 .memory-section.implicit .memory-section-title {
-    color: rgba(180, 140, 255, 0.9);
+    color: rgba(160, 130, 255, 0.85);
 }
 
 /* ============================================================
@@ -154,10 +154,10 @@
 .memory-block {
     border-radius: 16px;
     overflow: hidden;
-    transition: all 0.3s var(--spring-curve);
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    transition: all 0.4s var(--spring-curve);
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
 .memory-block:hover {
@@ -170,7 +170,7 @@
     gap: 0.875rem;
     padding: 1rem 1.25rem;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: background 0.3s ease;
 }
 
 .memory-block-header:hover {
@@ -186,7 +186,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: all 0.3s var(--spring-curve);
+    transition: all 0.4s var(--spring-curve);
 }
 
 /* Titles */
@@ -224,14 +224,14 @@
 }
 
 .memory-badge.implicit {
-    background: rgba(180, 140, 255, 0.15);
-    color: rgba(180, 140, 255, 0.9);
-    border: 1px solid rgba(180, 140, 255, 0.25);
+    background: rgba(160, 130, 255, 0.1);
+    color: rgba(160, 130, 255, 0.85);
+    border: 1px solid rgba(160, 130, 255, 0.2);
 }
 
 .memory-chevron {
     color: var(--ns-gray);
-    transition: transform 0.3s var(--spring-curve);
+    transition: transform 0.4s var(--spring-curve);
     display: flex;
 }
 
@@ -241,13 +241,13 @@
 
 /* Content Area */
 .memory-content-wrapper {
-    animation: slideDown 0.3s var(--spring-curve);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    animation: slideDown 0.4s var(--spring-curve);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .memory-content {
     padding: 1.25rem;
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .memory-text {
@@ -283,32 +283,32 @@
 
 /* Semantic - Blue (Facts & Knowledge) */
 .semantic-icon {
-    background: rgba(100, 180, 255, 0.12);
+    background: rgba(100, 180, 255, 0.1);
     color: #64B4FF;
 }
 
 .memory-block.semantic {
-    border: 1px solid rgba(100, 180, 255, 0.15);
+    border: 1px solid rgba(100, 180, 255, 0.1);
 }
 
 .memory-block.semantic:hover {
-    border-color: rgba(100, 180, 255, 0.3);
-    box-shadow: 0 0 25px rgba(100, 180, 255, 0.08);
+    border-color: rgba(100, 180, 255, 0.2);
+    box-shadow: 0 0 40px rgba(100, 180, 255, 0.05);
 }
 
 /* Episodic - Cyan (Events & Experiences) */
 .episodic-icon {
-    background: rgba(100, 220, 220, 0.12);
+    background: rgba(100, 200, 200, 0.1);
     color: #64DCDC;
 }
 
 .memory-block.episodic {
-    border: 1px solid rgba(100, 220, 220, 0.15);
+    border: 1px solid rgba(100, 200, 200, 0.1);
 }
 
 .memory-block.episodic:hover {
-    border-color: rgba(100, 220, 220, 0.3);
-    box-shadow: 0 0 25px rgba(100, 220, 220, 0.08);
+    border-color: rgba(100, 200, 200, 0.2);
+    box-shadow: 0 0 40px rgba(100, 200, 200, 0.05);
 }
 
 /* ============================================================
@@ -317,47 +317,47 @@
 
 /* Procedural - Purple (Behavioral Patterns) */
 .procedural-icon {
-    background: rgba(160, 100, 255, 0.12);
+    background: rgba(160, 100, 255, 0.1);
     color: #A064FF;
 }
 
 .memory-block.procedural {
-    border: 1px solid rgba(160, 100, 255, 0.15);
+    border: 1px solid rgba(160, 100, 255, 0.1);
 }
 
 .memory-block.procedural:hover {
-    border-color: rgba(160, 100, 255, 0.3);
-    box-shadow: 0 0 25px rgba(160, 100, 255, 0.08);
+    border-color: rgba(160, 100, 255, 0.2);
+    box-shadow: 0 0 40px rgba(160, 100, 255, 0.05);
 }
 
 /* Emotional - Pink (Feeling Associations) */
 .emotional-icon {
-    background: rgba(255, 100, 150, 0.12);
+    background: rgba(255, 100, 150, 0.1);
     color: #FF6496;
 }
 
 .memory-block.emotional {
-    border: 1px solid rgba(255, 100, 150, 0.15);
+    border: 1px solid rgba(255, 100, 150, 0.1);
 }
 
 .memory-block.emotional:hover {
-    border-color: rgba(255, 100, 150, 0.3);
-    box-shadow: 0 0 25px rgba(255, 100, 150, 0.08);
+    border-color: rgba(255, 100, 150, 0.2);
+    box-shadow: 0 0 40px rgba(255, 100, 150, 0.05);
 }
 
 /* Priming - Orange (Override Rules) */
 .priming-icon {
-    background: rgba(255, 180, 100, 0.12);
+    background: rgba(255, 180, 100, 0.1);
     color: #FFB464;
 }
 
 .memory-block.priming {
-    border: 1px solid rgba(255, 180, 100, 0.15);
+    border: 1px solid rgba(255, 180, 100, 0.1);
 }
 
 .memory-block.priming:hover {
-    border-color: rgba(255, 180, 100, 0.3);
-    box-shadow: 0 0 25px rgba(255, 180, 100, 0.08);
+    border-color: rgba(255, 180, 100, 0.2);
+    box-shadow: 0 0 40px rgba(255, 180, 100, 0.05);
 }
 
 /* ============================================================
@@ -379,9 +379,9 @@
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%);
     background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+    animation: shimmer 2s infinite;
 }
 
 .skeleton-text {
@@ -391,9 +391,9 @@
 .skeleton-line {
     height: 12px;
     border-radius: 6px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%);
     background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+    animation: shimmer 2s infinite;
 }
 
 .skeleton-line.wide {
@@ -422,11 +422,11 @@
     text-align: center;
     padding: 3rem 2rem;
     border-radius: 16px;
-    border: 1px solid rgba(255, 100, 100, 0.2);
+    border: 1px solid rgba(255, 100, 100, 0.15);
 }
 
 .error-icon {
-    color: rgba(255, 100, 100, 0.6);
+    color: rgba(255, 100, 100, 0.5);
     margin-bottom: 1rem;
 }
 
@@ -444,18 +444,18 @@
 .error-retry-btn {
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
-    background: rgba(0, 217, 255, 0.1);
-    border: 1px solid rgba(0, 217, 255, 0.25);
-    color: var(--ns-blue-glow);
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    color: #60A5FA;
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .error-retry-btn:hover {
-    background: rgba(0, 217, 255, 0.2);
-    border-color: rgba(0, 217, 255, 0.4);
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.25);
 }
 
 /* ============================================================
@@ -469,24 +469,24 @@
     padding: 0.875rem 1.25rem;
     margin-bottom: 1.5rem;
     border-radius: 12px;
-    background: rgba(255, 180, 100, 0.08);
-    border: 1px solid rgba(255, 180, 100, 0.2);
-    color: rgba(255, 200, 140, 0.9);
+    background: rgba(255, 180, 100, 0.06);
+    border: 1px solid rgba(255, 180, 100, 0.15);
+    color: rgba(255, 200, 140, 0.85);
     font-size: 0.875rem;
-    animation: pendingPulse 2s ease-in-out infinite;
+    animation: pendingPulse 3s ease-in-out infinite;
 }
 
 .pending-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 180, 100, 0.8);
-    animation: pendingSpin 3s linear infinite;
+    color: rgba(255, 180, 100, 0.7);
+    animation: pendingSpin 4s linear infinite;
 }
 
 @keyframes pendingPulse {
-    0%, 100% { opacity: 0.8; }
-    50% { opacity: 1; }
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 0.9; }
 }
 
 @keyframes pendingSpin {
@@ -534,7 +534,7 @@
     justify-content: space-between;
     gap: 1rem;
     padding: 0.625rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .memory-item:last-child {
@@ -559,8 +559,8 @@
     font-weight: 600;
     padding: 0.2rem 0.5rem;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.5);
     min-width: 1.5rem;
     text-align: center;
 }
@@ -575,25 +575,25 @@
     position: relative;
     padding: 0.25rem;
     flex-shrink: 0;
-    transition: transform 0.2s ease;
+    transition: transform 0.3s ease;
 }
 
 .confidence-dot:hover {
-    transform: scale(1.2);
+    transform: scale(1.15);
 }
 
 .confidence-dot.high {
     color: #64B4FF;
-    text-shadow: 0 0 8px rgba(100, 180, 255, 0.4);
+    text-shadow: 0 0 12px rgba(100, 180, 255, 0.3);
 }
 
 .confidence-dot.medium {
     color: #FFB464;
-    text-shadow: 0 0 8px rgba(255, 180, 100, 0.4);
+    text-shadow: 0 0 12px rgba(255, 180, 100, 0.3);
 }
 
 .confidence-dot.low {
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.3);
 }
 
 /* Legend dots in tooltip */
@@ -613,7 +613,7 @@
 }
 
 .legend-item .dot.low {
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.3);
 }
 
 /* ============================================================
@@ -625,17 +625,17 @@
     right: 0;
     top: calc(100% + 8px);
     width: 280px;
-    background: rgba(15, 20, 30, 0.98);
-    border: 1px solid rgba(0, 217, 255, 0.2);
+    background: rgba(15, 20, 30, 0.95);
+    border: 1px solid rgba(59, 130, 246, 0.12);
     border-radius: 12px;
     padding: 0;
     z-index: 1000;
-    animation: tooltipFadeIn 0.2s ease;
+    animation: tooltipFadeIn 0.3s ease;
     box-shadow:
-        0 4px 20px rgba(0, 0, 0, 0.4),
-        0 0 30px rgba(0, 217, 255, 0.05);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+        0 4px 24px rgba(0, 0, 0, 0.4),
+        0 0 60px rgba(59, 130, 246, 0.04);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 @keyframes tooltipFadeIn {
@@ -656,14 +656,14 @@
     padding: 0.875rem 1rem;
     font-weight: 600;
     font-size: 0.85rem;
-    color: var(--ns-blue-glow);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(0, 217, 255, 0.05);
+    color: #60A5FA;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(59, 130, 246, 0.04);
     border-radius: 12px 12px 0 0;
 }
 
 .tooltip-header svg {
-    opacity: 0.8;
+    opacity: 0.7;
 }
 
 .tooltip-body {
@@ -703,7 +703,7 @@
     font-size: 0.75rem;
     color: var(--ns-gray);
     padding-top: 0.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .tooltip-meta span {
@@ -718,7 +718,7 @@
     border-radius: 6px;
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.5);
     margin-top: 0.25rem;
     word-break: break-all;
 }
@@ -749,14 +749,14 @@
 .memory-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.92);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: modalFadeIn 0.2s ease;
+    animation: modalFadeIn 0.3s ease;
 }
 
 @keyframes modalFadeIn {
@@ -772,25 +772,24 @@
     width: 95%;
     max-width: 1100px;
     max-height: 90vh;
-    background: rgba(10, 10, 31, 0.65);
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
-    border: 2px solid rgba(0, 217, 255, 0.4);
+    background: rgba(15, 20, 30, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(59, 130, 246, 0.1);
     box-shadow:
-        0 0 40px rgba(0, 217, 255, 0.6),
-        0 0 80px rgba(0, 217, 255, 0.4),
-        0 20px 60px rgba(0, 0, 0, 0.5);
-    border-radius: 12px;
+        0 0 100px rgba(59, 130, 246, 0.06),
+        0 32px 64px rgba(0, 0, 0, 0.5);
+    border-radius: 16px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    animation: modalSlideIn 0.25s ease;
+    animation: modalSlideIn 0.35s var(--smooth-out);
 }
 
 @keyframes modalSlideIn {
     from {
         opacity: 0;
-        transform: scale(0.95) translateY(10px);
+        transform: scale(0.98) translateY(10px);
     }
     to {
         opacity: 1;
@@ -800,11 +799,11 @@
 
 .memory-modal-header {
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 217, 255, 0.03);
+    background: rgba(59, 130, 246, 0.02);
     flex-shrink: 0;
 }
 
@@ -817,9 +816,9 @@
 .memory-modal-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--ns-blue-glow);
+    color: #60A5FA;
     margin: 0;
-    text-shadow: 0 0 20px rgba(0, 217, 255, 0.4);
+    text-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
 }
 
 .memory-modal-subtitle {
@@ -838,20 +837,20 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 0.875rem;
-    background: rgba(0, 217, 255, 0.1);
-    border: 1px solid rgba(0, 217, 255, 0.3);
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.15);
     border-radius: 8px;
-    color: rgba(0, 217, 255, 0.9);
+    color: rgba(96, 165, 250, 0.9);
     font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .memory-modal-full-view-btn:hover {
-    background: rgba(0, 217, 255, 0.15);
-    border-color: rgba(0, 217, 255, 0.5);
-    box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.25);
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
 }
 
 .memory-modal-close-btn {
@@ -860,18 +859,18 @@
     justify-content: center;
     width: 36px;
     height: 36px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.5);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .memory-modal-close-btn:hover {
-    background: rgba(255, 100, 100, 0.15);
-    border-color: rgba(255, 100, 100, 0.3);
-    color: rgba(255, 100, 100, 0.9);
+    background: rgba(255, 100, 100, 0.1);
+    border-color: rgba(255, 100, 100, 0.2);
+    color: rgba(255, 100, 100, 0.8);
 }
 
 .memory-modal-content {

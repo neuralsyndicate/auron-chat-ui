@@ -20,8 +20,8 @@ function BlueprintSourceCard({ source, index }) {
 
     return (
         <div style={{
-            background: 'rgba(0, 217, 255, 0.04)',
-            border: '1px solid rgba(0, 217, 255, 0.12)',
+            background: 'rgba(59, 130, 246, 0.03)',
+            border: '1px solid rgba(59, 130, 246, 0.08)',
             borderRadius: '12px',
             padding: '1rem',
             marginBottom: '0.75rem'
@@ -31,7 +31,7 @@ function BlueprintSourceCard({ source, index }) {
                 <h5 style={{
                     fontSize: '0.875rem',
                     fontWeight: '600',
-                    color: 'rgba(0, 217, 255, 0.9)',
+                    color: 'rgba(96, 165, 250, 0.9)',
                     margin: 0
                 }}>
                     {source.page_title}
@@ -39,12 +39,12 @@ function BlueprintSourceCard({ source, index }) {
                 <div style={{
                     fontSize: '0.75rem',
                     fontWeight: '600',
-                    color: similarityPercent >= 90 ? 'rgba(0, 217, 255, 0.9)'
-                        : similarityPercent >= 80 ? 'rgba(0, 150, 255, 0.8)'
+                    color: similarityPercent >= 90 ? 'rgba(96, 165, 250, 0.9)'
+                        : similarityPercent >= 80 ? 'rgba(59, 130, 246, 0.8)'
                         : 'rgba(255, 255, 255, 0.6)',
                     padding: '0.25rem 0.5rem',
-                    background: similarityPercent >= 90 ? 'rgba(0, 217, 255, 0.1)'
-                        : 'rgba(255, 255, 255, 0.05)',
+                    background: similarityPercent >= 90 ? 'rgba(59, 130, 246, 0.08)'
+                        : 'rgba(255, 255, 255, 0.04)',
                     borderRadius: '6px',
                     marginLeft: 'auto'
                 }}>
@@ -326,29 +326,29 @@ function EvidenceInThePattern({ research_synthesis, cited_references }) {
 
     return (
         <div className="evidence-section mt-6" style={{
-            background: 'rgba(10, 10, 31, 0.4)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border: '1px solid rgba(0, 217, 255, 0.12)',
+            background: 'rgba(15, 20, 30, 0.4)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(59, 130, 246, 0.08)',
             borderRadius: '16px',
             padding: '1.75rem',
-            boxShadow: '0 0 25px rgba(0, 191, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+            boxShadow: '0 0 60px rgba(59, 130, 246, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.02)',
             position: 'relative'
         }}>
             {/* Heading */}
             <div className="flex items-center gap-3 mb-4" style={{
                 paddingBottom: '0.75rem',
-                borderBottom: '1px solid rgba(0, 217, 255, 0.08)'
+                borderBottom: '1px solid rgba(59, 130, 246, 0.06)'
             }}>
                 <span style={{
                     fontSize: '1.25rem',
-                    filter: 'drop-shadow(0 0 8px rgba(0, 217, 255, 0.4))'
+                    filter: 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.2))'
                 }}>🔬</span>
                 <h3 className="text-white font-semibold" style={{
                     fontSize: '1rem',
                     letterSpacing: '0.03em',
                     textTransform: 'uppercase',
-                    color: 'rgba(0, 217, 255, 0.95)',
+                    color: 'rgba(96, 165, 250, 0.9)',
                     fontWeight: '600'
                 }}>
                     Evidence in the Pattern
@@ -376,14 +376,14 @@ function HighlightedQuestion({ question }) {
 
     return (
         <div className="highlighted-question mt-6" style={{
-            background: 'linear-gradient(135deg, rgba(0, 13, 255, 0.08) 0%, rgba(0, 217, 255, 0.08) 100%)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border: '2px solid rgba(0, 217, 255, 0.3)',
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.06) 0%, rgba(59, 130, 246, 0.06) 100%)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(59, 130, 246, 0.12)',
             borderRadius: '20px',
             padding: '2rem',
-            boxShadow: '0 0 40px rgba(0, 191, 255, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.05)',
-            animation: 'subtle-pulse 3s ease-in-out infinite',
+            boxShadow: '0 0 60px rgba(59, 130, 246, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+            animation: 'subtle-pulse 6s ease-in-out infinite',
             position: 'relative'
         }}>
             {/* Icon */}
@@ -393,7 +393,7 @@ function HighlightedQuestion({ question }) {
             }}>
                 <span style={{
                     fontSize: '2rem',
-                    filter: 'drop-shadow(0 0 12px rgba(0, 217, 255, 0.5))'
+                    filter: 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.25))'
                 }}>💭</span>
             </div>
 
@@ -434,10 +434,10 @@ function UserResponseArea({ onSubmit, messageId }) {
                 className="w-full px-4 py-3 rounded-xl resize-none"
                 rows={4}
                 style={{
-                    background: 'rgba(10, 10, 31, 0.5)',
+                    background: 'rgba(15, 20, 30, 0.5)',
                     backdropFilter: 'blur(12px)',
                     WebkitBackdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(0, 217, 255, 0.2)',
+                    border: '1px solid rgba(59, 130, 246, 0.1)',
                     color: 'white',
                     fontSize: '0.95rem',
                     lineHeight: '1.6',
@@ -445,11 +445,11 @@ function UserResponseArea({ onSubmit, messageId }) {
                     transition: 'all 0.3s ease'
                 }}
                 onFocus={(e) => {
-                    e.target.style.border = '1px solid rgba(0, 217, 255, 0.4)';
-                    e.target.style.boxShadow = '0 0 20px rgba(0, 191, 255, 0.2)';
+                    e.target.style.border = '1px solid rgba(59, 130, 246, 0.2)';
+                    e.target.style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.08)';
                 }}
                 onBlur={(e) => {
-                    e.target.style.border = '1px solid rgba(0, 217, 255, 0.2)';
+                    e.target.style.border = '1px solid rgba(59, 130, 246, 0.1)';
                     e.target.style.boxShadow = 'none';
                 }}
             />
@@ -528,9 +528,9 @@ function ReferencesSidebar({ isOpen, onClose, sources }) {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'rgba(0, 0, 0, 0.4)',
-                        backdropFilter: 'blur(4px)',
-                        WebkitBackdropFilter: 'blur(4px)',
+                        background: 'rgba(0, 0, 0, 0.6)',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
                         zIndex: 999,
                         opacity: isOpen ? 1 : 0,
                         transition: 'opacity 0.3s ease'
@@ -545,11 +545,11 @@ function ReferencesSidebar({ isOpen, onClose, sources }) {
                 top: 0,
                 width: '420px',
                 height: '100vh',
-                background: 'rgba(10, 10, 31, 0.95)',
-                backdropFilter: 'blur(40px)',
-                WebkitBackdropFilter: 'blur(40px)',
-                borderLeft: '1px solid rgba(0, 217, 255, 0.2)',
-                boxShadow: '-10px 0 50px rgba(0, 0, 0, 0.5)',
+                background: 'rgba(15, 20, 30, 0.95)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                borderLeft: '1px solid rgba(59, 130, 246, 0.1)',
+                boxShadow: '-10px 0 60px rgba(0, 0, 0, 0.5)',
                 transition: 'right 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
                 zIndex: 1000,
                 display: 'flex',
@@ -559,16 +559,16 @@ function ReferencesSidebar({ isOpen, onClose, sources }) {
                 {/* Header */}
                 <div style={{
                     padding: '1.5rem',
-                    borderBottom: '1px solid rgba(0, 217, 255, 0.1)',
+                    borderBottom: '1px solid rgba(59, 130, 246, 0.08)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    background: 'rgba(0, 13, 255, 0.05)'
+                    background: 'rgba(59, 130, 246, 0.02)'
                 }}>
                     <div className="flex items-center gap-3">
                         <span style={{
                             fontSize: '1.5rem',
-                            filter: 'drop-shadow(0 0 8px rgba(0, 217, 255, 0.4))'
+                            filter: 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.2))'
                         }}>📚</span>
                         <h3 className="text-white font-semibold" style={{
                             fontSize: '1.1rem',
@@ -577,8 +577,8 @@ function ReferencesSidebar({ isOpen, onClose, sources }) {
                             Full References
                         </h3>
                         <span className="px-2 py-1 rounded-full text-xs font-bold" style={{
-                            background: 'rgba(0, 217, 255, 0.2)',
-                            color: 'rgba(0, 217, 255, 0.95)'
+                            background: 'rgba(59, 130, 246, 0.1)',
+                            color: 'rgba(96, 165, 250, 0.9)'
                         }}>
                             {sources.length}
                         </span>
@@ -604,7 +604,7 @@ function ReferencesSidebar({ isOpen, onClose, sources }) {
                     overflowY: 'auto',
                     padding: '1.5rem',
                     scrollbarWidth: 'thin',
-                    scrollbarColor: '#00A8FF #1a1a1a'
+                    scrollbarColor: 'rgba(59, 130, 246, 0.3) #1a1a1a'
                 }}>
                     <div className="space-y-4">
                         {sources.map((source, i) => (
@@ -661,7 +661,7 @@ function DialogueModal({ dialogue, onClose, onSendResponse }) {
                         <div style={{
                             fontSize: showQuestion ? '2rem' : '3rem',
                             marginBottom: '0.5rem',
-                            filter: 'drop-shadow(0 0 20px rgba(0, 191, 255, 0.6))',
+                            filter: 'drop-shadow(0 0 30px rgba(59, 130, 246, 0.3))',
                             transition: 'all 0.5s ease'
                         }}>
                             🧠
@@ -689,9 +689,9 @@ function DialogueModal({ dialogue, onClose, onSendResponse }) {
                             fontSize: showQuestion ? '0.95rem' : '1.15rem',
                             lineHeight: showQuestion ? '1.6' : '2',
                             padding: showQuestion ? '1rem' : '1.5rem',
-                            background: 'rgba(0, 191, 255, 0.03)',
+                            background: 'rgba(59, 130, 246, 0.02)',
                             borderRadius: '16px',
-                            border: '1px solid rgba(0, 191, 255, 0.1)',
+                            border: '1px solid rgba(59, 130, 246, 0.06)',
                             transition: 'all 0.5s ease',
                             marginBottom: showQuestion ? '0' : '2rem'
                         }}>
@@ -730,9 +730,9 @@ function DialogueModal({ dialogue, onClose, onSendResponse }) {
                         <div
                             className="p-8 rounded-2xl"
                             style={{
-                                background: 'linear-gradient(135deg, rgba(0, 191, 255, 0.15) 0%, rgba(30, 144, 255, 0.15) 100%)',
-                                border: '2px solid rgba(0, 191, 255, 0.3)',
-                                boxShadow: '0 0 40px rgba(0, 191, 255, 0.3)',
+                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.08) 100%)',
+                                border: '1px solid rgba(59, 130, 246, 0.15)',
+                                boxShadow: '0 0 60px rgba(59, 130, 246, 0.1)',
                                 position: 'relative',
                                 overflow: 'hidden',
                                 marginBottom: '1.5rem'
@@ -741,10 +741,10 @@ function DialogueModal({ dialogue, onClose, onSendResponse }) {
                                 position: 'absolute',
                                 top: 0,
                                 left: 0,
-                                width: '4px',
+                                width: '3px',
                                 height: '100%',
-                                background: 'linear-gradient(180deg, #000DFF 0%, #001AFF 100%)',
-                                boxShadow: '0 0 20px rgba(0, 191, 255, 0.8)'
+                                background: 'linear-gradient(180deg, #3B82F6 0%, #60A5FA 100%)',
+                                boxShadow: '0 0 30px rgba(59, 130, 246, 0.4)'
                             }}></div>
 
                             <div style={{ paddingLeft: '1rem' }}>
@@ -859,7 +859,7 @@ function DialogueMessage({ message, onOpenDialogue, onOpenReferences, onOpenBlue
                         <p style={{
                             fontSize: '0.75rem',
                             fontWeight: '600',
-                            color: '#00D9FF',
+                            color: '#60A5FA',
                             textTransform: 'uppercase',
                             letterSpacing: '0.1em',
                             margin: 0
@@ -876,7 +876,7 @@ function DialogueMessage({ message, onOpenDialogue, onOpenReferences, onOpenBlue
                             display: 'inline-block',
                             width: '2px',
                             height: '1.2em',
-                            background: '#00D9FF',
+                            background: '#60A5FA',
                             marginLeft: '2px',
                             animation: 'blink 1s step-end infinite',
                             verticalAlign: 'text-bottom'
@@ -906,10 +906,10 @@ function DialogueMessage({ message, onOpenDialogue, onOpenReferences, onOpenBlue
                     width: '100%',
                     borderRadius: '20px',
                     padding: '2rem',
-                    background: 'rgba(10, 10, 31, 0.3)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(0, 217, 255, 0.1)',
+                    background: 'rgba(15, 20, 30, 0.3)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(59, 130, 246, 0.06)',
                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                     position: 'relative'
                 }}>
@@ -923,11 +923,11 @@ function DialogueMessage({ message, onOpenDialogue, onOpenReferences, onOpenBlue
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                         <span style={{
                             fontSize: '1.75rem',
-                            filter: 'drop-shadow(0 0 8px rgba(0, 217, 255, 0.4))'
+                            filter: 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.2))'
                         }}>🧠</span>
                         <div>
                             <p className="text-xs font-semibold uppercase tracking-wide glow" style={{
-                                color: 'rgba(0, 217, 255, 0.95)',
+                                color: 'rgba(96, 165, 250, 0.9)',
                                 letterSpacing: '0.1em'
                             }}>
                                 Auron

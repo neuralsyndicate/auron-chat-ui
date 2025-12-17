@@ -1,105 +1,113 @@
-/* Neural Syndicate - Cyberpunk Minimalist Design System */
-/* Dark Blue (#000DFF) + Pure Black - Professional/Futuristic */
+/* Neural Music - Bioluminescent Design System v0.5 */
+/* Organic neural aesthetics - calm, introspective, intelligent */
 
 :root {
-    /* Core Colors - HEAVY Electric Blue (like 43.png) */
+    /* Core Colors - Soft Bioluminescent Blues */
     --ns-black: #000000;
-    --ns-navy: #0a0a0f;
-    --ns-blue-glow: #00D9FF;      /* Bright electric blue - MAIN */
-    --ns-blue-bright: #00BFFF;    /* Cyan glow */
-    --ns-blue-mid: #0099FF;       /* Medium blue */
+    --ns-navy: #0a0f14;
+    --ns-blue-glow: #60A5FA;      /* Soft bioluminescent blue - MAIN */
+    --ns-blue-bright: #3B82F6;    /* Neural blue primary */
+    --ns-blue-mid: #2563EB;       /* Deep neural blue */
+    --ns-blue-soft: #93C5FD;      /* Ultra-soft highlight */
 
     /* Text */
     --ns-white: #FFFFFF;
     --ns-gray: #8899AA;
     --ns-gray-dark: #556677;
 
-    /* Liquid Glass (Apple-style) */
-    --glass-bg: rgba(10, 10, 31, 0.4);
-    --glass-bg-strong: rgba(10, 10, 31, 0.75);
-    --glass-border: rgba(0, 13, 255, 0.12);
-    --glass-blur: blur(24px);
+    /* Glass System - Subtle, Organic */
+    --glass-bg: rgba(255, 255, 255, 0.02);
+    --glass-bg-strong: rgba(15, 20, 30, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.04);
+    --glass-blur: blur(16px);
 
-    /* Glows - Dark Blue Only */
-    --glow-soft: 0 0 15px rgba(0, 13, 255, 0.3);
-    --glow-medium: 0 0 25px rgba(0, 13, 255, 0.5);
-    --glow-strong: 0 0 45px rgba(0, 13, 255, 0.7);
+    /* Bioluminescent Glow System - Diffuse, Organic */
+    --glow-soft: 0 0 30px rgba(59, 130, 246, 0.08);
+    --glow-medium: 0 0 50px rgba(59, 130, 246, 0.12);
+    --glow-strong: 0 0 80px rgba(59, 130, 246, 0.18);
 
-    /* Neural Identity Map v2 */
-    --neural-primary: #00D9FF;
-    --neural-secondary: #0066FF;
-    --neural-glow: rgba(0, 217, 255, 0.4);
-    --neural-bg: #0A0A1F;
-    --neural-surface: rgba(10, 10, 31, 0.95);
-    --neural-border: rgba(0, 217, 255, 0.15);
+    /* Neural Identity */
+    --neural-primary: #60A5FA;
+    --neural-secondary: #3B82F6;
+    --neural-glow: rgba(59, 130, 246, 0.15);
+    --neural-bg: #000000;
+    --neural-surface: rgba(15, 20, 30, 0.6);
+    --neural-border: rgba(59, 130, 246, 0.08);
 
-    /* Neural Identity Map v3 - Blueprint Aesthetic */
-    --blueprint-bg: #0A0A1F;
-    --blueprint-line: rgba(0, 217, 255, 0.15);
-    --blueprint-accent: rgba(0, 217, 255, 0.4);
-    --blueprint-glow: 0 0 20px rgba(0, 217, 255, 0.3), 0 0 40px rgba(0, 217, 255, 0.15);
-    --blueprint-border: 1px solid rgba(0, 217, 255, 0.25);
-    --section-label-color: rgba(0, 217, 255, 0.7);
-    --micro-dot-color: rgba(0, 217, 255, 0.3);
+    /* Blueprint Aesthetic - Softened */
+    --blueprint-bg: #000000;
+    --blueprint-line: rgba(59, 130, 246, 0.08);
+    --blueprint-accent: rgba(59, 130, 246, 0.15);
+    --blueprint-glow: 0 0 40px rgba(59, 130, 246, 0.08), 0 0 80px rgba(59, 130, 246, 0.04);
+    --blueprint-border: 1px solid rgba(59, 130, 246, 0.1);
+    --section-label-color: rgba(96, 165, 250, 0.6);
+    --micro-dot-color: rgba(59, 130, 246, 0.2);
 
-    /* V4 Premium Neon System */
-    --neon-inner: 0 0 10px rgba(0, 217, 255, 0.6);
-    --neon-outer: 0 0 30px rgba(0, 217, 255, 0.35);
-    --neon-bloom: 0 0 60px rgba(0, 217, 255, 0.15);
-    --neon-intense: 0 0 15px rgba(0, 217, 255, 0.8), 0 0 40px rgba(0, 217, 255, 0.4), 0 0 80px rgba(0, 217, 255, 0.2);
+    /* Bioluminescent System - Replaces Neon */
+    --bio-inner: 0 0 20px rgba(59, 130, 246, 0.15);
+    --bio-outer: 0 0 60px rgba(59, 130, 246, 0.08);
+    --bio-bloom: 0 0 100px rgba(59, 130, 246, 0.04);
+    --bio-subtle: 0 0 40px rgba(96, 165, 250, 0.06);
 
-    /* Glow Intensity Scale */
-    --glow-subtle: 0.12;
-    --glow-low: 0.18;
-    --glow-medium: 0.45;
-    --glow-bright: 0.85;
+    /* Legacy neon variables - mapped to bio system */
+    --neon-inner: var(--bio-inner);
+    --neon-outer: var(--bio-outer);
+    --neon-bloom: var(--bio-bloom);
+    --neon-intense: 0 0 30px rgba(59, 130, 246, 0.2), 0 0 60px rgba(59, 130, 246, 0.1), 0 0 100px rgba(59, 130, 246, 0.05);
+
+    /* Glow Intensity Scale - Reduced */
+    --glow-subtle: 0.06;
+    --glow-low: 0.10;
+    --glow-medium-intensity: 0.15;
+    --glow-bright: 0.25;
 
     /* ========================================
        V5 LIQUID GLASS DESIGN SYSTEM
-       Apple VisionOS-inspired refraction UI
+       Refined for organic neural aesthetic
        ======================================== */
 
-    /* Liquid Glass Core */
+    /* Liquid Glass Core - Subtler */
     --liquid-glass-blur: 12px;
-    --liquid-glass-bg: rgba(10, 10, 31, 0.25);
-    --liquid-glass-bg-hover: rgba(10, 10, 31, 0.35);
-    --liquid-glass-border: rgba(255, 255, 255, 0.12);
-    --liquid-glass-border-hover: rgba(0, 217, 255, 0.35);
-    --liquid-glass-highlight: rgba(255, 255, 255, 0.5);
+    --liquid-glass-bg: rgba(15, 20, 30, 0.25);
+    --liquid-glass-bg-hover: rgba(15, 20, 30, 0.35);
+    --liquid-glass-border: rgba(255, 255, 255, 0.06);
+    --liquid-glass-border-hover: rgba(59, 130, 246, 0.15);
+    --liquid-glass-highlight: rgba(255, 255, 255, 0.3);
     --liquid-glass-shadow: rgba(0, 0, 0, 0.4);
     --liquid-refraction-scale: 70;
 
-    /* VisionOS Animation Curves */
+    /* Animation Curves - Unchanged */
     --spring-curve: cubic-bezier(0.25, 0.84, 0.42, 1);
     --bounce-curve: cubic-bezier(0.34, 1.56, 0.64, 1);
     --micro-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
     --smooth-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-    /* V6: Sector Expansion - Larger, more spacious */
+    /* V6: Sector Expansion */
     --sector-expand-duration: 0.45s;
     --sector-expand-radius: 480px;
     --sector-collapse-radius: 360px;
     --sector-dim-opacity: 0.08;
     --sector-inner-radius: 140px;
 
-    /* V6: Node Sizing - Larger for better visibility */
+    /* V6: Node Sizing */
     --node-radius-base: 32px;
     --node-radius-selected: 40px;
     --ring-radius: 360px;
 
-    /* V6: Enhanced Color Palette */
-    --neural-accent-warm: #FF6B00;
-    --neural-accent-red: #FF4444;
+    /* V6: Accent Colors - Softened */
+    --neural-accent-warm: #F97316;
+    --neural-accent-red: #EF4444;
 
-    /* V6: Parallax Depths - Stronger effect */
+    /* V6: Parallax Depths */
     --parallax-bg-multiplier: 3;
     --parallax-mid-multiplier: 1.5;
     --parallax-fg-multiplier: 0.75;
 
-    /* Micro-motion */
-    --breathe-duration: 4s;
-    --shimmer-duration: 8s;
-    --drift-amplitude: 3px;
+    /* Micro-motion - Slower, Contemplative */
+    --breathe-duration: 8s;
+    --shimmer-duration: 16s;
+    --drift-amplitude: 2px;
+    --pulse-duration: 6s;
 }
 
 * {
@@ -123,62 +131,92 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Liquid Glass Effect (Apple-inspired) */
+/* Liquid Glass Effect - Subtle, Organic */
 .glass {
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.04);
     box-shadow:
-        0 8px 32px 0 rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.03),
-        inset 0 0 20px 0 rgba(0, 13, 255, 0.02);
+        0 4px 24px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .glass-strong {
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
-    border: 1px solid rgba(0, 13, 255, 0.18);
+    background: rgba(15, 20, 30, 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(59, 130, 246, 0.08);
     box-shadow:
-        0 16px 48px 0 rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-/* Glow Effects - Dark Blue ONLY */
+/* Neural Glass - For key UI elements */
+.glass-neural {
+    background: rgba(15, 20, 30, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(59, 130, 246, 0.06);
+    box-shadow:
+        0 0 60px rgba(59, 130, 246, 0.04),
+        0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Glow Effects - Soft Bioluminescence */
 .glow {
-    text-shadow: var(--glow-soft);
+    text-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+}
+
+.glow-soft {
+    text-shadow: 0 0 30px rgba(59, 130, 246, 0.15);
 }
 
 .glow-strong {
-    text-shadow: var(--glow-medium);
-    filter: drop-shadow(0 0 12px rgba(0, 13, 255, 0.4));
+    text-shadow: 0 0 50px rgba(96, 165, 250, 0.4);
+    filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.15));
 }
 
 .neural-glow {
-    box-shadow: var(--glow-soft);
+    box-shadow: 0 0 80px rgba(59, 130, 246, 0.06);
+}
+
+.neural-glow-hover {
+    box-shadow: 0 0 100px rgba(59, 130, 246, 0.1);
 }
 
 .neural-border {
-    border: 1px solid rgba(0, 13, 255, 0.25);
+    border: 1px solid rgba(59, 130, 246, 0.1);
     box-shadow:
         var(--glow-soft),
-        inset 0 0 15px rgba(0, 13, 255, 0.04);
+        inset 0 0 15px rgba(59, 130, 246, 0.02);
 }
 
-/* ===== ANIMATIONS ===== */
+/* ===== ANIMATIONS - Contemplative, Organic ===== */
 
 @keyframes pulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.9; }
 }
 
 .pulse-line {
-    animation: pulse 2s ease-in-out infinite;
+    animation: pulse var(--pulse-duration) ease-in-out infinite;
+}
+
+/* Bio-pulse - organic breathing */
+@keyframes bio-pulse {
+    0%, 100% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.9;
+        transform: scale(1.01);
+    }
 }
 
 .message {
-    animation: slideIn 0.3s ease;
+    animation: slideIn 0.4s var(--smooth-out);
 }
 
 @keyframes slideIn {
@@ -242,7 +280,7 @@ body {
 @keyframes slideUp {
     from {
         opacity: 0;
-        transform: translateY(30px) scale(0.95);
+        transform: translateY(30px) scale(0.98);
     }
     to {
         opacity: 1;
@@ -261,12 +299,13 @@ body {
     }
 }
 
-/* Sci-Fi Shimmer Effects (Neural Music style) */
+/* Slow organic rotation */
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
 
+/* Gentle shimmer - very slow */
 @keyframes shimmer {
     0%, 100% {
         background-position: -200% center;
@@ -276,31 +315,33 @@ body {
     }
 }
 
+/* Bioluminescent pulse - soft and diffuse */
 @keyframes glow-pulse {
     0%, 100% {
         box-shadow:
-            0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-            0 24px 60px 0 rgba(0, 0, 0, 0.6),
-            0 0 60px 0 rgba(0, 13, 255, 0.15),
-            0 0 120px 0 rgba(0, 13, 255, 0.08);
+            0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+            0 16px 48px rgba(0, 0, 0, 0.4),
+            0 0 60px rgba(59, 130, 246, 0.04),
+            0 0 100px rgba(59, 130, 246, 0.02);
     }
     50% {
         box-shadow:
-            0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-            0 24px 60px 0 rgba(0, 0, 0, 0.6),
-            0 0 80px 0 rgba(0, 13, 255, 0.25),
-            0 0 160px 0 rgba(0, 13, 255, 0.15);
+            0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+            0 16px 48px rgba(0, 0, 0, 0.4),
+            0 0 80px rgba(59, 130, 246, 0.08),
+            0 0 140px rgba(59, 130, 246, 0.04);
     }
 }
 
+/* Subtle pulse - for highlighted elements */
 @keyframes subtle-pulse {
     0%, 100% {
-        box-shadow: 0 0 40px rgba(0, 191, 255, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.05);
-        border-color: rgba(0, 217, 255, 0.3);
+        box-shadow: 0 0 60px rgba(59, 130, 246, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        border-color: rgba(59, 130, 246, 0.1);
     }
     50% {
-        box-shadow: 0 0 50px rgba(0, 191, 255, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.08);
-        border-color: rgba(0, 217, 255, 0.4);
+        box-shadow: 0 0 80px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        border-color: rgba(59, 130, 246, 0.15);
     }
 }
 
@@ -316,25 +357,25 @@ body {
     }
 }
 
-/* V5 Micro-motion Keyframes */
+/* Glass breathing - subtle organic motion */
 @keyframes glass-breathe {
     0%, 100% {
         transform: scale(1);
-        filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.2));
+        filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.04));
     }
     50% {
-        transform: scale(1.02);
-        filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.35));
+        transform: scale(1.005);
+        filter: drop-shadow(0 0 50px rgba(59, 130, 246, 0.08));
     }
 }
 
 @keyframes edge-shimmer {
     0%, 100% {
-        opacity: 0.3;
+        opacity: 0.2;
         transform: translateX(-100%);
     }
     50% {
-        opacity: 0.6;
+        opacity: 0.4;
         transform: translateX(100%);
     }
 }
@@ -359,7 +400,7 @@ body {
         transform: translateY(0) rotate(0deg);
     }
     50% {
-        transform: translateY(-2px) rotate(0.5deg);
+        transform: translateY(-1px) rotate(0.3deg);
     }
 }
 
@@ -368,13 +409,13 @@ body {
         --liquid-refraction-scale: 70;
     }
     50% {
-        --liquid-refraction-scale: 85;
+        --liquid-refraction-scale: 80;
     }
 }
 
 @keyframes twinkle {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.2); }
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); }
 }
 
 @keyframes bar-grow {
@@ -382,7 +423,7 @@ body {
     to { transform: scaleY(1); opacity: 1; }
 }
 
-/* V5 Performance: Animation optimization */
+/* Performance: Animation optimization */
 @media (prefers-reduced-motion: reduce) {
     .parallax-bg,
     .parallax-mid,
@@ -403,6 +444,6 @@ body {
 @supports not (backdrop-filter: blur(12px)) {
     .liquid-glass,
     .liquid-glass-sector {
-        background: rgba(10, 10, 31, 0.85);
+        background: rgba(15, 20, 30, 0.85);
     }
 }
