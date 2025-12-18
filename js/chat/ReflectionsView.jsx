@@ -27,8 +27,19 @@ function ReflectionsView({ user, setCurrentView, setLoadedSessionId, conversatio
     const [loadingDetails, setLoadingDetails] = useState(false);
 
     useEffect(() => {
-        loadConversations();
-    }, []);
+        const initAndLoad = async () => {
+            // Initialize conversation index if user is available
+            if (user?.sub && !conversationIndex.initialized) {
+                try {
+                    await conversationIndex.init(user.sub);
+                } catch (err) {
+                    console.warn('Failed to init conversation index:', err);
+                }
+            }
+            loadConversations();
+        };
+        initAndLoad();
+    }, [user?.sub]);
 
     const loadConversations = async () => {
         try {
@@ -38,7 +49,24 @@ function ReflectionsView({ user, setCurrentView, setLoadedSessionId, conversatio
                 return;
             }
 
-            const response = await fetch(`${DIALOGUE_API_BASE}/conversations?limit=20`, {
+            // Try frontend-first: Load from encrypted conversation index
+            if (user?.sub && conversationIndex.initialized) {
+                try {
+                    await conversationIndex.load();
+                    const indexConversations = conversationIndex.list(20);
+                    if (indexConversations.length > 0) {
+                        console.log('Loaded conversations from frontend index:', indexConversations.length);
+                        setConversations(indexConversations);
+                        setLoading(false);
+                        return;
+                    }
+                } catch (indexErr) {
+                    console.warn('Frontend index load failed, falling back to BFF:', indexErr);
+                }
+            }
+
+            // Fallback to BFF API for legacy conversations
+            const response = await fetch(`${BFF_API_BASE}/conversations?limit=20`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -50,7 +78,7 @@ function ReflectionsView({ user, setCurrentView, setLoadedSessionId, conversatio
             }
 
             const data = await response.json();
-            console.log('Loaded conversations:', data);
+            console.log('Loaded conversations from BFF:', data);
             setConversations(data.conversations || []);
 
         } catch (err) {
@@ -233,7 +261,7 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
             setError(null);
             const token = await getAuthToken();
 
-            // Step 1: Verify access with BFF
+            // Step 1: Verify access with BFF and get signed URL
             const verifyResponse = await fetch(`${BFF_API_BASE}/get-conversation`, {
                 method: 'POST',
                 headers: {

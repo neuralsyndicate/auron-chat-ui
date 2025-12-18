@@ -58,6 +58,33 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
     const [audioFileUrl, setAudioFileUrl] = useState(null);
     const [isDraggingAudio, setIsDraggingAudio] = useState(false);
 
+    // Frontend Encryption State
+    const [encryptionKey, setEncryptionKey] = useState(null);
+    const [userHash, setUserHash] = useState(null);
+    const [conversationTitle, setConversationTitle] = useState(null);
+    const isFirstMessageRef = useRef(true);
+
+    // Initialize frontend encryption and conversation index
+    useEffect(() => {
+        const initEncryption = async () => {
+            if (!user?.sub) return;
+            try {
+                const key = await deriveUserEncryptionKey(user.sub);
+                const hash = await hashUserId(user.sub);
+                setEncryptionKey(key);
+                setUserHash(hash);
+
+                // Initialize conversation index
+                await conversationIndex.init(user.sub);
+                await conversationIndex.load();
+                console.log('Frontend encryption initialized');
+            } catch (err) {
+                console.error('Failed to initialize encryption:', err);
+            }
+        };
+        initEncryption();
+    }, [user?.sub]);
+
     // Load past conversation from Reflections
     useEffect(() => {
         if (loadedSessionId) {
@@ -86,6 +113,11 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     setMessages(conversationData.messages || []);
                     setSessionId(loadedSessionId);
                     setNeedsLoadSession(true);
+                    // Not a new conversation - don't regenerate title
+                    isFirstMessageRef.current = false;
+                    if (conversationData.title) {
+                        setConversationTitle(conversationData.title);
+                    }
                 } catch (err) {
                     console.error('Failed to load past conversation:', err);
                 } finally {
@@ -245,6 +277,81 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
 
     const handleQuestionnaireClose = () => { setShowQuestionnaire(false); setQuestionnaireUploadId(null); setDspComplete(false); setQuestionnaireAnswers(null); setSynthesizedProfile(null); };
 
+    // Save conversation to BunnyCDN with frontend encryption
+    const saveConversationToCloud = async (currentSessionId, allMessages, title) => {
+        if (!encryptionKey || !userHash) {
+            console.warn('Encryption not initialized, skipping save');
+            return;
+        }
+
+        try {
+            const token = await getAuthToken();
+            const conversationPath = `conversations/${userHash}/${currentSessionId}.enc`;
+
+            // Prepare conversation data
+            const conversationData = {
+                id: currentSessionId,
+                title: title || conversationTitle || generateConversationTitle(allMessages.find(m => m.role === 'user')?.content || ''),
+                messages: allMessages.map(m => ({
+                    role: m.role,
+                    content: m.content || m.dialogue?.guidance || '',
+                    timestamp: m.timestamp || new Date().toISOString()
+                })),
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            // Encrypt and upload
+            const encryptedData = await encryptData(conversationData, encryptionKey);
+            const uploadResponse = await fetch(`${BFF_API_BASE}/cdn-proxy`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/octet-stream',
+                    'X-CDN-Path': conversationPath
+                },
+                body: encryptedData
+            });
+
+            if (!uploadResponse.ok) {
+                throw new Error(`Failed to save conversation: ${uploadResponse.status}`);
+            }
+
+            // Update conversation index
+            const indexEntry = {
+                id: currentSessionId,
+                title: conversationData.title,
+                created_at: conversationData.created_at,
+                message_count: allMessages.length,
+                bunny_key: conversationPath
+            };
+
+            if (conversationIndex.hasConversation(currentSessionId)) {
+                await conversationIndex.updateConversation(currentSessionId, {
+                    title: conversationData.title,
+                    message_count: allMessages.length
+                });
+            } else {
+                await conversationIndex.addConversation(indexEntry);
+            }
+
+            console.log(`Conversation saved: ${currentSessionId}`);
+
+            // Notify parent about conversation update for sidebar refresh
+            if (onConversationUpdate) {
+                onConversationUpdate({
+                    id: currentSessionId,
+                    conversation_id: currentSessionId,
+                    title: conversationData.title,
+                    message_count: allMessages.length,
+                    updated_at: conversationData.updated_at
+                });
+            }
+        } catch (err) {
+            console.error('Failed to save conversation:', err);
+        }
+    };
+
     const handleSendMessage = async (messageText) => {
         setMessages(prev => [...prev, { role: 'user', content: messageText }]);
         setLoading(true);
@@ -318,17 +425,33 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     blueprintSourcesRef.current = null;
                 },
                 onComplete: (result) => {
+                    const newSessionId = result.metadata?.session_id || sessionId;
                     if (result.metadata && result.metadata.session_id) setSessionId(result.metadata.session_id);
-                    // Update sidebar with conversation metadata (OpenAI-style immediate visibility)
-                    if (result.metadata?.conversation && onConversationUpdate) {
-                        onConversationUpdate(result.metadata.conversation);
-                    }
+
                     const currentIndex = streamingMessageIndexRef.current;
                     if (currentIndex !== null && result.sources) {
                         setMessages(msgs => msgs.map((msg, idx) => idx === currentIndex && msg.dialogue ? {
                             ...msg, dialogue: { ...msg.dialogue, sources: result.sources || msg.dialogue.sources, research_quality: result.analysis?.web_search?.research_quality || msg.dialogue.research_quality, cited_references: result.analysis?.cited_references || msg.dialogue.cited_references, research_synthesis: result.research_synthesis || msg.dialogue.research_synthesis }
                         } : msg));
                     }
+
+                    // Frontend-first: Generate title and save conversation with encryption
+                    if (newSessionId) {
+                        // Generate title from first user message if this is a new conversation
+                        let title = conversationTitle;
+                        if (isFirstMessageRef.current) {
+                            title = generateConversationTitle(messageText);
+                            setConversationTitle(title);
+                            isFirstMessageRef.current = false;
+                        }
+
+                        // Get current messages and save to cloud
+                        setMessages(currentMsgs => {
+                            saveConversationToCloud(newSessionId, currentMsgs, title);
+                            return currentMsgs;
+                        });
+                    }
+
                     setTimeout(onUpdateProgress, 1000);
                     setIsStreaming(false);
                     setLoading(false);
@@ -339,15 +462,28 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     fetch(`${DIALOGUE_API_BASE}/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ message: messageText, metadata: { session_id: sessionId } }) })
                     .then(res => res.json())
                     .then(data => {
+                        const newSessionId = data.metadata?.session_id || sessionId;
                         if (data.metadata && data.metadata.session_id) setSessionId(data.metadata.session_id);
-                        // Update sidebar with conversation metadata (OpenAI-style immediate visibility)
-                        if (data.metadata?.conversation && onConversationUpdate) {
-                            onConversationUpdate(data.metadata.conversation);
-                        }
+
                         const messageData = data.auron_response || data.message;
                         const parsedMessage = typeof messageData === 'string' ? { guidance: messageData, reflective_question: "What insight from this resonates most with you?" } : messageData;
                         const dialogueWithSources = { ...parsedMessage, sources: data.sources || null, research_quality: data.analysis?.web_search?.research_quality || null, cited_references: data.analysis?.cited_references || null, research_synthesis: data.research_synthesis || null };
-                        setMessages(prev => [...prev, { role: 'auron', content: "View Insight →", isDialogue: true, dialogue: dialogueWithSources }]);
+                        setMessages(prev => {
+                            const newMessages = [...prev, { role: 'auron', content: "View Insight →", isDialogue: true, dialogue: dialogueWithSources }];
+
+                            // Frontend-first: Save with encryption
+                            if (newSessionId) {
+                                let title = conversationTitle;
+                                if (isFirstMessageRef.current) {
+                                    title = generateConversationTitle(messageText);
+                                    setConversationTitle(title);
+                                    isFirstMessageRef.current = false;
+                                }
+                                saveConversationToCloud(newSessionId, newMessages, title);
+                            }
+
+                            return newMessages;
+                        });
                         setTimeout(onUpdateProgress, 1000);
                     })
                     .catch(err => { setMessages(prev => [...prev, { role: 'auron', content: `Error: ${err.message}` }]); })
