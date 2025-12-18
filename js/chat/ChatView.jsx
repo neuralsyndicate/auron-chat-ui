@@ -432,7 +432,10 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     blueprintSourcesRef.current = null;
                 },
                 onComplete: (result) => {
+                    console.log('onComplete result:', result);
+                    console.log('result.metadata:', result.metadata);
                     const newSessionId = result.metadata?.session_id || sessionId;
+                    console.log('newSessionId:', newSessionId, 'sessionId state:', sessionId);
                     if (result.metadata && result.metadata.session_id) setSessionId(result.metadata.session_id);
 
                     const currentIndex = streamingMessageIndexRef.current;
