@@ -660,6 +660,7 @@ async function connectSSEChat({
     message,
     sessionId,
     token,
+    conversationHistory,  // Array of {role, content} for context
     onProgress,
     onBlueprintRetrieved,
     onBlueprintSkipped,
@@ -671,6 +672,9 @@ async function connectSSEChat({
 }) {
     try {
         console.log('🔄 Initiating SSE stream for message:', message.substring(0, 50) + '...');
+        if (conversationHistory?.length > 0) {
+            console.log('📜 Sending conversation history:', conversationHistory.length, 'messages');
+        }
 
         const initResponse = await fetch(`${DIALOGUE_API_BASE}/chat/stream`, {
             method: 'POST',
@@ -680,6 +684,7 @@ async function connectSSEChat({
             },
             body: JSON.stringify({
                 message: message,
+                conversation_history: conversationHistory || [],
                 metadata: { session_id: sessionId || null }
             })
         });

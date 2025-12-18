@@ -383,10 +383,23 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                 if (loadResponse.ok) { console.log('Session loaded into backend RAM'); setNeedsLoadSession(false); }
             }
 
+            // Build conversation history for context (exclude the welcome message and current user message)
+            const conversationHistory = messages
+                .filter(m => m.role !== 'system') // Exclude system messages
+                .slice(1) // Skip the initial welcome message
+                .map(m => ({
+                    role: m.role === 'auron' ? 'assistant' : m.role,
+                    content: m.role === 'auron'
+                        ? (m.dialogue?.guidance || m.content || '')
+                        : (m.content || '')
+                }))
+                .filter(m => m.content && m.content !== "View Insight →"); // Only include messages with actual content
+
             const cleanup = await connectSSEChat({
                 message: messageText,
                 sessionId: sessionId,
                 token: token,
+                conversationHistory: conversationHistory,
                 onProgress: (event) => {
                     setSSEProgress(event.progress);
                     setSSECurrentStage(event.type);
@@ -470,7 +483,7 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                 },
                 onError: (error) => {
                     console.error('SSE Error - falling back to regular chat:', error);
-                    fetch(`${DIALOGUE_API_BASE}/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ message: messageText, metadata: { session_id: sessionId } }) })
+                    fetch(`${DIALOGUE_API_BASE}/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ message: messageText, conversation_history: conversationHistory, metadata: { session_id: sessionId } }) })
                     .then(res => res.json())
                     .then(data => {
                         const newSessionId = data.metadata?.session_id || sessionId;
