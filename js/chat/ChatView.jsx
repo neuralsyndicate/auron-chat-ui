@@ -14,7 +14,7 @@ const {
   useContext
 } = React;
 
-function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessionId, setSyncing }) {
+function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessionId, setSyncing, onConversationUpdate }) {
     const [messages, setMessages] = useState([
         { role: 'auron', content: "Hello. I'm Auron, your creative psychologist. Share what's on your mind — whether it's frustration, curiosity, or something you can't quite name yet. I'm listening." }
     ]);
@@ -319,6 +319,10 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                 },
                 onComplete: (result) => {
                     if (result.metadata && result.metadata.session_id) setSessionId(result.metadata.session_id);
+                    // Update sidebar with conversation metadata (OpenAI-style immediate visibility)
+                    if (result.metadata?.conversation && onConversationUpdate) {
+                        onConversationUpdate(result.metadata.conversation);
+                    }
                     const currentIndex = streamingMessageIndexRef.current;
                     if (currentIndex !== null && result.sources) {
                         setMessages(msgs => msgs.map((msg, idx) => idx === currentIndex && msg.dialogue ? {
@@ -336,6 +340,10 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     .then(res => res.json())
                     .then(data => {
                         if (data.metadata && data.metadata.session_id) setSessionId(data.metadata.session_id);
+                        // Update sidebar with conversation metadata (OpenAI-style immediate visibility)
+                        if (data.metadata?.conversation && onConversationUpdate) {
+                            onConversationUpdate(data.metadata.conversation);
+                        }
                         const messageData = data.auron_response || data.message;
                         const parsedMessage = typeof messageData === 'string' ? { guidance: messageData, reflective_question: "What insight from this resonates most with you?" } : messageData;
                         const dialogueWithSources = { ...parsedMessage, sources: data.sources || null, research_quality: data.analysis?.web_search?.research_quality || null, cited_references: data.analysis?.cited_references || null, research_synthesis: data.research_synthesis || null };

@@ -25,8 +25,25 @@ function Dashboard() {
     const [sessionId, setSessionId] = useState(null);
     const [syncing, setSyncing] = useState(false);
 
+    // Conversations state (shared between ChatView and ReflectionsView)
+    const [conversations, setConversations] = useState([]);
+
     // Memory modal state
     const [showMemoryModal, setShowMemoryModal] = useState(false);
+
+    // Update conversation in sidebar (called from ChatView when /chat returns conversation metadata)
+    const updateConversationInSidebar = useCallback((conv) => {
+        setConversations(prev => {
+            const exists = prev.find(c => c.id === conv.id || c.conversation_id === conv.id);
+            if (exists) {
+                // Update existing conversation
+                return prev.map(c => (c.id === conv.id || c.conversation_id === conv.id) ? { ...c, ...conv } : c);
+            } else {
+                // Add new conversation at the top
+                return [conv, ...prev];
+            }
+        });
+    }, []);
 
     // Handler for "Open Full View" from memory modal
     const handleOpenFullMemoryView = () => {
@@ -293,9 +310,16 @@ function Dashboard() {
                         sessionId={sessionId}
                         setSessionId={setSessionId}
                         setSyncing={setSyncing}
+                        onConversationUpdate={updateConversationInSidebar}
                     />
                 ) : currentView === 'reflections' ? (
-                    <ReflectionsView user={user} setCurrentView={setCurrentView} setLoadedSessionId={setLoadedSessionId} />
+                    <ReflectionsView
+                        user={user}
+                        setCurrentView={setCurrentView}
+                        setLoadedSessionId={setLoadedSessionId}
+                        conversations={conversations}
+                        setConversations={setConversations}
+                    />
                 ) : currentView === 'memory' ? (
                     <MemoryView user={user} />
                 ) : (

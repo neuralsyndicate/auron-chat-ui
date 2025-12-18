@@ -15,8 +15,12 @@ const {
 } = React;
 
 // Reflections View - Horizontal scrolling card gallery
-function ReflectionsView({ user, setCurrentView, setLoadedSessionId }) {
-    const [conversations, setConversations] = useState([]);
+function ReflectionsView({ user, setCurrentView, setLoadedSessionId, conversations: externalConversations, setConversations: setExternalConversations }) {
+    // Use external state if provided, otherwise use local state
+    const [localConversations, setLocalConversations] = useState([]);
+    const conversations = externalConversations !== undefined ? externalConversations : localConversations;
+    const setConversations = setExternalConversations || setLocalConversations;
+
     const [loading, setLoading] = useState(true);
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [conversationDetails, setConversationDetails] = useState(null);
@@ -34,7 +38,7 @@ function ReflectionsView({ user, setCurrentView, setLoadedSessionId }) {
                 return;
             }
 
-            const response = await fetch(`${BFF_API_BASE}/conversations?limit=20`, {
+            const response = await fetch(`${DIALOGUE_API_BASE}/conversations?limit=20`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -83,7 +87,7 @@ function ReflectionsView({ user, setCurrentView, setLoadedSessionId }) {
                     <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>📚</div>
                     <h2 className="text-2xl font-bold text-white mb-4">No Reflections Yet</h2>
                     <p className="text-gray-400 mb-6">
-                        Your past conversations with Auron will appear here after 5 minutes of inactivity.
+                        Your conversations with Auron will appear here as you chat.
                     </p>
                     <p className="text-gray-500 text-sm">
                         Each conversation becomes a memory that shapes your Neural Music Profile.
@@ -156,9 +160,9 @@ function ReflectionsView({ user, setCurrentView, setLoadedSessionId }) {
                                         })}
                                     </div>
 
-                                    {/* Summary or first message */}
+                                    {/* Title or summary */}
                                     <h3 className="text-white font-semibold text-lg mb-3 line-clamp-2">
-                                        {conv.summary || conv.title || 'Conversation with Auron'}
+                                        {conv.title || conv.summary || 'Conversation with Auron'}
                                     </h3>
 
                                     {/* Preview text */}
