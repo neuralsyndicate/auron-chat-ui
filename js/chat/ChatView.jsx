@@ -301,7 +301,8 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                 title: title || conversationTitle || generateConversationTitle(allMessages.find(m => m.role === 'user')?.content || ''),
                 messages: allMessages.map(m => ({
                     role: m.role,
-                    content: m.content || m.dialogue?.guidance || '',
+                    // For Auron messages, save the actual guidance, not "View Insight →"
+                    content: m.role === 'auron' ? (m.dialogue?.guidance || m.content || '') : (m.content || ''),
                     timestamp: m.timestamp || new Date().toISOString()
                 })),
                 created_at: new Date().toISOString(),
