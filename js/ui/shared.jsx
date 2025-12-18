@@ -792,7 +792,15 @@ async function connectSSEChat({
                 console.log('✅ SSE Complete:', data);
                 isComplete = true;
                 eventSource.close();
-                if (onComplete) onComplete(data.result);
+                // Include sseSessionId in result for frontend conversation saving
+                const resultWithSession = {
+                    ...data.result,
+                    metadata: {
+                        ...(data.result?.metadata || {}),
+                        session_id: sseSessionId
+                    }
+                };
+                if (onComplete) onComplete(resultWithSession);
             } catch (err) {
                 console.error('Error parsing complete event:', err);
                 eventSource.close();
