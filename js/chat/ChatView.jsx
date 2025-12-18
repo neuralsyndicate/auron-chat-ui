@@ -67,15 +67,18 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
     // Initialize frontend encryption and conversation index
     useEffect(() => {
         const initEncryption = async () => {
-            if (!user?.sub) return;
+            const userId = user?.sub || user?.id;
+            if (!userId) return;
+
             try {
-                const key = await deriveUserEncryptionKey(user.sub);
-                const hash = await hashUserId(user.sub);
+                console.log('Initializing frontend encryption for user:', userId.slice(0, 8) + '...');
+                const key = await deriveUserEncryptionKey(userId);
+                const hash = await hashUserId(userId);
                 setEncryptionKey(key);
                 setUserHash(hash);
 
                 // Initialize conversation index
-                await conversationIndex.init(user.sub);
+                await conversationIndex.init(userId);
                 await conversationIndex.load();
                 console.log('Frontend encryption initialized');
             } catch (err) {
@@ -83,7 +86,7 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
             }
         };
         initEncryption();
-    }, [user?.sub]);
+    }, [user?.sub, user?.id]);
 
     // Load past conversation from Reflections
     useEffect(() => {

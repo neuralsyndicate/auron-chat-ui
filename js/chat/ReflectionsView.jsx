@@ -28,10 +28,15 @@ function ReflectionsView({ user, setCurrentView, setLoadedSessionId, conversatio
 
     useEffect(() => {
         const initAndLoad = async () => {
+            // Get user ID (Logto uses 'sub' in JWT but might return 'id' in userInfo)
+            const userId = user?.sub || user?.id;
+            console.log('ReflectionsView: userId=', userId, 'initialized=', conversationIndex.initialized);
+
             // Initialize conversation index if user is available
-            if (user?.sub && !conversationIndex.initialized) {
+            if (userId && !conversationIndex.initialized) {
                 try {
-                    await conversationIndex.init(user.sub);
+                    await conversationIndex.init(userId);
+                    console.log('ReflectionsView: conversationIndex initialized');
                 } catch (err) {
                     console.warn('Failed to init conversation index:', err);
                 }
@@ -39,47 +44,27 @@ function ReflectionsView({ user, setCurrentView, setLoadedSessionId, conversatio
             loadConversations();
         };
         initAndLoad();
-    }, [user?.sub]);
+    }, [user?.sub, user?.id]);
 
     const loadConversations = async () => {
         try {
-            const token = await getAuthToken();
-            if (!token) {
-                console.warn('No auth token');
+            const userId = user?.sub || user?.id;
+            if (!userId) {
+                console.warn('No user ID available');
+                setConversations([]);
                 return;
             }
 
-            // Try frontend-first: Load from encrypted conversation index
-            if (user?.sub && conversationIndex.initialized) {
-                try {
-                    await conversationIndex.load();
-                    const indexConversations = conversationIndex.list(20);
-                    if (indexConversations.length > 0) {
-                        console.log('Loaded conversations from frontend index:', indexConversations.length);
-                        setConversations(indexConversations);
-                        setLoading(false);
-                        return;
-                    }
-                } catch (indexErr) {
-                    console.warn('Frontend index load failed, falling back to BFF:', indexErr);
-                }
+            // Initialize if needed
+            if (!conversationIndex.initialized) {
+                await conversationIndex.init(userId);
             }
 
-            // Fallback to BFF API for legacy conversations
-            const response = await fetch(`${BFF_API_BASE}/conversations?limit=20`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to load conversations');
-            }
-
-            const data = await response.json();
-            console.log('Loaded conversations from BFF:', data);
-            setConversations(data.conversations || []);
+            // Load from frontend encrypted index ONLY
+            await conversationIndex.load();
+            const indexConversations = conversationIndex.list(20);
+            console.log('Loaded conversations from frontend index:', indexConversations.length);
+            setConversations(indexConversations);
 
         } catch (err) {
             console.error('Failed to load conversations:', err);
