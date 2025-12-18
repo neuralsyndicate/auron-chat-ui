@@ -244,30 +244,27 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
         try {
             setLoading(true);
             setError(null);
+
+            // E2E: Get conversation from frontend encrypted index
+            const convEntry = conversationIndex.getConversation(conversationId);
+            if (!convEntry || !convEntry.bunny_key) {
+                throw new Error('Conversation not found in index');
+            }
+
             const token = await getAuthToken();
 
-            // Step 1: Verify access with BFF and get signed URL
-            const verifyResponse = await fetch(`${BFF_API_BASE}/get-conversation`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ conversation_id: conversationId })
+            // Fetch encrypted data via BFF cdn-proxy
+            const response = await fetch(`${BFF_API_BASE}/cdn-proxy?path=${encodeURIComponent(convEntry.bunny_key)}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!verifyResponse.ok) throw new Error('Failed to verify conversation access');
+            if (!response.ok) throw new Error(`Failed to fetch conversation: ${response.status}`);
 
-            const { signed_url, encryption_key } = await verifyResponse.json();
+            // Decrypt with frontend key
+            const encryptedData = await response.arrayBuffer();
+            const conversationData = await decryptData(encryptedData, conversationIndex.encryptionKey);
 
-            // Step 2: Fetch from BunnyCDN
-            const bunnyResponse = await fetch(signed_url);
-            if (!bunnyResponse.ok) throw new Error('Failed to fetch from BunnyCDN CDN');
-
-            // Step 3: Decrypt
-            const encryptedData = await bunnyResponse.arrayBuffer();
-            const conversationData = await decryptConversation(encryptedData, encryption_key);
-
+            console.log('Loaded conversation via E2E:', conversationId);
             setMessages(conversationData.messages || []);
         } catch (err) {
             console.error('Failed to load reflection:', err);
