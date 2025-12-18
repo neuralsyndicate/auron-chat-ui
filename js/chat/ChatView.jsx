@@ -282,6 +282,9 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
 
     // Save conversation to BunnyCDN with frontend encryption
     const saveConversationToCloud = async (currentSessionId, allMessages, title) => {
+        console.log('saveConversationToCloud called:', { currentSessionId, messageCount: allMessages.length, title });
+        console.log('Encryption state:', { hasKey: !!encryptionKey, hasHash: !!userHash });
+
         if (!encryptionKey || !userHash) {
             console.warn('Encryption not initialized, skipping save');
             return;
@@ -290,6 +293,7 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
         try {
             const token = await getAuthToken();
             const conversationPath = `conversations/${userHash}/${currentSessionId}.enc`;
+            console.log('Saving to path:', conversationPath);
 
             // Prepare conversation data
             const conversationData = {

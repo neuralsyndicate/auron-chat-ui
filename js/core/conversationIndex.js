@@ -48,14 +48,22 @@ class ConversationIndexManager {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (response.ok) {
-                const encryptedData = await response.arrayBuffer();
-                this.index = await decryptData(encryptedData, this.encryptionKey);
-                console.log(`Loaded conversation index: ${Object.keys(this.index.conversations || {}).length} conversations`);
-            } else if (response.status === 404) {
+            console.log('Index load response:', response.status);
+
+            if (response.status === 404) {
                 // No index exists yet - create empty one
                 this.index = { version: 1, conversations: {} };
                 console.log('No existing index, created new empty index');
+            } else if (response.ok) {
+                const encryptedData = await response.arrayBuffer();
+                // Check if we got actual data (min size for AES-GCM: 12 byte IV + 16 byte tag = 28 bytes)
+                if (encryptedData.byteLength < 28) {
+                    console.log('Index file too small, creating new empty index');
+                    this.index = { version: 1, conversations: {} };
+                } else {
+                    this.index = await decryptData(encryptedData, this.encryptionKey);
+                    console.log(`Loaded conversation index: ${Object.keys(this.index.conversations || {}).length} conversations`);
+                }
             } else {
                 throw new Error(`Failed to load index: ${response.status}`);
             }
