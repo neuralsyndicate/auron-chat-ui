@@ -201,6 +201,7 @@ function ProfileView({ user, isLocked, conversationCount }) {
 
     // tonal_dna is an object with numeric properties, not an array
     const tonalDNA = dims.tonal_dna || {};
+    const timbreDNA = dims.timbre_dna || {};
     const rhythmicDNA = dims.rhythmic_dna || {};
 
     // emotional_fingerprint.nodes is the array
@@ -210,6 +211,9 @@ function ProfileView({ user, isLocked, conversationCount }) {
 
     // inspirational_triggers.sources is the array
     const inspirationalTriggers = (dims.inspirational_triggers?.sources) || [];
+
+    // creative_behaviour patterns
+    const creativeBehaviour = dims.creative_behaviour || [];
 
     // sonic_architecture is an object with layering_approach and tension_release
     const sonicArchitecture = dims.sonic_architecture || {};
@@ -300,49 +304,46 @@ function ProfileView({ user, isLocked, conversationCount }) {
                         </ProfileSection>
                     </div>
 
-                    {/* TONAL DNA + RHYTHMIC DNA */}
-                    <ProfileSection componentKey="tonal_dna" label="Tonal DNA" profile={profile}>
+                    {/* TONAL IDENTITY + TIMBRE DNA */}
+                    <ProfileSection componentKey="tonal_dna" label="Tonal Identity" profile={profile}>
                         <TonalDNAQuadrant data={tonalDNA} />
                     </ProfileSection>
 
+                    <ProfileSection componentKey="timbre_dna" label="Timbre DNA" profile={profile}>
+                        <TimbreDNASpectrum data={timbreDNA} />
+                    </ProfileSection>
+
+                    {/* RHYTHMIC DNA + SOUND PALETTE */}
                     <ProfileSection componentKey="rhythmic_dna" label="Rhythmic DNA" profile={profile}>
                         <RhythmicDNAWaveform data={rhythmicDNA} />
                     </ProfileSection>
 
-                    {/* SOUND PALETTE + EMOTIONAL FINGERPRINT */}
                     <ProfileSection componentKey="sound_palette" label="Sound Palette" profile={profile}>
                         <SoundPaletteOrbital data={soundPalette} />
                     </ProfileSection>
 
+                    {/* EMOTIONAL FINGERPRINT + PROCESSING SIGNATURE */}
                     <ProfileSection componentKey="emotional_fingerprint" label="Emotional & Psychological" profile={profile}>
                         <EmotionalBubbleNetwork data={emotionalFingerprint} />
                     </ProfileSection>
 
-                    {/* PROCESSING SIGNATURE + INSPIRATIONAL TRIGGERS */}
-                    <ProfileSection componentKey="processing_signature" label="Processing Signature" profile={profile}>
+                    <ProfileSection componentKey="processing_signature" label="Mixing & Processing" profile={profile}>
                         <DataList data={processingSignature} />
                     </ProfileSection>
 
+                    {/* INSPIRATIONAL TRIGGERS + CREATIVE BEHAVIOUR */}
                     <ProfileSection componentKey="inspirational_triggers" label="Inspirational Triggers" profile={profile}>
                         <InspirationalConstellation data={inspirationalTriggers} />
                     </ProfileSection>
 
-                    {/* SONIC ARCHITECTURE */}
-                    <div className="profile-architecture">
-                        <ProfileSection componentKey="sonic_architecture" label="Layering Approach" profile={profile}>
-                            <div style={{ alignItems: 'flex-start' }}>
-                                <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem', lineHeight: 1.7 }}>
-                                    {sonicArchitecture.layering_approach || sonicArchitecture.layering || 'Layering approach data emerging...'}
-                                </p>
-                            </div>
-                        </ProfileSection>
+                    <ProfileSection componentKey="creative_behaviour" label="Creative Behaviour" profile={profile}>
+                        <CreativeBehaviourMatrix data={creativeBehaviour} />
+                    </ProfileSection>
 
-                        <ProfileSection componentKey="sonic_architecture" label="Tension & Release" profile={profile}>
-                            <div style={{ alignItems: 'flex-start' }}>
-                                <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem', lineHeight: 1.7 }}>
-                                    {sonicArchitecture.tension_release || sonicArchitecture.tension || 'Tension & release data emerging...'}
-                                </p>
-                            </div>
+                    {/* SONIC ARCHITECTURE - Full Width */}
+                    <div className="profile-spectrum">
+                        <ProfileSection componentKey="sonic_architecture" label="Sonic Architecture" profile={profile}>
+                            <SonicArchitectureDisplay data={sonicArchitecture} />
                         </ProfileSection>
                     </div>
 
@@ -1700,6 +1701,315 @@ function SonicArchitectureTower({ data }) {
                     }}>{tensionRelease}</p>
                 </div>
             )}
+        </div>
+    );
+}
+
+// 10. Timbre DNA Spectrum - Spectral harmonic visualization for timbre characteristics
+function TimbreDNASpectrum({ data }) {
+    const vizRef = useRef(null);
+
+    // Extract timbre properties
+    const brightness = typeof data === 'object' && data !== null ? (data.brightness ?? 0.5) : 0.5;
+    const warmth = typeof data === 'object' && data !== null ? (data.warmth ?? 0.5) : 0.5;
+    const texture = typeof data === 'object' && data !== null ? (data.texture || 'balanced') : 'balanced';
+    const hasData = typeof data === 'object' && data !== null && Object.keys(data).length > 0;
+
+    useEffect(() => {
+        if (!vizRef.current) return;
+        d3.select(vizRef.current).selectAll('*').remove();
+
+        const width = 300;
+        const height = 260;
+        const cx = width / 2;
+        const cy = height / 2;
+
+        const svg = d3.select(vizRef.current)
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const defs = svg.append('defs');
+
+        // Bioluminescent bloom filter
+        const filter = defs.append('filter')
+            .attr('id', 'timbre-bloom')
+            .attr('x', '-50%')
+            .attr('y', '-50%')
+            .attr('width', '200%')
+            .attr('height', '200%');
+        filter.append('feGaussianBlur').attr('in', 'SourceAlpha').attr('stdDeviation', '8').attr('result', 'blur');
+        filter.append('feFlood').attr('flood-color', '#3B82F6').attr('flood-opacity', '0.15');
+        filter.append('feComposite').attr('in2', 'blur').attr('operator', 'in').attr('result', 'glow');
+        const merge = filter.append('feMerge');
+        merge.append('feMergeNode').attr('in', 'glow');
+        merge.append('feMergeNode').attr('in', 'SourceGraphic');
+
+        // Spectral bars representing harmonic content
+        const barCount = 16;
+        const barWidth = 12;
+        const maxHeight = 100;
+        const barSpacing = (width - 60) / barCount;
+
+        // Generate spectral heights based on brightness/warmth
+        const bars = d3.range(barCount).map(i => {
+            const position = i / barCount;
+            // Lower frequencies (left) affected by warmth, higher (right) by brightness
+            const lowInfluence = Math.max(0, 1 - position * 2) * warmth;
+            const highInfluence = Math.max(0, position * 2 - 1) * brightness;
+            const midInfluence = Math.sin(position * Math.PI) * 0.5;
+            return (lowInfluence + highInfluence + midInfluence) * 0.8 + Math.random() * 0.2;
+        });
+
+        // Draw spectral bars
+        bars.forEach((h, i) => {
+            const x = 30 + i * barSpacing;
+            const barH = h * maxHeight;
+            const y = cy + 40 - barH / 2;
+
+            // Bar glow
+            svg.append('rect')
+                .attr('x', x - barWidth/2 - 2)
+                .attr('y', y - 2)
+                .attr('width', barWidth + 4)
+                .attr('height', barH + 4)
+                .attr('rx', 3)
+                .attr('fill', '#3B82F6')
+                .attr('opacity', 0.15)
+                .style('filter', 'url(#timbre-bloom)');
+
+            // Main bar
+            svg.append('rect')
+                .attr('x', x - barWidth/2)
+                .attr('y', y)
+                .attr('width', barWidth)
+                .attr('height', barH)
+                .attr('rx', 2)
+                .attr('fill', d3.interpolateRgb('#60A5FA', '#3B82F6')(i / barCount))
+                .attr('opacity', 0.7 + h * 0.3);
+        });
+
+        // Central label
+        svg.append('text')
+            .attr('x', cx)
+            .attr('y', height - 25)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', '9px')
+            .attr('font-weight', '700')
+            .attr('fill', '#60A5FA')
+            .attr('letter-spacing', '2px')
+            .text('TIMBRE DNA');
+
+        // Axis labels
+        svg.append('text')
+            .attr('x', 30)
+            .attr('y', height - 8)
+            .attr('text-anchor', 'start')
+            .attr('font-size', '7px')
+            .attr('fill', 'rgba(96, 165, 250, 0.5)')
+            .text('LOW');
+        svg.append('text')
+            .attr('x', width - 30)
+            .attr('y', height - 8)
+            .attr('text-anchor', 'end')
+            .attr('font-size', '7px')
+            .attr('fill', 'rgba(96, 165, 250, 0.5)')
+            .text('HIGH');
+
+    }, [data, brightness, warmth]);
+
+    if (!hasData) {
+        return <p style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>No timbre data yet</p>;
+    }
+
+    return (
+        <div>
+            <div ref={vizRef} className="flex justify-center mb-2"></div>
+            <div className="text-center text-xs" style={{ color: 'rgba(96, 165, 250, 0.6)' }}>
+                <span style={{ fontWeight: 600 }}>{texture}</span>
+            </div>
+        </div>
+    );
+}
+
+// 11. Creative Behaviour Matrix - Pattern visualization for creative behaviors
+function CreativeBehaviourMatrix({ data }) {
+    const vizRef = useRef(null);
+
+    useEffect(() => {
+        if (!vizRef.current) return;
+        d3.select(vizRef.current).selectAll('*').remove();
+
+        if (!data || !Array.isArray(data) || data.length === 0) return;
+
+        const width = 300;
+        const height = 260;
+        const cx = width / 2;
+        const cy = height / 2;
+
+        const svg = d3.select(vizRef.current)
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const defs = svg.append('defs');
+
+        // Bloom filter
+        const filter = defs.append('filter')
+            .attr('id', 'behaviour-bloom')
+            .attr('x', '-50%')
+            .attr('y', '-50%')
+            .attr('width', '200%')
+            .attr('height', '200%');
+        filter.append('feGaussianBlur').attr('in', 'SourceAlpha').attr('stdDeviation', '10').attr('result', 'blur');
+        filter.append('feFlood').attr('flood-color', '#3B82F6').attr('flood-opacity', '0.12');
+        filter.append('feComposite').attr('in2', 'blur').attr('operator', 'in').attr('result', 'glow');
+        const merge = filter.append('feMerge');
+        merge.append('feMergeNode').attr('in', 'glow');
+        merge.append('feMergeNode').attr('in', 'SourceGraphic');
+
+        const patterns = data.slice(0, 6);
+        const radius = 85;
+
+        // Draw hexagonal pattern connections
+        patterns.forEach((_, i) => {
+            const angle1 = (i / patterns.length) * 2 * Math.PI - Math.PI / 2;
+            const angle2 = ((i + 1) % patterns.length / patterns.length) * 2 * Math.PI - Math.PI / 2;
+            const x1 = cx + radius * Math.cos(angle1);
+            const y1 = cy + radius * Math.sin(angle1);
+            const x2 = cx + radius * Math.cos(angle2);
+            const y2 = cy + radius * Math.sin(angle2);
+
+            svg.append('line')
+                .attr('x1', x1).attr('y1', y1)
+                .attr('x2', x2).attr('y2', y2)
+                .attr('stroke', 'rgba(59, 130, 246, 0.15)')
+                .attr('stroke-width', 1);
+
+            // Connect to center
+            svg.append('line')
+                .attr('x1', cx).attr('y1', cy)
+                .attr('x2', x1).attr('y2', y1)
+                .attr('stroke', 'rgba(59, 130, 246, 0.1)')
+                .attr('stroke-width', 1);
+        });
+
+        // Central hub
+        svg.append('circle')
+            .attr('cx', cx).attr('cy', cy).attr('r', 25)
+            .attr('fill', '#3B82F6').attr('fill-opacity', 0.2)
+            .style('filter', 'url(#behaviour-bloom)');
+        svg.append('circle')
+            .attr('cx', cx).attr('cy', cy).attr('r', 15)
+            .attr('fill', '#60A5FA').attr('fill-opacity', 0.8);
+
+        // Pattern nodes
+        patterns.forEach((pattern, i) => {
+            const angle = (i / patterns.length) * 2 * Math.PI - Math.PI / 2;
+            const x = cx + radius * Math.cos(angle);
+            const y = cy + radius * Math.sin(angle);
+            const nodeR = 12 + (pattern.weight || 1) * 3;
+
+            // Outer glow
+            svg.append('circle')
+                .attr('cx', x).attr('cy', y).attr('r', nodeR + 6)
+                .attr('fill', '#3B82F6').attr('opacity', 0.12)
+                .style('filter', 'url(#behaviour-bloom)');
+
+            // Main node
+            svg.append('circle')
+                .attr('cx', x).attr('cy', y).attr('r', nodeR)
+                .attr('fill', '#60A5FA').attr('fill-opacity', 0.7);
+
+            // Label
+            const labelRadius = radius + 28;
+            const labelX = cx + labelRadius * Math.cos(angle);
+            const labelY = cy + labelRadius * Math.sin(angle);
+
+            svg.append('text')
+                .attr('x', labelX).attr('y', labelY + 4)
+                .attr('text-anchor', 'middle')
+                .attr('font-size', '8px')
+                .attr('font-weight', '500')
+                .attr('fill', '#60A5FA')
+                .attr('opacity', 0.85)
+                .text((pattern.name || pattern.pattern || '').substring(0, 12).toUpperCase());
+        });
+
+        // Center label
+        svg.append('text')
+            .attr('x', cx).attr('y', cy + 50)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', '9px')
+            .attr('font-weight', '700')
+            .attr('fill', '#60A5FA')
+            .attr('letter-spacing', '1px')
+            .text('CREATIVE');
+
+    }, [data]);
+
+    if (!data || !Array.isArray(data) || data.length === 0) {
+        return <p style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>No behaviour data yet</p>;
+    }
+
+    return <div ref={vizRef} className="flex justify-center neural-glow"></div>;
+}
+
+// 12. Sonic Architecture Display - Combined layering and tension visualization
+function SonicArchitectureDisplay({ data }) {
+    const layeringApproach = typeof data === 'object' && data !== null ? (data.layering_approach || data.layering) : null;
+    const tensionRelease = typeof data === 'object' && data !== null ? (data.tension_release || data.tension) : null;
+    const hasData = layeringApproach || tensionRelease;
+
+    if (!hasData) {
+        return <p style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>No architecture data yet</p>;
+    }
+
+    return (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', width: '100%' }}>
+            {/* Layering Approach */}
+            <div style={{
+                background: 'rgba(59, 130, 246, 0.05)',
+                borderRadius: '12px',
+                padding: '20px',
+                borderLeft: '3px solid rgba(59, 130, 246, 0.4)'
+            }}>
+                <p style={{
+                    fontSize: '0.65rem',
+                    color: '#60A5FA',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    marginBottom: '12px'
+                }}>Layering Approach</p>
+                <p style={{
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '0.85rem',
+                    lineHeight: 1.7
+                }}>{layeringApproach || 'Emerging...'}</p>
+            </div>
+
+            {/* Tension & Release */}
+            <div style={{
+                background: 'rgba(59, 130, 246, 0.05)',
+                borderRadius: '12px',
+                padding: '20px',
+                borderLeft: '3px solid rgba(59, 130, 246, 0.4)'
+            }}>
+                <p style={{
+                    fontSize: '0.65rem',
+                    color: '#60A5FA',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    marginBottom: '12px'
+                }}>Tension & Release</p>
+                <p style={{
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '0.85rem',
+                    lineHeight: 1.7
+                }}>{tensionRelease || 'Emerging...'}</p>
+            </div>
         </div>
     );
 }
