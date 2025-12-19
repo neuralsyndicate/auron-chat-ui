@@ -15,22 +15,39 @@ const {
 } = React;
 
 // ============================================================
-// LOCKED COMPONENT OVERLAY
-// Atmospheric "dormant" overlay for locked profile sections
+// COMPONENT STATE OVERLAY
+// Three-state overlay: locked, pending, active
+// - LOCKED: No data source (dark overlay, action prompt)
+// - PENDING: Data source exists but extraction pending (softer, analyzing)
+// - ACTIVE: Data ready (no overlay)
 // ============================================================
 
-const LockedComponentOverlay = ({ requires }) => {
+const ComponentStateOverlay = ({ state, requires }) => {
+    // Different messages for locked vs pending
     const getMessage = () => {
+        if (state === 'pending') {
+            switch(requires) {
+                case 'audio': return 'ANALYZING AUDIO...';
+                case 'chat': return 'EXTRACTING PATTERNS...';
+                case 'both': return 'SYNTHESIZING DATA...';
+                default: return 'PROCESSING...';
+            }
+        }
+        // Locked state
         switch(requires) {
             case 'audio': return 'UPLOAD AUDIO TO ACTIVATE';
             case 'chat': return 'CHAT WITH AURON TO ACTIVATE';
             case 'both': return 'AUDIO + CHAT TO ACTIVATE';
-            default: return 'DATA PENDING';
+            default: return 'DATA REQUIRED';
         }
     };
 
-    // Geometric icons instead of emoji
+    // Different icons for locked vs pending
     const getIcon = () => {
+        if (state === 'pending') {
+            return '◎';  // Processing/target symbol
+        }
+        // Locked state - geometric icons
         switch(requires) {
             case 'audio': return '◉';  // Waveform/audio symbol
             case 'chat': return '◈';   // Chat/diamond symbol
@@ -39,49 +56,68 @@ const LockedComponentOverlay = ({ requires }) => {
         }
     };
 
+    // Different styling for locked vs pending
+    const isPending = state === 'pending';
+
     return (
         <div style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%)',
-            backdropFilter: 'blur(3px)',
+            background: isPending
+                ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.35) 100%)'
+                : 'linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%)',
+            backdropFilter: isPending ? 'blur(2px)' : 'blur(3px)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: 'inherit',
             zIndex: 10,
-            border: '1px solid rgba(59, 130, 246, 0.06)'
+            border: isPending
+                ? '1px solid rgba(249, 115, 22, 0.08)'
+                : '1px solid rgba(59, 130, 246, 0.06)'
         }}>
-            {/* Dormant indicator - subtle pulsing glow */}
+            {/* State indicator */}
             <div style={{
                 width: '44px',
                 height: '44px',
                 borderRadius: '50%',
-                background: 'rgba(59, 130, 246, 0.06)',
+                background: isPending
+                    ? 'rgba(249, 115, 22, 0.08)'
+                    : 'rgba(59, 130, 246, 0.06)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: '14px',
-                boxShadow: '0 0 25px rgba(59, 130, 246, 0.12)',
-                animation: 'dormant-pulse 4s ease-in-out infinite'
+                boxShadow: isPending
+                    ? '0 0 25px rgba(249, 115, 22, 0.15)'
+                    : '0 0 25px rgba(59, 130, 246, 0.12)',
+                animation: isPending
+                    ? 'pending-pulse 2s ease-in-out infinite'
+                    : 'dormant-pulse 4s ease-in-out infinite'
             }}>
                 <span style={{
                     fontSize: '1.1rem',
-                    color: 'rgba(96, 165, 250, 0.45)',
-                    filter: 'drop-shadow(0 0 6px rgba(59, 130, 246, 0.25))'
+                    color: isPending
+                        ? 'rgba(249, 115, 22, 0.6)'
+                        : 'rgba(96, 165, 250, 0.45)',
+                    filter: isPending
+                        ? 'drop-shadow(0 0 6px rgba(249, 115, 22, 0.3))'
+                        : 'drop-shadow(0 0 6px rgba(59, 130, 246, 0.25))'
                 }}>
                     {getIcon()}
                 </span>
             </div>
 
-            {/* Status text - matches Auron label style */}
+            {/* Status text */}
             <div style={{
                 fontSize: '0.6rem',
                 fontWeight: 600,
                 textTransform: 'uppercase',
                 letterSpacing: '0.12em',
-                color: 'rgba(96, 165, 250, 0.35)',
+                color: isPending
+                    ? 'rgba(249, 115, 22, 0.5)'
+                    : 'rgba(96, 165, 250, 0.35)',
                 textAlign: 'center'
             }}>
                 {getMessage()}
@@ -92,26 +128,36 @@ const LockedComponentOverlay = ({ requires }) => {
 
 // ============================================================
 // PROFILE SECTION WRAPPER
-// Wraps visualization components with lock support
+// Wraps visualization components with three-state support
 // ============================================================
 
 const ProfileSection = ({ componentKey, label, children, profile }) => {
-    const lockInfo = profile?.component_locks?.[componentKey];
-    const isLocked = lockInfo?.locked ?? false;
+    const stateInfo = profile?.component_states?.[componentKey];
+    const state = stateInfo?.state ?? 'active';  // Default to active if no state info
+    const showOverlay = state === 'locked' || state === 'pending';
+
+    // Different content opacity for each state
+    const getContentOpacity = () => {
+        switch(state) {
+            case 'locked': return 0.08;
+            case 'pending': return 0.2;
+            default: return 1;
+        }
+    };
 
     return (
         <div className="profile-liquid-glass profile-section" style={{ position: 'relative' }}>
             <p className="profile-section-label">{label}</p>
             <div className="profile-section-content profile-viz" style={{
-                opacity: isLocked ? 0.12 : 1,
-                filter: isLocked ? 'saturate(0.25)' : 'none',
-                pointerEvents: isLocked ? 'none' : 'auto',
+                opacity: getContentOpacity(),
+                filter: showOverlay ? 'saturate(0.3)' : 'none',
+                pointerEvents: showOverlay ? 'none' : 'auto',
                 transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
             }}>
                 {children}
             </div>
-            {isLocked && (
-                <LockedComponentOverlay requires={lockInfo.requires} />
+            {showOverlay && (
+                <ComponentStateOverlay state={state} requires={stateInfo?.requires} />
             )}
         </div>
     );

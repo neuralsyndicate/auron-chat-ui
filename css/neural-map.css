@@ -974,7 +974,7 @@
    COMPONENT LOCK ANIMATIONS
 ═══════════════════════════════════════════════════════════════ */
 
-/* Dormant pulse animation for locked component indicators */
+/* Dormant pulse animation for LOCKED component indicators (blue, slow) */
 @keyframes dormant-pulse {
     0%, 100% {
         opacity: 0.6;
@@ -988,7 +988,21 @@
     }
 }
 
-/* Reveal animation when component unlocks */
+/* Pending pulse animation for PENDING component indicators (orange, faster) */
+@keyframes pending-pulse {
+    0%, 100% {
+        opacity: 0.7;
+        transform: scale(1);
+        box-shadow: 0 0 20px rgba(249, 115, 22, 0.15);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.04);
+        box-shadow: 0 0 30px rgba(249, 115, 22, 0.25);
+    }
+}
+
+/* Reveal animation when component becomes active */
 @keyframes reveal-activate {
     0% {
         opacity: 0.12;
