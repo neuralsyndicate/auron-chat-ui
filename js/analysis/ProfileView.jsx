@@ -14,6 +14,109 @@ const {
   useContext
 } = React;
 
+// ============================================================
+// LOCKED COMPONENT OVERLAY
+// Atmospheric "dormant" overlay for locked profile sections
+// ============================================================
+
+const LockedComponentOverlay = ({ requires }) => {
+    const getMessage = () => {
+        switch(requires) {
+            case 'audio': return 'UPLOAD AUDIO TO ACTIVATE';
+            case 'chat': return 'CHAT WITH AURON TO ACTIVATE';
+            case 'both': return 'AUDIO + CHAT TO ACTIVATE';
+            default: return 'DATA PENDING';
+        }
+    };
+
+    // Geometric icons instead of emoji
+    const getIcon = () => {
+        switch(requires) {
+            case 'audio': return '◉';  // Waveform/audio symbol
+            case 'chat': return '◈';   // Chat/diamond symbol
+            case 'both': return '⬡';   // Hexagon for combined
+            default: return '○';
+        }
+    };
+
+    return (
+        <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 'inherit',
+            zIndex: 10,
+            border: '1px solid rgba(59, 130, 246, 0.06)'
+        }}>
+            {/* Dormant indicator - subtle pulsing glow */}
+            <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                background: 'rgba(59, 130, 246, 0.06)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '14px',
+                boxShadow: '0 0 25px rgba(59, 130, 246, 0.12)',
+                animation: 'dormant-pulse 4s ease-in-out infinite'
+            }}>
+                <span style={{
+                    fontSize: '1.1rem',
+                    color: 'rgba(96, 165, 250, 0.45)',
+                    filter: 'drop-shadow(0 0 6px rgba(59, 130, 246, 0.25))'
+                }}>
+                    {getIcon()}
+                </span>
+            </div>
+
+            {/* Status text - matches Auron label style */}
+            <div style={{
+                fontSize: '0.6rem',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                color: 'rgba(96, 165, 250, 0.35)',
+                textAlign: 'center'
+            }}>
+                {getMessage()}
+            </div>
+        </div>
+    );
+};
+
+// ============================================================
+// PROFILE SECTION WRAPPER
+// Wraps visualization components with lock support
+// ============================================================
+
+const ProfileSection = ({ componentKey, label, children, profile }) => {
+    const lockInfo = profile?.component_locks?.[componentKey];
+    const isLocked = lockInfo?.locked ?? false;
+
+    return (
+        <div className="profile-liquid-glass profile-section" style={{ position: 'relative' }}>
+            <p className="profile-section-label">{label}</p>
+            <div className="profile-section-content profile-viz" style={{
+                opacity: isLocked ? 0.12 : 1,
+                filter: isLocked ? 'saturate(0.25)' : 'none',
+                pointerEvents: isLocked ? 'none' : 'auto',
+                transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
+            }}>
+                {children}
+            </div>
+            {isLocked && (
+                <LockedComponentOverlay requires={lockInfo.requires} />
+            )}
+        </div>
+    );
+};
+
 function ProfileView({ user, isLocked, conversationCount }) {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -162,10 +265,9 @@ function ProfileView({ user, isLocked, conversationCount }) {
 
                     {/* SONIC CORE: Title + Genre Fusion */}
                     <div className="profile-sonic-core">
-                        {/* Sonic Title Card */}
-                        <div className="profile-liquid-glass profile-section">
-                            <p className="profile-section-label">Sonic Title</p>
-                            <div className="profile-section-content" style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
+                        {/* Sonic Title Card - requires both audio + chat */}
+                        <ProfileSection componentKey="sound_description" label="Sonic Title" profile={profile}>
+                            <div style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
                                 <h2 style={{
                                     fontSize: '2rem',
                                     fontWeight: 800,
@@ -185,95 +287,74 @@ function ProfileView({ user, isLocked, conversationCount }) {
                                     <p style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '0.9rem', fontStyle: 'italic' }}>Your sonic identity is emerging...</p>
                                 )}
                             </div>
-                        </div>
+                        </ProfileSection>
 
                         {/* Genre Fusion Ring */}
-                        <div className="profile-liquid-glass profile-section">
-                            <p className="profile-section-label">Genre Fusion</p>
-                            <div className="profile-section-content profile-viz">
-                                <GenreFusionRing data={genreFusion} />
-                            </div>
-                        </div>
+                        <ProfileSection componentKey="genre_fusion" label="Genre Fusion" profile={profile}>
+                            <GenreFusionRing data={genreFusion} />
+                        </ProfileSection>
                     </div>
 
                     {/* NEURAL SPECTRUM - Full Width */}
-                    <div className="profile-spectrum profile-liquid-glass profile-section">
-                        <p className="profile-section-label">Neural Spectrum</p>
-                        <div className="profile-section-content profile-viz">
+                    <div className="profile-spectrum">
+                        <ProfileSection componentKey="neural_spectrum" label="Neural Spectrum" profile={profile}>
                             <NeuralSpectrumBar data={neuralSpectrum} />
-                        </div>
+                        </ProfileSection>
                     </div>
 
                     {/* TONAL DNA + RHYTHMIC DNA */}
-                    <div className="profile-liquid-glass profile-section">
-                        <p className="profile-section-label">Tonal DNA</p>
-                        <div className="profile-section-content profile-viz">
-                            <TonalDNAQuadrant data={tonalDNA} />
-                        </div>
-                    </div>
+                    <ProfileSection componentKey="tonal_dna" label="Tonal DNA" profile={profile}>
+                        <TonalDNAQuadrant data={tonalDNA} />
+                    </ProfileSection>
 
-                    <div className="profile-liquid-glass profile-section">
-                        <p className="profile-section-label">Rhythmic DNA</p>
-                        <div className="profile-section-content profile-viz">
-                            <RhythmicDNAWaveform data={rhythmicDNA} />
-                        </div>
-                    </div>
+                    <ProfileSection componentKey="rhythmic_dna" label="Rhythmic DNA" profile={profile}>
+                        <RhythmicDNAWaveform data={rhythmicDNA} />
+                    </ProfileSection>
 
                     {/* SOUND PALETTE + EMOTIONAL FINGERPRINT */}
-                    <div className="profile-liquid-glass profile-section">
-                        <p className="profile-section-label">Sound Palette</p>
-                        <div className="profile-section-content profile-viz">
-                            <SoundPaletteOrbital data={soundPalette} />
-                        </div>
-                    </div>
+                    <ProfileSection componentKey="sound_palette" label="Sound Palette" profile={profile}>
+                        <SoundPaletteOrbital data={soundPalette} />
+                    </ProfileSection>
 
-                    <div className="profile-liquid-glass profile-section">
-                        <p className="profile-section-label">Emotional & Psychological</p>
-                        <div className="profile-section-content profile-viz">
-                            <EmotionalBubbleNetwork data={emotionalFingerprint} />
-                        </div>
-                    </div>
+                    <ProfileSection componentKey="emotional_fingerprint" label="Emotional & Psychological" profile={profile}>
+                        <EmotionalBubbleNetwork data={emotionalFingerprint} />
+                    </ProfileSection>
 
                     {/* PROCESSING SIGNATURE + INSPIRATIONAL TRIGGERS */}
-                    <div className="profile-liquid-glass profile-section">
-                        <p className="profile-section-label">Processing Signature</p>
-                        <div className="profile-section-content profile-viz">
-                            <DataList data={processingSignature} />
-                        </div>
-                    </div>
+                    <ProfileSection componentKey="processing_signature" label="Processing Signature" profile={profile}>
+                        <DataList data={processingSignature} />
+                    </ProfileSection>
 
-                    <div className="profile-liquid-glass profile-section">
-                        <p className="profile-section-label">Inspirational Triggers</p>
-                        <div className="profile-section-content profile-viz">
-                            <InspirationalConstellation data={inspirationalTriggers} />
-                        </div>
-                    </div>
+                    <ProfileSection componentKey="inspirational_triggers" label="Inspirational Triggers" profile={profile}>
+                        <InspirationalConstellation data={inspirationalTriggers} />
+                    </ProfileSection>
 
                     {/* SONIC ARCHITECTURE */}
                     <div className="profile-architecture">
-                        <div className="profile-liquid-glass profile-section" style={{ minHeight: '200px' }}>
-                            <p className="profile-section-label">Layering Approach</p>
-                            <div className="profile-section-content" style={{ alignItems: 'flex-start' }}>
+                        <ProfileSection componentKey="sonic_architecture" label="Layering Approach" profile={profile}>
+                            <div style={{ alignItems: 'flex-start' }}>
                                 <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem', lineHeight: 1.7 }}>
                                     {sonicArchitecture.layering_approach || sonicArchitecture.layering || 'Layering approach data emerging...'}
                                 </p>
                             </div>
-                        </div>
+                        </ProfileSection>
 
-                        <div className="profile-liquid-glass profile-section" style={{ minHeight: '200px' }}>
-                            <p className="profile-section-label">Tension & Release</p>
-                            <div className="profile-section-content" style={{ alignItems: 'flex-start' }}>
+                        <ProfileSection componentKey="sonic_architecture" label="Tension & Release" profile={profile}>
+                            <div style={{ alignItems: 'flex-start' }}>
                                 <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem', lineHeight: 1.7 }}>
                                     {sonicArchitecture.tension_release || sonicArchitecture.tension || 'Tension & release data emerging...'}
                                 </p>
                             </div>
-                        </div>
+                        </ProfileSection>
                     </div>
 
-                    {/* Conversation Count Footer */}
+                    {/* Data Sources Footer */}
                     <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '24px 0' }}>
                         <p style={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.85rem' }}>
-                            Built from <span style={{ color: '#60A5FA', fontWeight: 600 }}>{profile?.conversation_count || 0}</span> conversations with Auron
+                            Built from <span style={{ color: '#60A5FA', fontWeight: 600 }}>{profile?.conversation_count || 0}</span> conversations
+                            {profile?.audio_upload_count > 0 && (
+                                <span> and <span style={{ color: '#F97316', fontWeight: 600 }}>{profile?.audio_upload_count}</span> audio uploads</span>
+                            )}
                         </p>
                     </div>
                 </div>
