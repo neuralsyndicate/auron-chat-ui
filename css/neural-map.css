@@ -974,31 +974,29 @@
    COMPONENT LOCK ANIMATIONS
 ═══════════════════════════════════════════════════════════════ */
 
-/* Dormant pulse animation for LOCKED component indicators (blue, slow) */
-@keyframes dormant-pulse {
+/* LOCKED state - slow, dim, dormant bioluminescent glow */
+@keyframes dormant-glow {
     0%, 100% {
-        opacity: 0.6;
-        transform: scale(1);
-        box-shadow: 0 0 25px rgba(59, 130, 246, 0.12);
+        opacity: 0.5;
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
     }
     50% {
-        opacity: 1;
-        transform: scale(1.02);
-        box-shadow: 0 0 35px rgba(59, 130, 246, 0.2);
+        opacity: 0.8;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
     }
 }
 
-/* Pending pulse animation for PENDING component indicators (orange, faster) */
-@keyframes pending-pulse {
+/* PENDING state - faster, brighter, active processing glow */
+@keyframes pending-glow {
     0%, 100% {
-        opacity: 0.7;
+        opacity: 0.6;
         transform: scale(1);
-        box-shadow: 0 0 20px rgba(249, 115, 22, 0.15);
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
     }
     50% {
         opacity: 1;
-        transform: scale(1.04);
-        box-shadow: 0 0 30px rgba(249, 115, 22, 0.25);
+        transform: scale(1.05);
+        box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
     }
 }
 
