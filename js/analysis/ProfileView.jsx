@@ -115,104 +115,165 @@ function ProfileView({ user, isLocked, conversationCount }) {
 
     return (
         <div className="h-full overflow-y-auto relative" style={{ background: '#000' }}>
+            {/* SVG Filter Definitions for D3 Visualizations */}
+            <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+                <defs>
+                    <filter id="bio-glow-soft">
+                        <feGaussianBlur stdDeviation="8" result="blur"/>
+                        <feFlood floodColor="#3B82F6" floodOpacity="0.12"/>
+                        <feComposite in2="blur" operator="in"/>
+                        <feMerge>
+                            <feMergeNode/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                    <filter id="bio-glow-warm">
+                        <feGaussianBlur stdDeviation="8" result="blur"/>
+                        <feFlood floodColor="#F97316" floodOpacity="0.12"/>
+                        <feComposite in2="blur" operator="in"/>
+                        <feMerge>
+                            <feMergeNode/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+            </svg>
+
             {/* Content */}
-            <div className={`p-12 ${isLocked ? 'filter blur-md' : ''}`}>
-                <div className="max-w-7xl mx-auto space-y-12">
+            <div className={`${isLocked ? 'filter blur-md' : ''}`}>
+                <div className="profile-grid">
                     {/* Header */}
-                    <div className="text-center mb-12">
-                        <h1 className="text-4xl font-bold glow mb-2" style={{
-                            background: 'linear-gradient(135deg, #00A8FF 0%, #005CFF 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text',
-                            letterSpacing: '0.05em'
+                    <div className="profile-header">
+                        <h1 style={{
+                            fontSize: '1.5rem',
+                            fontWeight: 600,
+                            color: '#60A5FA',
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
+                            marginBottom: '8px',
+                            textShadow: '0 0 40px rgba(59, 130, 246, 0.3)'
                         }}>
                             NEURAL MUSIC PROFILE
                         </h1>
-                        <p className="text-gray-500 text-sm">Mapping the inner architecture of sound and mind</p>
+                        <p style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 300, letterSpacing: '0.05em' }}>
+                            Mapping the inner architecture of sound and mind
+                        </p>
                     </div>
 
-                    {/* Top Row: Sonic Title + Genre Fusion */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* SONIC CORE: Title + Genre Fusion */}
+                    <div className="profile-sonic-core">
                         {/* Sonic Title Card */}
-                        <div className="card-glow rounded-xl p-8" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
-                            <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Sonic Title</p>
-                            <h2 className="text-3xl font-black glow mb-4" style={{
-                                background: 'linear-gradient(135deg, #00A8FF 0%, #005CFF 100%)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                backgroundClip: 'text'
-                            }}>
-                                {sonicTitle}
-                            </h2>
-                            {soundDescription && (
-                                <p className="text-gray-400 text-sm leading-relaxed">{soundDescription}</p>
-                            )}
-                            {!soundDescription && (
-                                <p className="text-gray-600 text-sm italic">Your sonic identity is emerging...</p>
-                            )}
+                        <div className="profile-liquid-glass profile-section">
+                            <p className="profile-section-label">Sonic Title</p>
+                            <div className="profile-section-content" style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
+                                <h2 style={{
+                                    fontSize: '2rem',
+                                    fontWeight: 800,
+                                    background: 'linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text',
+                                    marginBottom: '12px',
+                                    textShadow: '0 0 30px rgba(59, 130, 246, 0.2)'
+                                }}>
+                                    {sonicTitle}
+                                </h2>
+                                {soundDescription && (
+                                    <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem', lineHeight: 1.6 }}>{soundDescription}</p>
+                                )}
+                                {!soundDescription && (
+                                    <p style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '0.9rem', fontStyle: 'italic' }}>Your sonic identity is emerging...</p>
+                                )}
+                            </div>
                         </div>
 
                         {/* Genre Fusion Ring */}
-                        <div className="card-glow rounded-xl p-8" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
-                            <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Sonic Code / Genre Fusion</p>
-                            <GenreFusionRing data={genreFusion} />
+                        <div className="profile-liquid-glass profile-section">
+                            <p className="profile-section-label">Genre Fusion</p>
+                            <div className="profile-section-content profile-viz">
+                                <GenreFusionRing data={genreFusion} />
+                            </div>
                         </div>
                     </div>
 
-                    {/* Neural Spectrum - Full Width */}
-                    <div className="card-glow rounded-xl p-8" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
-                        <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Neural Spectrum</p>
-                        <NeuralSpectrumBar data={neuralSpectrum} />
+                    {/* NEURAL SPECTRUM - Full Width */}
+                    <div className="profile-spectrum profile-liquid-glass profile-section">
+                        <p className="profile-section-label">Neural Spectrum</p>
+                        <div className="profile-section-content profile-viz">
+                            <NeuralSpectrumBar data={neuralSpectrum} />
+                        </div>
                     </div>
 
-                    {/* Middle Row: Sound System + Tonal DNA + Rhythmic DNA */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="card-glow rounded-xl p-6" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
-                            <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Sound System</p>
-                            <SoundPaletteOrbital data={soundPalette} />
-                        </div>
-
-                        <div className="card-glow rounded-xl p-6" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
-                            <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Tonal DNA</p>
+                    {/* TONAL DNA + RHYTHMIC DNA */}
+                    <div className="profile-liquid-glass profile-section">
+                        <p className="profile-section-label">Tonal DNA</p>
+                        <div className="profile-section-content profile-viz">
                             <TonalDNAQuadrant data={tonalDNA} />
                         </div>
+                    </div>
 
-                        <div className="card-glow rounded-xl p-6" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
-                            <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Rhythmic DNA</p>
+                    <div className="profile-liquid-glass profile-section">
+                        <p className="profile-section-label">Rhythmic DNA</p>
+                        <div className="profile-section-content profile-viz">
                             <RhythmicDNAWaveform data={rhythmicDNA} />
                         </div>
                     </div>
 
-                    {/* Emotional & Psychological Section */}
-                    <div className="card-glow rounded-xl p-8" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
-                        <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-6">Emotional & Psychological</p>
-                        <EmotionalBubbleNetwork data={emotionalFingerprint} />
+                    {/* SOUND PALETTE + EMOTIONAL FINGERPRINT */}
+                    <div className="profile-liquid-glass profile-section">
+                        <p className="profile-section-label">Sound Palette</p>
+                        <div className="profile-section-content profile-viz">
+                            <SoundPaletteOrbital data={soundPalette} />
+                        </div>
                     </div>
 
-                    {/* Bottom Row: Processing Signature + Inspirational Triggers */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="card-glow rounded-xl p-6" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
-                            <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Processing Signature</p>
+                    <div className="profile-liquid-glass profile-section">
+                        <p className="profile-section-label">Emotional & Psychological</p>
+                        <div className="profile-section-content profile-viz">
+                            <EmotionalBubbleNetwork data={emotionalFingerprint} />
+                        </div>
+                    </div>
+
+                    {/* PROCESSING SIGNATURE + INSPIRATIONAL TRIGGERS */}
+                    <div className="profile-liquid-glass profile-section">
+                        <p className="profile-section-label">Processing Signature</p>
+                        <div className="profile-section-content profile-viz">
                             <DataList data={processingSignature} />
                         </div>
+                    </div>
 
-                        <div className="card-glow rounded-xl p-6" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
-                            <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Inspirational Triggers</p>
+                    <div className="profile-liquid-glass profile-section">
+                        <p className="profile-section-label">Inspirational Triggers</p>
+                        <div className="profile-section-content profile-viz">
                             <InspirationalConstellation data={inspirationalTriggers} />
                         </div>
                     </div>
 
-                    {/* Sonic Architecture Tower */}
-                    <div className="card-glow rounded-xl p-8" style={{ background: 'rgba(10, 10, 20, 0.6)' }}>
-                        <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-6 text-center">Sonic Architecture</p>
-                        <SonicArchitectureTower data={sonicArchitecture} />
+                    {/* SONIC ARCHITECTURE */}
+                    <div className="profile-architecture">
+                        <div className="profile-liquid-glass profile-section" style={{ minHeight: '200px' }}>
+                            <p className="profile-section-label">Layering Approach</p>
+                            <div className="profile-section-content" style={{ alignItems: 'flex-start' }}>
+                                <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem', lineHeight: 1.7 }}>
+                                    {sonicArchitecture.layering_approach || sonicArchitecture.layering || 'Layering approach data emerging...'}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="profile-liquid-glass profile-section" style={{ minHeight: '200px' }}>
+                            <p className="profile-section-label">Tension & Release</p>
+                            <div className="profile-section-content" style={{ alignItems: 'flex-start' }}>
+                                <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem', lineHeight: 1.7 }}>
+                                    {sonicArchitecture.tension_release || sonicArchitecture.tension || 'Tension & release data emerging...'}
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Conversation Count Footer */}
-                    <div className="text-center">
-                        <p className="text-gray-600 text-sm">
-                            Built from <span className="text-primary font-semibold">{profile?.conversation_count || 0}</span> conversations with Auron
+                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '24px 0' }}>
+                        <p style={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.85rem' }}>
+                            Built from <span style={{ color: '#60A5FA', fontWeight: 600 }}>{profile?.conversation_count || 0}</span> conversations with Auron
                         </p>
                     </div>
                 </div>
@@ -220,33 +281,39 @@ function ProfileView({ user, isLocked, conversationCount }) {
 
             {/* Lock Overlay */}
             {isLocked && (
-                <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(8px)' }}>
-                    <div className="text-center max-w-lg p-12 card-glow rounded-2xl" style={{ background: 'rgba(10, 10, 15, 0.95)' }}>
-                        <div className="text-7xl mb-6">🔒</div>
-                        <h2 className="text-4xl font-black mb-4 glow" style={{
-                            background: 'linear-gradient(135deg, #00A8FF 0%, #005CFF 100%)',
+                <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0, 0, 0, 0.9)', backdropFilter: 'blur(12px)' }}>
+                    <div className="profile-liquid-glass text-center max-w-lg p-12" style={{ background: 'rgba(15, 23, 42, 0.6)' }}>
+                        <div style={{ fontSize: '4rem', marginBottom: '24px', filter: 'grayscale(0.3)' }}>🔒</div>
+                        <h2 style={{
+                            fontSize: '2rem',
+                            fontWeight: 800,
+                            marginBottom: '16px',
+                            background: 'linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text'
                         }}>
                             PROFILE LOCKED
                         </h2>
-                        <p className="text-gray-300 text-lg mb-2">
-                            Have <span className="text-primary font-bold">{UNLOCK_THRESHOLD - conversationCount} more conversations</span> with Auron to unlock
+                        <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1rem', marginBottom: '8px' }}>
+                            Have <span style={{ color: '#60A5FA', fontWeight: 600 }}>{UNLOCK_THRESHOLD - conversationCount} more conversations</span> with Auron to unlock
                         </p>
-                        <p className="text-gray-500 text-sm mb-6">
+                        <p style={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.85rem', marginBottom: '24px' }}>
                             Every conversation builds your 10-dimensional sonic identity
                         </p>
-                        <div className="w-full bg-gray-800 rounded-full h-4 overflow-hidden mb-3">
+                        <div style={{ width: '100%', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', height: '8px', overflow: 'hidden', marginBottom: '12px' }}>
                             <div
-                                className="h-full rounded-full transition-all duration-500"
                                 style={{
+                                    height: '100%',
+                                    borderRadius: '8px',
+                                    transition: 'all 0.5s ease',
                                     width: `${(conversationCount / UNLOCK_THRESHOLD) * 100}%`,
-                                    background: 'linear-gradient(90deg, #00D9FF 0%, #00BFFF 100%)'
+                                    background: 'linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%)',
+                                    boxShadow: '0 0 20px rgba(59, 130, 246, 0.4)'
                                 }}
                             />
                         </div>
-                        <p className="text-gray-400 text-sm">
+                        <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.85rem' }}>
                             {conversationCount} / {UNLOCK_THRESHOLD} conversations
                         </p>
                     </div>
@@ -279,7 +346,7 @@ function GenreFusionRing({ data }) {
             .attr('width', width)
             .attr('height', height);
 
-        // V6: Add bloom filter for outer glow
+        // V7: Soft bioluminescent bloom filter
         const defs = svg.append('defs');
         const filter = defs.append('filter')
             .attr('id', 'genre-bloom')
@@ -289,11 +356,11 @@ function GenreFusionRing({ data }) {
             .attr('height', '200%');
         filter.append('feGaussianBlur')
             .attr('in', 'SourceAlpha')
-            .attr('stdDeviation', '10')
+            .attr('stdDeviation', '15')
             .attr('result', 'blur');
         filter.append('feFlood')
-            .attr('flood-color', '#00D9FF')
-            .attr('flood-opacity', '0.4');
+            .attr('flood-color', '#3B82F6')
+            .attr('flood-opacity', '0.12');
         filter.append('feComposite')
             .attr('in2', 'blur')
             .attr('operator', 'in')
@@ -302,15 +369,15 @@ function GenreFusionRing({ data }) {
         merge.append('feMergeNode').attr('in', 'glow');
         merge.append('feMergeNode').attr('in', 'SourceGraphic');
 
-        // V6: Cyan-blue gradient for segments
+        // V7: Bioluminescent gradient for segments
         const segGradient = defs.append('linearGradient')
             .attr('id', 'segment-gradient')
             .attr('x1', '0%')
             .attr('y1', '0%')
             .attr('x2', '100%')
             .attr('y2', '100%');
-        segGradient.append('stop').attr('offset', '0%').attr('stop-color', '#00D9FF');
-        segGradient.append('stop').attr('offset', '100%').attr('stop-color', '#0066FF');
+        segGradient.append('stop').attr('offset', '0%').attr('stop-color', '#60A5FA');
+        segGradient.append('stop').attr('offset', '100%').attr('stop-color', '#2563EB');
 
         const g = svg.append('g')
             .attr('transform', `translate(${width/2}, ${height/2})`);
@@ -329,25 +396,25 @@ function GenreFusionRing({ data }) {
             .enter()
             .append('g');
 
-        // V6: Main segments with gradient fill and bloom
+        // V7: Main segments with bioluminescent gradient fill
         arcs.append('path')
             .attr('d', arc)
             .attr('fill', (d, i) => {
                 const t = i / 8;
-                return d3.interpolateRgb('#00D9FF', '#0066FF')(t);
+                return d3.interpolateRgb('#60A5FA', '#2563EB')(t);
             })
-            .attr('stroke', 'rgba(0, 217, 255, 0.3)')
+            .attr('stroke', 'rgba(59, 130, 246, 0.15)')
             .attr('stroke-width', 1)
-            .style('opacity', 0.85)
+            .style('opacity', 0.75)
             .style('filter', 'url(#genre-bloom)');
 
-        // V6: Outer highlight ring
+        // V7: Soft outer glow ring
         arcs.append('path')
             .attr('d', outerArc)
             .attr('fill', 'none')
-            .attr('stroke', '#00D9FF')
+            .attr('stroke', '#60A5FA')
             .attr('stroke-width', 2)
-            .style('opacity', 0.5);
+            .style('opacity', 0.3);
 
         // V6: Segment labels positioned outside
         arcs.append('text')
@@ -365,14 +432,14 @@ function GenreFusionRing({ data }) {
             .attr('letter-spacing', '0.5px')
             .text(d => (d.data.name || d.data.genre || '').toUpperCase().substring(0, 10));
 
-        // V6: Center label "GENRE FUSION"
+        // V7: Center label "GENRE FUSION"
         g.append('text')
             .attr('x', 0)
             .attr('y', -8)
             .attr('text-anchor', 'middle')
             .attr('font-size', '11px')
             .attr('font-weight', '700')
-            .attr('fill', '#00D9FF')
+            .attr('fill', '#60A5FA')
             .attr('letter-spacing', '2px')
             .text('GENRE');
         g.append('text')
@@ -381,17 +448,17 @@ function GenreFusionRing({ data }) {
             .attr('text-anchor', 'middle')
             .attr('font-size', '11px')
             .attr('font-weight', '700')
-            .attr('fill', '#00D9FF')
+            .attr('fill', '#60A5FA')
             .attr('letter-spacing', '2px')
             .text('FUSION');
 
-        // V6: Inner ring highlight
+        // V7: Soft inner ring
         g.append('circle')
             .attr('r', radius * 0.45)
             .attr('fill', 'none')
-            .attr('stroke', '#00D9FF')
+            .attr('stroke', '#60A5FA')
             .attr('stroke-width', 1)
-            .style('opacity', 0.3);
+            .style('opacity', 0.2);
 
     }, [data]);
 
@@ -426,35 +493,35 @@ function NeuralSpectrumBar({ data }) {
 
         const defs = svg.append('defs');
 
-        // V6: Blue → White → Orange/Red gradient (Parasympathetic → Hybrid → Sympathetic)
+        // V7: Bioluminescent Blue → White → Warm Orange gradient
         const gradient = defs.append('linearGradient')
             .attr('id', 'spectrum-gradient-v6')
             .attr('x1', '0%')
             .attr('x2', '100%');
-        gradient.append('stop').attr('offset', '0%').attr('stop-color', '#0066FF').attr('stop-opacity', 1);
-        gradient.append('stop').attr('offset', '50%').attr('stop-color', '#FFFFFF').attr('stop-opacity', 0.9);
-        gradient.append('stop').attr('offset', '100%').attr('stop-color', '#FF6B00').attr('stop-opacity', 1);
+        gradient.append('stop').attr('offset', '0%').attr('stop-color', '#3B82F6').attr('stop-opacity', 1);
+        gradient.append('stop').attr('offset', '50%').attr('stop-color', '#FFFFFF').attr('stop-opacity', 0.85);
+        gradient.append('stop').attr('offset', '100%').attr('stop-color', '#F97316').attr('stop-opacity', 1);
 
-        // V6: Bloom filter
+        // V7: Softer bloom filter
         const filter = defs.append('filter')
             .attr('id', 'spectrum-bloom')
             .attr('x', '-20%')
             .attr('y', '-50%')
             .attr('width', '140%')
             .attr('height', '200%');
-        filter.append('feGaussianBlur').attr('in', 'SourceGraphic').attr('stdDeviation', '4').attr('result', 'blur');
-        filter.append('feColorMatrix').attr('in', 'blur').attr('type', 'saturate').attr('values', '1.5');
+        filter.append('feGaussianBlur').attr('in', 'SourceGraphic').attr('stdDeviation', '6').attr('result', 'blur');
+        filter.append('feColorMatrix').attr('in', 'blur').attr('type', 'saturate').attr('values', '1.2');
         const merge = filter.append('feMerge');
         merge.append('feMergeNode');
         merge.append('feMergeNode').attr('in', 'SourceGraphic');
 
-        // V6: Base axis line
+        // V7: Base axis line
         svg.append('line')
             .attr('x1', 30)
             .attr('x2', width - 30)
             .attr('y1', height / 2)
             .attr('y2', height / 2)
-            .attr('stroke', 'rgba(0, 217, 255, 0.2)')
+            .attr('stroke', 'rgba(59, 130, 246, 0.15)')
             .attr('stroke-width', 1);
 
         // V6: Double-headed arrow on axis
@@ -506,10 +573,10 @@ function NeuralSpectrumBar({ data }) {
             .attr('stroke-width', 3)
             .style('filter', 'url(#spectrum-bloom)');
 
-        // V6: Position indicator with colored glow based on placement
+        // V7: Position indicator with colored glow based on placement
         const markerX = 30 + position * (width - 60);
-        const markerColor = placement === 'parasympathetic' ? '#0066FF' :
-                           placement === 'sympathetic' ? '#FF6B00' : '#FFFFFF';
+        const markerColor = placement === 'parasympathetic' ? '#3B82F6' :
+                           placement === 'sympathetic' ? '#F97316' : '#FFFFFF';
 
         svg.append('line')
             .attr('x1', markerX)
@@ -518,21 +585,21 @@ function NeuralSpectrumBar({ data }) {
             .attr('y2', height - 35)
             .attr('stroke', markerColor)
             .attr('stroke-width', 2)
-            .style('filter', `drop-shadow(0 0 8px ${markerColor})`);
+            .style('filter', `drop-shadow(0 0 12px ${markerColor}40)`);
 
-        // V6: Endpoint glows
+        // V7: Soft endpoint glows
         svg.append('circle')
             .attr('cx', 30)
             .attr('cy', height / 2)
             .attr('r', 6)
-            .attr('fill', '#0066FF')
-            .style('filter', 'drop-shadow(0 0 10px #0066FF)');
+            .attr('fill', '#3B82F6')
+            .style('filter', 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.4))');
         svg.append('circle')
             .attr('cx', width - 30)
             .attr('cy', height / 2)
             .attr('r', 6)
-            .attr('fill', '#FF6B00')
-            .style('filter', 'drop-shadow(0 0 10px #FF6B00)');
+            .attr('fill', '#F97316')
+            .style('filter', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.4))');
 
         let time = 0;
         function animate() {
@@ -545,8 +612,8 @@ function NeuralSpectrumBar({ data }) {
 
     const getStateLabel = () => placement.charAt(0).toUpperCase() + placement.slice(1);
     const getStateColor = () => {
-        if (placement === 'parasympathetic') return '#0066FF';
-        if (placement === 'sympathetic') return '#FF6B00';
+        if (placement === 'parasympathetic') return '#3B82F6';
+        if (placement === 'sympathetic') return '#F97316';
         return '#FFFFFF';
     };
     const getDescription = () => {
@@ -557,33 +624,34 @@ function NeuralSpectrumBar({ data }) {
 
     return (
         <div className="w-full">
-            <div ref={vizRef} className="w-full neural-glow mb-2"></div>
-            {/* V6: Zone labels with colored text */}
+            <div ref={vizRef} className="w-full mb-2"></div>
+            {/* V7: Zone labels with bioluminescent colors */}
             <div className="flex justify-between items-center text-xs px-8 mb-1">
-                <span style={{ color: '#0066FF', fontWeight: 600 }}>PARASYMPATHETIC</span>
-                <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>HYBRID</span>
-                <span style={{ color: '#FF6B00', fontWeight: 600 }}>SYMPATHETIC</span>
+                <span style={{ color: '#3B82F6', fontWeight: 600 }}>PARASYMPATHETIC</span>
+                <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>HYBRID</span>
+                <span style={{ color: '#F97316', fontWeight: 600 }}>SYMPATHETIC</span>
             </div>
             {/* State + Percentage + Intensity */}
             <div className="flex justify-center items-center gap-3 text-sm mt-2">
-                <span style={{ color: getStateColor(), fontWeight: 700, textShadow: `0 0 10px ${getStateColor()}` }}>
+                <span style={{ color: getStateColor(), fontWeight: 700, textShadow: `0 0 15px ${getStateColor()}40` }}>
                     {getStateLabel()}
                 </span>
-                <span style={{ opacity: 0.6, fontSize: '0.85rem' }}>
+                <span style={{ opacity: 0.5, fontSize: '0.85rem' }}>
                     {(position * 100).toFixed(0)}%
                 </span>
                 <span style={{
                     fontSize: '0.65rem',
                     padding: '0.2rem 0.5rem',
-                    background: 'rgba(0, 217, 255, 0.15)',
+                    background: 'rgba(59, 130, 246, 0.1)',
                     borderRadius: '4px',
                     textTransform: 'uppercase',
-                    letterSpacing: '1px'
+                    letterSpacing: '1px',
+                    color: 'rgba(96, 165, 250, 0.8)'
                 }}>
                     {intensity}
                 </span>
             </div>
-            <div className="text-center text-xs mt-1" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
+            <div className="text-center text-xs mt-1" style={{ color: 'rgba(255, 255, 255, 0.35)' }}>
                 {getDescription()}
             </div>
         </div>
@@ -612,21 +680,21 @@ function SoundPaletteOrbital({ data }) {
 
         const defs = svg.append('defs');
 
-        // V6: Bloom filter for glowing nodes
+        // V7: Soft bioluminescent bloom filter
         const filter = defs.append('filter')
             .attr('id', 'orbital-bloom')
             .attr('x', '-50%')
             .attr('y', '-50%')
             .attr('width', '200%')
             .attr('height', '200%');
-        filter.append('feGaussianBlur').attr('in', 'SourceAlpha').attr('stdDeviation', '6').attr('result', 'blur');
-        filter.append('feFlood').attr('flood-color', '#00D9FF').attr('flood-opacity', '0.5');
+        filter.append('feGaussianBlur').attr('in', 'SourceAlpha').attr('stdDeviation', '10').attr('result', 'blur');
+        filter.append('feFlood').attr('flood-color', '#3B82F6').attr('flood-opacity', '0.15');
         filter.append('feComposite').attr('in2', 'blur').attr('operator', 'in').attr('result', 'glow');
         const merge = filter.append('feMerge');
         merge.append('feMergeNode').attr('in', 'glow');
         merge.append('feMergeNode').attr('in', 'SourceGraphic');
 
-        // V6: Draw 3 thin orbital rings
+        // V7: Draw 3 thin orbital rings
         const orbits = [55, 85, 115];
         orbits.forEach((r) => {
             svg.append('circle')
@@ -634,19 +702,19 @@ function SoundPaletteOrbital({ data }) {
                 .attr('cy', cy)
                 .attr('r', r)
                 .attr('fill', 'none')
-                .attr('stroke', '#00D9FF')
+                .attr('stroke', '#60A5FA')
                 .attr('stroke-width', 1)
-                .attr('stroke-opacity', 0.25);
+                .attr('stroke-opacity', 0.12);
         });
 
-        // V6: Central glowing sphere with "SOUND" label
+        // V7: Central glowing sphere with "SOUND PALETTE" label
         svg.append('circle')
             .attr('cx', cx)
             .attr('cy', cy)
             .attr('r', 28)
-            .attr('fill', 'rgba(0, 102, 255, 0.3)')
-            .attr('stroke', '#00D9FF')
-            .attr('stroke-width', 1.5)
+            .attr('fill', 'rgba(37, 99, 235, 0.2)')
+            .attr('stroke', '#60A5FA')
+            .attr('stroke-width', 1)
             .style('filter', 'url(#orbital-bloom)');
         svg.append('text')
             .attr('x', cx)
@@ -654,7 +722,7 @@ function SoundPaletteOrbital({ data }) {
             .attr('text-anchor', 'middle')
             .attr('font-size', '9px')
             .attr('font-weight', '700')
-            .attr('fill', '#00D9FF')
+            .attr('fill', '#60A5FA')
             .attr('letter-spacing', '1px')
             .text('SOUND');
         svg.append('text')
@@ -663,11 +731,11 @@ function SoundPaletteOrbital({ data }) {
             .attr('text-anchor', 'middle')
             .attr('font-size', '9px')
             .attr('font-weight', '700')
-            .attr('fill', '#00D9FF')
+            .attr('fill', '#60A5FA')
             .attr('letter-spacing', '1px')
             .text('PALETTE');
 
-        // V6: Evenly distribute nodes on orbits (cleaner look, no labels)
+        // V7: Evenly distribute nodes on orbits
         const nodesPerOrbit = [3, 4, 5];
         let nodeIndex = 0;
         orbits.forEach((orbitR, orbitIdx) => {
@@ -683,8 +751,8 @@ function SoundPaletteOrbital({ data }) {
                     .attr('cx', x)
                     .attr('cy', y)
                     .attr('r', nodeR)
-                    .attr('fill', '#00D9FF')
-                    .attr('fill-opacity', 0.8)
+                    .attr('fill', '#60A5FA')
+                    .attr('fill-opacity', 0.7)
                     .style('filter', 'url(#orbital-bloom)');
 
                 nodeIndex++;
@@ -693,10 +761,10 @@ function SoundPaletteOrbital({ data }) {
     }, [data]);
 
     if (!data || data.length === 0) {
-        return <p className="text-gray-600 text-sm text-center py-12">No sound data yet</p>;
+        return <p style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>No sound data yet</p>;
     }
 
-    return <div ref={vizRef} className="flex justify-center neural-glow"></div>;
+    return <div ref={vizRef} className="flex justify-center"></div>;
 }
 
 // 4. Tonal DNA Quadrant - V6 4-quadrant plot with glowing blob position indicator
@@ -725,26 +793,26 @@ function TonalDNAQuadrant({ data }) {
 
         const defs = svg.append('defs');
 
-        // V6: Glowing blob gradient (soft edges)
+        // V7: Bioluminescent blob gradient (soft edges)
         const blobGradient = defs.append('radialGradient')
             .attr('id', 'tonal-blob-gradient')
             .attr('cx', '50%')
             .attr('cy', '50%')
             .attr('r', '50%');
-        blobGradient.append('stop').attr('offset', '0%').attr('stop-color', '#00D9FF').attr('stop-opacity', '0.9');
-        blobGradient.append('stop').attr('offset', '50%').attr('stop-color', '#00D9FF').attr('stop-opacity', '0.5');
-        blobGradient.append('stop').attr('offset', '100%').attr('stop-color', '#00D9FF').attr('stop-opacity', '0');
+        blobGradient.append('stop').attr('offset', '0%').attr('stop-color', '#60A5FA').attr('stop-opacity', '0.8');
+        blobGradient.append('stop').attr('offset', '50%').attr('stop-color', '#3B82F6').attr('stop-opacity', '0.3');
+        blobGradient.append('stop').attr('offset', '100%').attr('stop-color', '#3B82F6').attr('stop-opacity', '0');
 
-        // V6: Bloom filter
+        // V7: Soft bloom filter
         const filter = defs.append('filter')
             .attr('id', 'tonal-bloom')
             .attr('x', '-100%')
             .attr('y', '-100%')
             .attr('width', '300%')
             .attr('height', '300%');
-        filter.append('feGaussianBlur').attr('in', 'SourceGraphic').attr('stdDeviation', '8');
+        filter.append('feGaussianBlur').attr('in', 'SourceGraphic').attr('stdDeviation', '12');
 
-        // V6: Glass card border
+        // V7: Subtle border
         svg.append('rect')
             .attr('x', margin / 2)
             .attr('y', margin / 2)
@@ -752,26 +820,26 @@ function TonalDNAQuadrant({ data }) {
             .attr('height', height - margin)
             .attr('rx', 8)
             .attr('fill', 'none')
-            .attr('stroke', 'rgba(0, 217, 255, 0.2)')
+            .attr('stroke', 'rgba(59, 130, 246, 0.1)')
             .attr('stroke-width', 1);
 
-        // V6: Quadrant axis lines
+        // V7: Quadrant axis lines
         svg.append('line')
             .attr('x1', margin)
             .attr('y1', cy)
             .attr('x2', width - margin)
             .attr('y2', cy)
-            .attr('stroke', 'rgba(0, 217, 255, 0.3)')
+            .attr('stroke', 'rgba(59, 130, 246, 0.15)')
             .attr('stroke-width', 1);
         svg.append('line')
             .attr('x1', cx)
             .attr('y1', margin)
             .attr('x2', cx)
             .attr('y2', height - margin)
-            .attr('stroke', 'rgba(0, 217, 255, 0.3)')
+            .attr('stroke', 'rgba(59, 130, 246, 0.15)')
             .attr('stroke-width', 1);
 
-        // V6: Quadrant corner labels
+        // V7: Quadrant corner labels
         const cornerLabels = [
             { text: 'MINIMAL', x: margin + 5, y: margin + 15, anchor: 'start' },
             { text: 'BRIGHT', x: width - margin - 5, y: margin + 15, anchor: 'end' },
@@ -785,12 +853,12 @@ function TonalDNAQuadrant({ data }) {
                 .attr('text-anchor', l.anchor)
                 .attr('font-size', '8px')
                 .attr('font-weight', '600')
-                .attr('fill', 'rgba(0, 217, 255, 0.5)')
+                .attr('fill', 'rgba(96, 165, 250, 0.35)')
                 .attr('letter-spacing', '0.5px')
                 .text(l.text);
         });
 
-        // V6: Inner axis labels (closer to center)
+        // V7: Inner axis labels
         const innerLabels = [
             { text: 'DIGITAL', x: cx - 40, y: cy - 30 },
             { text: 'HARMONIC', x: cx + 40, y: cy - 30 },
@@ -803,17 +871,17 @@ function TonalDNAQuadrant({ data }) {
                 .attr('y', l.y)
                 .attr('text-anchor', 'middle')
                 .attr('font-size', '7px')
-                .attr('fill', 'rgba(255, 255, 255, 0.35)')
+                .attr('fill', 'rgba(255, 255, 255, 0.2)')
                 .text(l.text);
         });
 
-        // V6: Calculate position (inverted Y for screen coords)
+        // V7: Calculate position
         const plotWidth = width - margin * 2;
         const plotHeight = height - margin * 2;
         const x = margin + minimalMaximal * plotWidth;
         const y = margin + (1 - darkBright) * plotHeight;
 
-        // V6: Glowing BLOB position indicator (soft edges, not hard circle)
+        // V7: Soft glowing blob position indicator
         svg.append('circle')
             .attr('cx', x)
             .attr('cy', y)
@@ -821,45 +889,45 @@ function TonalDNAQuadrant({ data }) {
             .attr('fill', 'url(#tonal-blob-gradient)')
             .style('filter', 'url(#tonal-bloom)');
 
-        // V6: Core bright center
+        // V7: Core center
         svg.append('circle')
             .attr('cx', x)
             .attr('cy', y)
             .attr('r', 8)
-            .attr('fill', '#00D9FF')
-            .attr('opacity', 0.9);
+            .attr('fill', '#60A5FA')
+            .attr('opacity', 0.8);
         svg.append('circle')
             .attr('cx', x)
             .attr('cy', y)
             .attr('r', 4)
             .attr('fill', '#FFFFFF');
 
-        // V6: Crosshair from center to blob
+        // V7: Crosshair from center to blob
         svg.append('line')
             .attr('x1', cx)
             .attr('y1', cy)
             .attr('x2', x)
             .attr('y2', y)
-            .attr('stroke', 'rgba(0, 217, 255, 0.4)')
+            .attr('stroke', 'rgba(59, 130, 246, 0.2)')
             .attr('stroke-width', 1)
             .attr('stroke-dasharray', '4,4');
 
     }, [data, darkBright, minimalMaximal, hasData]);
 
     if (!hasData) {
-        return <p className="text-gray-600 text-sm text-center py-12">No tonal data yet</p>;
+        return <p style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>No tonal data yet</p>;
     }
 
-    // V6: Axis label descriptions
+    // V7: Axis label descriptions
     const brightLabel = darkBright > 0.6 ? 'Bright' : darkBright < 0.4 ? 'Dark' : 'Balanced';
     const maxLabel = minimalMaximal > 0.6 ? 'Maximal' : minimalMaximal < 0.4 ? 'Minimal' : 'Moderate';
 
     return (
         <div>
-            <div ref={vizRef} className="flex justify-center neural-glow mb-2"></div>
-            <div className="text-center text-xs" style={{ color: 'rgba(0, 217, 255, 0.7)' }}>
+            <div ref={vizRef} className="flex justify-center mb-2"></div>
+            <div className="text-center text-xs" style={{ color: 'rgba(96, 165, 250, 0.6)' }}>
                 <span style={{ fontWeight: 600 }}>{brightLabel}</span>
-                <span style={{ opacity: 0.5, margin: '0 6px' }}>·</span>
+                <span style={{ opacity: 0.4, margin: '0 6px' }}>·</span>
                 <span style={{ fontWeight: 600 }}>{maxLabel}</span>
             </div>
         </div>
@@ -893,21 +961,21 @@ function RhythmicDNAWaveform({ data }) {
 
         const defs = svg.append('defs');
 
-        // V6: Bloom filter
+        // V7: Soft bioluminescent bloom filter
         const filter = defs.append('filter')
             .attr('id', 'rhythm-bloom')
             .attr('x', '-50%')
             .attr('y', '-50%')
             .attr('width', '200%')
             .attr('height', '200%');
-        filter.append('feGaussianBlur').attr('in', 'SourceAlpha').attr('stdDeviation', '5').attr('result', 'blur');
-        filter.append('feFlood').attr('flood-color', '#00D9FF').attr('flood-opacity', '0.4');
+        filter.append('feGaussianBlur').attr('in', 'SourceAlpha').attr('stdDeviation', '6').attr('result', 'blur');
+        filter.append('feFlood').attr('flood-color', '#3B82F6').attr('flood-opacity', '0.2');
         filter.append('feComposite').attr('in2', 'blur').attr('operator', 'in').attr('result', 'glow');
         const merge = filter.append('feMerge');
         merge.append('feMergeNode').attr('in', 'glow');
         merge.append('feMergeNode').attr('in', 'SourceGraphic');
 
-        // V6: Outer circular arc (partial, ~270 degrees)
+        // V7: Outer circular arc (partial, ~270 degrees)
         const arcPath = d3.arc()
             .innerRadius(arcRadius - 2)
             .outerRadius(arcRadius + 2)
@@ -917,10 +985,10 @@ function RhythmicDNAWaveform({ data }) {
         svg.append('path')
             .attr('d', arcPath())
             .attr('transform', `translate(${cx}, ${cy})`)
-            .attr('fill', 'rgba(0, 217, 255, 0.2)')
-            .attr('stroke', '#00D9FF')
+            .attr('fill', 'rgba(59, 130, 246, 0.1)')
+            .attr('stroke', '#60A5FA')
             .attr('stroke-width', 1)
-            .attr('stroke-opacity', 0.4);
+            .attr('stroke-opacity', 0.2);
 
         // V6: Place rhythm type nodes around the arc
         const nodeCount = rhythmTypes.length;
@@ -936,15 +1004,15 @@ function RhythmicDNAWaveform({ data }) {
                 (d.type || d.name || '').toLowerCase().includes(label.toLowerCase().split('-')[0])
             );
 
-            // Node
+            // V7: Node
             svg.append('circle')
                 .attr('cx', x)
                 .attr('cy', y)
                 .attr('r', isActive ? 8 : 5)
-                .attr('fill', isActive ? '#00D9FF' : 'rgba(0, 217, 255, 0.3)')
+                .attr('fill', isActive ? '#60A5FA' : 'rgba(59, 130, 246, 0.15)')
                 .style('filter', isActive ? 'url(#rhythm-bloom)' : 'none');
 
-            // Label (positioned outside arc)
+            // V7: Label (positioned outside arc)
             const labelRadius = arcRadius + 25;
             const labelX = cx + labelRadius * Math.sin(angle);
             const labelY = cy - labelRadius * Math.cos(angle);
@@ -954,23 +1022,23 @@ function RhythmicDNAWaveform({ data }) {
                 .attr('y', labelY)
                 .attr('text-anchor', 'middle')
                 .attr('font-size', '7px')
-                .attr('fill', isActive ? '#00D9FF' : 'rgba(255, 255, 255, 0.4)')
+                .attr('fill', isActive ? '#60A5FA' : 'rgba(255, 255, 255, 0.3)')
                 .attr('font-weight', isActive ? '600' : '400')
                 .text(label);
 
-            // Connection line from center to active nodes
+            // V7: Connection line from center to active nodes
             if (isActive) {
                 svg.append('line')
                     .attr('x1', cx)
                     .attr('y1', cy)
                     .attr('x2', x)
                     .attr('y2', y)
-                    .attr('stroke', 'rgba(0, 217, 255, 0.3)')
+                    .attr('stroke', 'rgba(59, 130, 246, 0.15)')
                     .attr('stroke-width', 1);
             }
         });
 
-        // V6: Central DNA-like double helix waveform
+        // V7: Central DNA-like double helix waveform
         const wavePoints = 40;
         const waveRadius = 35;
         const waveHeight = 50;
@@ -996,26 +1064,26 @@ function RhythmicDNAWaveform({ data }) {
         svg.append('path')
             .attr('d', helixLine(helix1))
             .attr('fill', 'none')
-            .attr('stroke', '#00D9FF')
+            .attr('stroke', '#60A5FA')
             .attr('stroke-width', 2)
-            .attr('stroke-opacity', 0.6)
+            .attr('stroke-opacity', 0.4)
             .style('filter', 'url(#rhythm-bloom)');
 
         svg.append('path')
             .attr('d', helixLine(helix2))
             .attr('fill', 'none')
-            .attr('stroke', '#0066FF')
+            .attr('stroke', '#3B82F6')
             .attr('stroke-width', 2)
-            .attr('stroke-opacity', 0.5);
+            .attr('stroke-opacity', 0.25);
 
-        // V6: Central "RHYTHM" label
+        // V7: Central "RHYTHM DNA" label
         svg.append('text')
             .attr('x', cx)
             .attr('y', cy + 45)
             .attr('text-anchor', 'middle')
             .attr('font-size', '9px')
             .attr('font-weight', '700')
-            .attr('fill', '#00D9FF')
+            .attr('fill', '#60A5FA')
             .attr('letter-spacing', '2px')
             .text('RHYTHM DNA');
 
@@ -1026,10 +1094,10 @@ function RhythmicDNAWaveform({ data }) {
                    (typeof data === 'object' && data !== null && Object.keys(data).length > 0);
 
     if (!hasData) {
-        return <p className="text-gray-600 text-sm text-center py-12">No rhythmic data yet</p>;
+        return <p style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>No rhythmic data yet</p>;
     }
 
-    return <div ref={vizRef} className="flex justify-center neural-glow"></div>;
+    return <div ref={vizRef} className="flex justify-center"></div>;
 }
 
 // 6. Emotional Bubble Network - V6 Hub-and-spoke with BLUE (cool) + ORANGE (warm) spheres
@@ -1061,31 +1129,31 @@ function EmotionalBubbleNetwork({ data }) {
 
         const defs = svg.append('defs');
 
-        // V6: Blue sphere gradient (cool emotions)
+        // V7: Bioluminescent blue sphere gradient (cool emotions)
         const blueGradient = defs.append('radialGradient')
             .attr('id', 'cool-sphere-gradient')
             .attr('cx', '30%')
             .attr('cy', '30%')
             .attr('r', '70%');
-        blueGradient.append('stop').attr('offset', '0%').attr('stop-color', '#66CCFF');
-        blueGradient.append('stop').attr('offset', '50%').attr('stop-color', '#0066FF');
-        blueGradient.append('stop').attr('offset', '100%').attr('stop-color', '#003399');
+        blueGradient.append('stop').attr('offset', '0%').attr('stop-color', '#93C5FD');
+        blueGradient.append('stop').attr('offset', '50%').attr('stop-color', '#3B82F6');
+        blueGradient.append('stop').attr('offset', '100%').attr('stop-color', '#1D4ED8');
 
-        // V6: Orange/red sphere gradient (warm emotions)
+        // V7: Warm orange sphere gradient (warm emotions)
         const warmGradient = defs.append('radialGradient')
             .attr('id', 'warm-sphere-gradient')
             .attr('cx', '30%')
             .attr('cy', '30%')
             .attr('r', '70%');
-        warmGradient.append('stop').attr('offset', '0%').attr('stop-color', '#FFAA66');
-        warmGradient.append('stop').attr('offset', '50%').attr('stop-color', '#FF6B00');
-        warmGradient.append('stop').attr('offset', '100%').attr('stop-color', '#CC3300');
+        warmGradient.append('stop').attr('offset', '0%').attr('stop-color', '#FDBA74');
+        warmGradient.append('stop').attr('offset', '50%').attr('stop-color', '#F97316');
+        warmGradient.append('stop').attr('offset', '100%').attr('stop-color', '#EA580C');
 
-        // V6: Bloom filters
+        // V7: Soft bloom filters
         const blueFilter = defs.append('filter').attr('id', 'blue-bloom').attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%');
-        blueFilter.append('feGaussianBlur').attr('in', 'SourceGraphic').attr('stdDeviation', '6');
+        blueFilter.append('feGaussianBlur').attr('in', 'SourceGraphic').attr('stdDeviation', '10');
         const warmFilter = defs.append('filter').attr('id', 'warm-bloom').attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%');
-        warmFilter.append('feGaussianBlur').attr('in', 'SourceGraphic').attr('stdDeviation', '6');
+        warmFilter.append('feGaussianBlur').attr('in', 'SourceGraphic').attr('stdDeviation', '10');
 
         // V6: Central hub (primary emotion - largest weight)
         const sortedData = [...data].sort((a, b) => (b.weight || 1) - (a.weight || 1));
@@ -1093,7 +1161,7 @@ function EmotionalBubbleNetwork({ data }) {
         const satellites = sortedData.slice(1, 9); // Up to 8 satellites
         const primaryIsWarm = isWarmEmotion(primary.emotion || primary.name);
 
-        // Draw connection lines first (so they're behind spheres)
+        // V7: Draw connection lines first (so they're behind spheres)
         const spokeRadius = 110;
         satellites.forEach((d, i) => {
             const angle = (i / satellites.length) * 2 * Math.PI - Math.PI / 2;
@@ -1105,18 +1173,18 @@ function EmotionalBubbleNetwork({ data }) {
                 .attr('y1', cy)
                 .attr('x2', x)
                 .attr('y2', y)
-                .attr('stroke', 'rgba(0, 217, 255, 0.2)')
+                .attr('stroke', 'rgba(59, 130, 246, 0.1)')
                 .attr('stroke-width', 1);
         });
 
-        // V6: Central hub sphere
+        // V7: Central hub sphere
         const hubRadius = 45;
         svg.append('circle')
             .attr('cx', cx)
             .attr('cy', cy)
             .attr('r', hubRadius + 15)
-            .attr('fill', primaryIsWarm ? '#FF6B00' : '#0066FF')
-            .attr('opacity', 0.15)
+            .attr('fill', primaryIsWarm ? '#F97316' : '#3B82F6')
+            .attr('opacity', 0.1)
             .style('filter', primaryIsWarm ? 'url(#warm-bloom)' : 'url(#blue-bloom)');
 
         svg.append('circle')
@@ -1147,7 +1215,7 @@ function EmotionalBubbleNetwork({ data }) {
                 .attr('cx', x)
                 .attr('cy', y)
                 .attr('r', r + 8)
-                .attr('fill', isWarm ? '#FF6B00' : '#0066FF')
+                .attr('fill', isWarm ? '#F97316' : '#3B82F6')
                 .attr('opacity', 0.15)
                 .style('filter', isWarm ? 'url(#warm-bloom)' : 'url(#blue-bloom)');
 
@@ -1169,7 +1237,8 @@ function EmotionalBubbleNetwork({ data }) {
                 .attr('text-anchor', 'middle')
                 .attr('font-size', '9px')
                 .attr('font-weight', '500')
-                .attr('fill', isWarm ? '#FF6B00' : '#00D9FF')
+                .attr('fill', isWarm ? '#F97316' : '#60A5FA')
+                .attr('opacity', 0.9)
                 .text((d.emotion || d.name || '').substring(0, 12));
         });
 
@@ -1210,8 +1279,8 @@ function DataList({ data }) {
             .attr('y', '-50%')
             .attr('width', '200%')
             .attr('height', '200%');
-        filter.append('feGaussianBlur').attr('in', 'SourceAlpha').attr('stdDeviation', '4').attr('result', 'blur');
-        filter.append('feFlood').attr('flood-color', '#00D9FF').attr('flood-opacity', '0.4');
+        filter.append('feGaussianBlur').attr('in', 'SourceAlpha').attr('stdDeviation', '8').attr('result', 'blur');
+        filter.append('feFlood').attr('flood-color', '#3B82F6').attr('flood-opacity', '0.12');
         filter.append('feComposite').attr('in2', 'blur').attr('operator', 'in').attr('result', 'glow');
         const merge = filter.append('feMerge');
         merge.append('feMergeNode').attr('in', 'glow');
@@ -1231,7 +1300,7 @@ function DataList({ data }) {
                 .attr('y1', cy)
                 .attr('x2', x)
                 .attr('y2', y)
-                .attr('stroke', 'rgba(0, 217, 255, 0.2)')
+                .attr('stroke', 'rgba(59, 130, 246, 0.12)')
                 .attr('stroke-width', 1);
         });
 
@@ -1249,7 +1318,7 @@ function DataList({ data }) {
                 .attr('y1', y1)
                 .attr('x2', x2)
                 .attr('y2', y2)
-                .attr('stroke', 'rgba(0, 217, 255, 0.15)')
+                .attr('stroke', 'rgba(59, 130, 246, 0.08)')
                 .attr('stroke-width', 1);
         });
 
@@ -1258,14 +1327,14 @@ function DataList({ data }) {
             .attr('cx', cx)
             .attr('cy', cy)
             .attr('r', 20)
-            .attr('fill', '#0066FF')
-            .attr('fill-opacity', 0.4)
+            .attr('fill', '#3B82F6')
+            .attr('fill-opacity', 0.3)
             .style('filter', 'url(#process-bloom)');
         svg.append('circle')
             .attr('cx', cx)
             .attr('cy', cy)
             .attr('r', 12)
-            .attr('fill', '#00D9FF');
+            .attr('fill', '#60A5FA');
 
         // V6: Outer nodes
         nodes.forEach((item, i) => {
@@ -1277,8 +1346,8 @@ function DataList({ data }) {
                 .attr('cx', x)
                 .attr('cy', y)
                 .attr('r', 10)
-                .attr('fill', '#00D9FF')
-                .attr('fill-opacity', 0.7)
+                .attr('fill', '#60A5FA')
+                .attr('fill-opacity', 0.6)
                 .style('filter', 'url(#process-bloom)');
 
             // Arrow indicator on line (small triangle pointing outward)
@@ -1292,7 +1361,7 @@ function DataList({ data }) {
                 .attr('d', `M${arrowX + arrowSize * Math.cos(angle)},${arrowY + arrowSize * Math.sin(angle)}
                            L${arrowX + arrowSize * Math.cos(perpAngle)},${arrowY + arrowSize * Math.sin(perpAngle)}
                            L${arrowX - arrowSize * Math.cos(perpAngle)},${arrowY - arrowSize * Math.sin(perpAngle)} Z`)
-                .attr('fill', 'rgba(0, 217, 255, 0.4)');
+                .attr('fill', 'rgba(59, 130, 246, 0.2)');
         });
 
         // V6: Center label
@@ -1302,7 +1371,8 @@ function DataList({ data }) {
             .attr('text-anchor', 'middle')
             .attr('font-size', '9px')
             .attr('font-weight', '700')
-            .attr('fill', '#00D9FF')
+            .attr('fill', '#60A5FA')
+            .attr('opacity', 0.8)
             .attr('letter-spacing', '2px')
             .text('PROCESSING');
 
@@ -1351,8 +1421,8 @@ function InspirationalConstellation({ data }) {
             .attr('y', '-50%')
             .attr('width', '200%')
             .attr('height', '200%');
-        filter.append('feGaussianBlur').attr('in', 'SourceAlpha').attr('stdDeviation', '6').attr('result', 'blur');
-        filter.append('feFlood').attr('flood-color', '#00D9FF').attr('flood-opacity', '0.5');
+        filter.append('feGaussianBlur').attr('in', 'SourceAlpha').attr('stdDeviation', '10').attr('result', 'blur');
+        filter.append('feFlood').attr('flood-color', '#3B82F6').attr('flood-opacity', '0.12');
         filter.append('feComposite').attr('in2', 'blur').attr('operator', 'in').attr('result', 'glow');
         const merge = filter.append('feMerge');
         merge.append('feMergeNode').attr('in', 'glow');
@@ -1364,9 +1434,9 @@ function InspirationalConstellation({ data }) {
             .attr('cx', '30%')
             .attr('cy', '30%')
             .attr('r', '70%');
-        hubGradient.append('stop').attr('offset', '0%').attr('stop-color', '#66CCFF');
-        hubGradient.append('stop').attr('offset', '50%').attr('stop-color', '#0066FF');
-        hubGradient.append('stop').attr('offset', '100%').attr('stop-color', '#003399');
+        hubGradient.append('stop').attr('offset', '0%').attr('stop-color', '#93C5FD');
+        hubGradient.append('stop').attr('offset', '50%').attr('stop-color', '#3B82F6');
+        hubGradient.append('stop').attr('offset', '100%').attr('stop-color', '#1D4ED8');
 
         // Get actual triggers from data or use defaults
         const triggers = data.slice(0, 8).map((d, i) => ({
@@ -1380,7 +1450,7 @@ function InspirationalConstellation({ data }) {
             .attr('cy', cy)
             .attr('r', spokeRadius)
             .attr('fill', 'none')
-            .attr('stroke', 'rgba(0, 217, 255, 0.15)')
+            .attr('stroke', 'rgba(59, 130, 246, 0.08)')
             .attr('stroke-width', 1);
 
         // Draw spoke lines first
@@ -1394,7 +1464,7 @@ function InspirationalConstellation({ data }) {
                 .attr('y1', cy)
                 .attr('x2', x)
                 .attr('y2', y)
-                .attr('stroke', 'rgba(0, 217, 255, 0.25)')
+                .attr('stroke', 'rgba(59, 130, 246, 0.12)')
                 .attr('stroke-width', 1);
         });
 
@@ -1437,8 +1507,8 @@ function InspirationalConstellation({ data }) {
                 .attr('cx', x)
                 .attr('cy', y)
                 .attr('r', nodeR + 5)
-                .attr('fill', '#0066FF')
-                .attr('opacity', 0.2)
+                .attr('fill', '#3B82F6')
+                .attr('opacity', 0.15)
                 .style('filter', 'url(#inspire-bloom)');
 
             // Main node
@@ -1446,8 +1516,8 @@ function InspirationalConstellation({ data }) {
                 .attr('cx', x)
                 .attr('cy', y)
                 .attr('r', nodeR)
-                .attr('fill', '#00D9FF')
-                .attr('fill-opacity', 0.8);
+                .attr('fill', '#60A5FA')
+                .attr('fill-opacity', 0.7);
 
             // Label (positioned outside)
             const labelRadius = spokeRadius + 25;
@@ -1460,7 +1530,8 @@ function InspirationalConstellation({ data }) {
                 .attr('text-anchor', 'middle')
                 .attr('font-size', '8px')
                 .attr('font-weight', '500')
-                .attr('fill', '#00D9FF')
+                .attr('fill', '#60A5FA')
+                .attr('opacity', 0.85)
                 .attr('letter-spacing', '0.5px')
                 .text(t.label.substring(0, 12));
         });
@@ -1512,10 +1583,10 @@ function SonicArchitectureTower({ data }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
             {layeringApproach && (
                 <div style={glassCardStyle}>
-                    <div style={glowBarStyle('#00D9FF')}></div>
+                    <div style={glowBarStyle('#60A5FA')}></div>
                     <p style={{
                         fontSize: '0.7rem',
-                        color: '#00D9FF',
+                        color: '#60A5FA',
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '2px',
@@ -1532,10 +1603,10 @@ function SonicArchitectureTower({ data }) {
             )}
             {tensionRelease && (
                 <div style={glassCardStyle}>
-                    <div style={glowBarStyle('#FF6B00')}></div>
+                    <div style={glowBarStyle('#F97316')}></div>
                     <p style={{
                         fontSize: '0.7rem',
-                        color: '#FF6B00',
+                        color: '#F97316',
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '2px',

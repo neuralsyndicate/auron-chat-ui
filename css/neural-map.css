@@ -5,6 +5,205 @@
    ======================================== */
 
 /* ═══════════════════════════════════════════════════════════════
+   V7 PROFILE VIEW - Bioluminescent Liquid Glass Design System
+═══════════════════════════════════════════════════════════════ */
+
+:root {
+    /* Profile Bioluminescent Color Palette */
+    --profile-primary-soft: #60A5FA;
+    --profile-primary: #3B82F6;
+    --profile-primary-deep: #2563EB;
+    --profile-warm: #F97316;
+    --profile-warm-red: #EF4444;
+
+    /* Profile Glow System - Soft, Diffuse, Organic */
+    --profile-glow-inner: 0 0 20px rgba(59, 130, 246, 0.15);
+    --profile-glow-mid: 0 0 50px rgba(59, 130, 246, 0.08);
+    --profile-glow-outer: 0 0 100px rgba(59, 130, 246, 0.04);
+    --profile-glow-warm: 0 0 30px rgba(249, 115, 22, 0.15);
+
+    /* Glass Surface */
+    --profile-glass-bg: rgba(15, 23, 42, 0.25);
+    --profile-glass-border: rgba(59, 130, 246, 0.08);
+    --profile-glass-border-hover: rgba(59, 130, 246, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIQUID GLASS CARD SYSTEM
+═══════════════════════════════════════════════════════════════ */
+
+.profile-liquid-glass {
+    position: relative;
+    background: var(--profile-glass-bg);
+    border: 1px solid var(--profile-glass-border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.profile-liquid-glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(20px) saturate(1.15);
+    -webkit-backdrop-filter: blur(20px) saturate(1.15);
+    border-radius: inherit;
+    z-index: -2;
+}
+
+.profile-liquid-glass::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        160deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        transparent 35%,
+        transparent 100%
+    );
+    border-radius: inherit;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.profile-liquid-glass:hover {
+    border-color: var(--profile-glass-border-hover);
+    box-shadow: var(--profile-glow-mid);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROFILE GRID LAYOUT
+═══════════════════════════════════════════════════════════════ */
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    padding: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.profile-header {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.profile-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--profile-primary-soft);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    text-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+}
+
+.profile-header p {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 300;
+    letter-spacing: 0.05em;
+}
+
+.profile-sonic-core {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.profile-spectrum {
+    grid-column: 1 / -1;
+}
+
+.profile-row {
+    display: contents;
+}
+
+.profile-architecture {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+/* Section Card */
+.profile-section {
+    padding: 24px;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-section-label {
+    font-size: 0.65rem;
+    color: rgba(96, 165, 250, 0.6);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+}
+
+.profile-section-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BREATHING ANIMATION - Organic Pulse
+═══════════════════════════════════════════════════════════════ */
+
+@keyframes profile-breathe {
+    0%, 100% {
+        filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.08));
+    }
+    50% {
+        filter: drop-shadow(0 0 50px rgba(59, 130, 246, 0.12));
+    }
+}
+
+.profile-viz {
+    animation: profile-breathe 8s ease-in-out infinite;
+}
+
+@keyframes profile-glow-pulse {
+    0%, 100% {
+        box-shadow: var(--profile-glow-inner);
+    }
+    50% {
+        box-shadow: var(--profile-glow-mid);
+    }
+}
+
+.profile-liquid-glass.breathing {
+    animation: profile-glow-pulse 6s ease-in-out infinite;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .profile-sonic-core,
+    .profile-architecture {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-section {
+        min-height: 240px;
+        padding: 20px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    ROOT LAYOUT - Flexbox Split
 ═══════════════════════════════════════════════════════════════ */
 
