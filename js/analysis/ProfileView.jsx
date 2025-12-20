@@ -161,10 +161,12 @@ function ProfileView({ user, isLocked, conversationCount }) {
                     neural_spectrum: [],
                     sound_palette: [],
                     tonal_dna: [],
+                    timbre_dna: [],
                     rhythmic_dna: [],
                     emotional_fingerprint: [],
-                    processing_signature: [],
+                    production_signature: [],
                     inspirational_triggers: [],
+                    creative_behaviour: [],
                     sonic_architecture: []
                 },
                 conversation_count: 0
@@ -207,7 +209,7 @@ function ProfileView({ user, isLocked, conversationCount }) {
     // emotional_fingerprint.nodes is the array
     const emotionalFingerprint = (dims.emotional_fingerprint?.nodes) || [];
 
-    const processingSignature = dims.processing_signature || [];
+    const productionSignature = dims.production_signature || [];
 
     // inspirational_triggers.sources is the array
     const inspirationalTriggers = (dims.inspirational_triggers?.sources) || [];
@@ -322,13 +324,13 @@ function ProfileView({ user, isLocked, conversationCount }) {
                         <SoundPaletteOrbital data={soundPalette} />
                     </ProfileSection>
 
-                    {/* EMOTIONAL FINGERPRINT + PROCESSING SIGNATURE */}
+                    {/* EMOTIONAL FINGERPRINT + PRODUCTION SIGNATURE */}
                     <ProfileSection componentKey="emotional_fingerprint" label="Emotional & Psychological" profile={profile}>
                         <EmotionalBubbleNetwork data={emotionalFingerprint} />
                     </ProfileSection>
 
-                    <ProfileSection componentKey="processing_signature" label="Mixing & Processing" profile={profile}>
-                        <DataList data={processingSignature} />
+                    <ProfileSection componentKey="production_signature" label="Production Signature" profile={profile}>
+                        <DataList data={productionSignature} />
                     </ProfileSection>
 
                     {/* INSPIRATIONAL TRIGGERS + CREATIVE BEHAVIOUR */}
