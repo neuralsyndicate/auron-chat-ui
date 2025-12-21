@@ -246,6 +246,51 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    // Save conversation after updates (same as ChatView)
+    const saveConversation = async (allMessages) => {
+        try {
+            const convEntry = conversationIndex.getConversation(conversationId);
+            if (!convEntry || !convEntry.bunny_key) return;
+
+            const token = await getAuthToken();
+
+            // Prepare conversation data (same structure as ChatView)
+            const conversationData = {
+                id: conversationId,
+                title: convEntry.title || 'Conversation',
+                messages: allMessages.map(m => ({
+                    role: m.role,
+                    content: m.role === 'auron' ? (m.dialogue?.guidance || m.content || '') : (m.content || ''),
+                    timestamp: m.timestamp || new Date().toISOString(),
+                    ...(m.dialogue && { dialogue: m.dialogue, isDialogue: true })
+                })),
+                created_at: convEntry.created_at || new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            // Encrypt and upload
+            const encryptedData = await encryptData(conversationData, conversationIndex.encryptionKey);
+            await fetch(`${BFF_API_BASE}/cdn-proxy`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/octet-stream',
+                    'X-CDN-Path': convEntry.bunny_key
+                },
+                body: encryptedData
+            });
+
+            // Update index
+            await conversationIndex.updateConversation(conversationId, {
+                message_count: allMessages.length
+            });
+
+            console.log(`Conversation saved: ${conversationId}`);
+        } catch (err) {
+            console.error('Failed to save conversation:', err);
+        }
+    };
+
     const loadConversation = async () => {
         try {
             setLoading(true);
@@ -294,7 +339,7 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
         }));
 
         // Add user message immediately for UI
-        setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+        setMessages(prev => [...prev, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }]);
 
         try {
             const token = await getAuthToken();
@@ -323,9 +368,25 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
                 console.log(`✓ Session active: ${data.metadata.session_id}`);
             }
 
-            // Handle both structured dialogue response and simple message
-            const auronMessage = data.message?.guidance || data.response || data.message;
-            setMessages(prev => [...prev, { role: 'auron', content: auronMessage }]);
+            // Preserve full dialogue object (same as ChatView)
+            const dialogue = data.message || {};
+            const guidance = dialogue.guidance || data.response || '';
+
+            const newAuronMessage = {
+                role: 'auron',
+                content: guidance,
+                dialogue: dialogue,
+                isDialogue: !!dialogue.guidance,
+                timestamp: new Date().toISOString()
+            };
+
+            // Update messages and save
+            setMessages(prev => {
+                const updatedMessages = [...prev, newAuronMessage];
+                // Save conversation with all messages including the new one
+                saveConversation(updatedMessages);
+                return updatedMessages;
+            });
 
         } catch (err) {
             console.error('Failed to send message:', err);
