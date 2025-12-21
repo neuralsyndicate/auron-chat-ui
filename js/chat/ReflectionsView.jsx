@@ -232,6 +232,12 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
     const [chatLoading, setChatLoading] = useState(false);
     const messagesEndRef = useRef(null);
 
+    // Sidebar state (same as ChatView)
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarSources, setSidebarSources] = useState([]);
+    const [blueprintPanelOpen, setBlueprintPanelOpen] = useState(false);
+    const [blueprintPanelSources, setBlueprintPanelSources] = useState([]);
+
     useEffect(() => {
         loadConversation();
     }, [conversationId]);
@@ -378,20 +384,21 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
                     {!loading && !error && (
                         <div className="space-y-6">
                             {messages.map((msg, idx) => (
-                                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`rounded-2xl px-6 py-4 ${
-                                        msg.role === 'user'
-                                            ? 'max-w-[70%] bg-gradient-to-r from-primary/30 to-primary-dark/30 border border-primary/50'
-                                            : 'max-w-[75%] bg-gray-900 border border-gray-800'
-                                    }`}>
-                                        <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2 glow">
-                                            {msg.role === 'user' ? 'You' : 'Auron'}
-                                        </p>
-                                        <p className="text-white leading-relaxed" style={{ lineHeight: '1.7' }}>
-                                            {msg.content}
-                                        </p>
-                                    </div>
-                                </div>
+                                <DialogueMessage
+                                    key={idx}
+                                    message={msg}
+                                    onOpenDialogue={() => {}}
+                                    onOpenReferences={(sources) => {
+                                        setSidebarSources(sources);
+                                        setSidebarOpen(true);
+                                    }}
+                                    onOpenBlueprintPanel={(sources) => {
+                                        setBlueprintPanelSources(sources);
+                                        setBlueprintPanelOpen(true);
+                                    }}
+                                    onCloseBlueprintPanel={() => setBlueprintPanelOpen(false)}
+                                    sendMessage={handleSendMessage}
+                                />
                             ))}
 
                             {chatLoading && (
@@ -445,6 +452,18 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
                     </div>
                 </div>
             </div>
+
+            {/* Sidebars (same as ChatView) */}
+            <ReferencesSidebar
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+                sources={sidebarSources}
+            />
+            <BlueprintFloatingPanel
+                isOpen={blueprintPanelOpen}
+                onClose={() => setBlueprintPanelOpen(false)}
+                sources={blueprintPanelSources}
+            />
         </div>
     );
 }
