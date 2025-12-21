@@ -303,7 +303,9 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     role: m.role,
                     // For Auron messages, save the actual guidance, not "View Insight →"
                     content: m.role === 'auron' ? (m.dialogue?.guidance || m.content || '') : (m.content || ''),
-                    timestamp: m.timestamp || new Date().toISOString()
+                    timestamp: m.timestamp || new Date().toISOString(),
+                    // Preserve full dialogue data for past conversation display
+                    ...(m.dialogue && { dialogue: m.dialogue, isDialogue: true })
                 })),
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
