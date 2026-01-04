@@ -3,7 +3,7 @@
 // Floating memory orbs representing past conversations
 // ============================================================
 
-console.log('=== CONSTELLATION v4 LOADED ===');
+console.log('=== CONSTELLATION v5 LOADED ===');
 
 const ConstellationWebGL = (function() {
     'use strict';
@@ -662,9 +662,13 @@ const ConstellationWebGL = (function() {
             const camY = Math.sin(this.cameraAngleY) * this.cameraDistance;
             const camZ = Math.cos(this.cameraAngleX) * Math.cos(this.cameraAngleY) * this.cameraDistance;
 
+            // MatrixMath expects {x,y,z} objects, not arrays!
             this.cameraPosition = [camX, camY, camZ];
+            const eye = { x: camX, y: camY, z: camZ };
+            const center = { x: 0, y: 0, z: 0 };
+            const up = { x: 0, y: 1, z: 0 };
 
-            mat4.lookAt(this.viewMatrix, this.cameraPosition, [0, 0, 0], [0, 1, 0]);
+            mat4.lookAt(this.viewMatrix, eye, center, up);
         }
 
         render() {
@@ -769,8 +773,9 @@ const ConstellationWebGL = (function() {
 
             // Now draw actual orbs
             for (const orb of this.orbs) {
-                mat4.identity(this.modelMatrix);
-                mat4.translate(this.modelMatrix, this.modelMatrix, orb.position);
+                // MatrixMath.mat4.translate takes (out, {x,y,z})
+                const pos = { x: orb.position[0], y: orb.position[1], z: orb.position[2] };
+                mat4.translate(this.modelMatrix, pos);
 
                 gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uModel'), false, this.modelMatrix);
                 gl.uniform1f(gl.getUniformLocation(program, 'uScale'), orb.radius);
