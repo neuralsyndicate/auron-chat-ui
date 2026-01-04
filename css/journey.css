@@ -1,7 +1,17 @@
 /* ============================================================
    JOURNEY VIEW STYLES
-   Unified Chat + Reflections with bubble-free design
+   Unified Chat + Reflections with Liquid Glass Design
    ============================================================ */
+
+/* ===== LIQUID GLASS VARIABLES ===== */
+:root {
+    --glass-blur: 100px;
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --user-glass-bg: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(59, 130, 246, 0.08) 100%);
+    --auron-glass-bg: linear-gradient(135deg, rgba(168, 127, 255, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
+}
 
 /* ===== MAIN CONTAINER ===== */
 .journey-container {
@@ -145,10 +155,15 @@
     background: linear-gradient(
         180deg,
         rgba(59, 130, 246, 0.1) 0%,
-        rgba(59, 130, 246, 0.3) 50%,
+        rgba(96, 165, 250, 0.4) 50%,
         rgba(59, 130, 246, 0.1) 100%
     );
-    transition: opacity 0.3s ease;
+    animation: timeline-glow 3s ease-in-out infinite;
+}
+
+@keyframes timeline-glow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; box-shadow: 0 0 10px rgba(96, 165, 250, 0.3); }
 }
 
 .chapter-node::before {
@@ -164,22 +179,19 @@
     transition: all 0.3s ease;
 }
 
-.chapter-node.expanded::before {
-    background: rgba(59, 130, 246, 0.8);
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-}
-
-/* Chapter Marker Button */
+/* Chapter Marker Button - Liquid Glass */
 .chapter-marker {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
     padding: 1.25rem 1.5rem;
-    background: rgba(15, 20, 30, 0.4);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(59, 130, 246, 0.08);
-    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+    backdrop-filter: blur(80px);
+    -webkit-backdrop-filter: blur(80px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.06);
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     width: 100%;
@@ -188,14 +200,14 @@
 }
 
 .chapter-marker:hover {
-    background: rgba(59, 130, 246, 0.06);
-    border-color: rgba(59, 130, 246, 0.15);
-    transform: translateX(8px);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-color: rgba(96, 165, 250, 0.2);
 }
 
-.chapter-node.expanded .chapter-marker {
-    border-color: rgba(59, 130, 246, 0.25);
-    box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+.chapter-marker:active {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.1);
 }
 
 .chapter-date {
@@ -216,51 +228,6 @@
 .chapter-meta {
     font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.4);
-}
-
-/* Chapter Content (Expanded) */
-.chapter-content {
-    margin-top: 1rem;
-    padding: 1.5rem;
-    background: rgba(10, 15, 25, 0.5);
-    border-radius: 12px;
-    border: 1px solid rgba(59, 130, 246, 0.06);
-    animation: expand-in 0.3s ease;
-}
-
-@keyframes expand-in {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.chapter-messages {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.chapter-continue {
-    width: 100%;
-    padding: 0.75rem 1.5rem;
-    background: transparent;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 8px;
-    color: rgba(96, 165, 250, 0.9);
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.chapter-continue:hover {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.3);
 }
 
 /* ===== PRESENT MARKER ===== */
@@ -301,43 +268,51 @@
     padding: 1rem 0;
 }
 
-/* ===== USER EXPRESSION (No Bubble!) ===== */
-.user-expression {
+/* ===== USER BUBBLE (Liquid Glass) ===== */
+.user-bubble {
     margin-left: auto;
     max-width: 75%;
-    padding: 1.25rem 1.5rem 1.25rem 0;
-    border-right: 2px solid rgba(96, 165, 250, 0.25);
-    text-align: right;
-    position: relative;
+    padding: 1.25rem 1.5rem;
+    background: var(--user-glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: 24px 24px 8px 24px;
+    box-shadow: var(--glass-shadow), var(--glass-highlight);
+    transition: all 0.3s ease;
 }
 
-.user-expression p {
+.user-bubble:hover {
+    transform: scale(1.01);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.user-bubble p {
     font-size: 1rem;
-    font-style: italic;
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.95);
     line-height: 1.7;
     margin: 0;
 }
 
-.user-expression::after {
-    content: '';
-    position: absolute;
-    right: -5px;
-    bottom: 0;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: rgba(96, 165, 250, 0.3);
-    box-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
-}
-
-/* ===== AURON RESPONSE (Flowing, No Bubble) ===== */
-.auron-response {
+/* ===== AURON BUBBLE (Liquid Glass) ===== */
+.auron-bubble {
+    max-width: 85%;
+    padding: 1.5rem;
+    background: var(--auron-glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px 24px 24px 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
     position: relative;
-    padding-right: 2rem;
+    transition: all 0.3s ease;
 }
 
-.auron-response.streaming .guidance-flow {
+.auron-bubble:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.auron-bubble.streaming .guidance-flow {
     color: rgba(255, 255, 255, 0.7);
 }
 
@@ -386,13 +361,16 @@
     margin: 0;
 }
 
-/* ===== EVIDENCE PANEL ===== */
+/* ===== EVIDENCE PANEL (Liquid Glass) ===== */
 .evidence-panel {
     margin: 1.5rem 0;
     padding: 1.5rem;
-    background: rgba(0, 217, 255, 0.03);
-    border-left: 2px solid rgba(0, 217, 255, 0.2);
-    border-radius: 0 8px 8px 0;
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.06) 0%, rgba(0, 180, 220, 0.02) 100%);
+    backdrop-filter: blur(60px);
+    -webkit-backdrop-filter: blur(60px);
+    border: 1px solid rgba(0, 217, 255, 0.15);
+    border-radius: 16px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .evidence-header {
@@ -418,18 +396,21 @@
     color: rgba(255, 255, 255, 0.8);
 }
 
-/* ===== REFLECTION INVITATION ===== */
+/* ===== REFLECTION INVITATION (Liquid Glass) ===== */
 .reflection-invitation {
     margin-top: 2rem;
     padding: 2rem;
     text-align: center;
     background: linear-gradient(
         135deg,
-        rgba(59, 130, 246, 0.04) 0%,
+        rgba(59, 130, 246, 0.08) 0%,
         rgba(96, 165, 250, 0.04) 100%
     );
-    border-radius: 16px;
-    border: 1px solid rgba(59, 130, 246, 0.1);
+    backdrop-filter: blur(80px);
+    -webkit-backdrop-filter: blur(80px);
+    border-radius: 24px;
+    border: 1px solid rgba(96, 165, 250, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
     animation: subtle-pulse 6s ease-in-out infinite;
 }
 
@@ -633,12 +614,17 @@
         padding-bottom: 7rem;
     }
 
-    .user-expression {
+    .user-bubble {
         max-width: 90%;
+    }
+
+    .auron-bubble {
+        max-width: 95%;
     }
 
     .chapter-marker {
         padding: 1rem 1.25rem;
+        border-radius: 16px;
     }
 
     .expression-input-container {
@@ -648,5 +634,10 @@
     .expression-textarea {
         padding: 0.875rem 4.5rem 0.875rem 1rem;
         font-size: 16px; /* Prevent zoom on iOS */
+    }
+
+    .reflection-invitation {
+        padding: 1.5rem;
+        border-radius: 20px;
     }
 }

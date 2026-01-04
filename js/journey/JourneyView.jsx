@@ -2,7 +2,7 @@
 // JOURNEY VIEW - Unified Chat + Reflections Timeline
 // ============================================================
 // Combines Dialogue and Reflections into a single continuous journey
-// with bubble-free message rendering and vertical chapter timeline
+// with Liquid Glass bubble design and vertical chapter timeline
 
 /* React Hooks (UMD) */
 const {
@@ -66,11 +66,13 @@ function JourneyView({ user, onUpdateProgress, loadedSessionId, sessionId, setSe
     // JOURNEY/TIMELINE STATE (new)
     // ============================================================
     const [chapters, setChapters] = useState([]);
-    const [expandedChapterId, setExpandedChapterId] = useState(null);
-    const [expandedChapterMessages, setExpandedChapterMessages] = useState([]);
     const [journeyDepth, setJourneyDepth] = useState(0);
     const [chaptersLoading, setChaptersLoading] = useState(true);
     const journeyContainerRef = useRef(null);
+
+    // Chapter modal state (new window behavior)
+    const [chapterModalOpen, setChapterModalOpen] = useState(false);
+    const [selectedChapterId, setSelectedChapterId] = useState(null);
 
     // Sidebar state (for sources/references)
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -190,50 +192,16 @@ function JourneyView({ user, onUpdateProgress, loadedSessionId, sessionId, setSe
         }
     };
 
-    // Load expanded chapter content
-    const loadChapterContent = async (chapterId) => {
-        try {
-            const convEntry = conversationIndex.getConversation(chapterId);
-            if (!convEntry || !convEntry.bunny_key) {
-                throw new Error('Chapter not found in index');
-            }
-
-            const token = await getAuthToken();
-            const response = await fetch(`${BFF_API_BASE}/cdn-proxy?path=${encodeURIComponent(convEntry.bunny_key)}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!response.ok) throw new Error(`Failed to fetch chapter: ${response.status}`);
-
-            const encryptedData = await response.arrayBuffer();
-            const conversationData = await decryptData(encryptedData, conversationIndex.encryptionKey);
-
-            return conversationData.messages || [];
-        } catch (err) {
-            console.error('Journey: Failed to load chapter content:', err);
-            return [];
-        }
+    // Open chapter in modal (new window behavior)
+    const openChapterModal = (chapterId) => {
+        setSelectedChapterId(chapterId);
+        setChapterModalOpen(true);
     };
 
-    // Toggle chapter expansion
-    const toggleChapter = async (chapterId) => {
-        if (expandedChapterId === chapterId) {
-            // Collapse
-            setExpandedChapterId(null);
-            setExpandedChapterMessages([]);
-        } else {
-            // Expand
-            setExpandedChapterId(chapterId);
-            const chapterMessages = await loadChapterContent(chapterId);
-            setExpandedChapterMessages(chapterMessages);
-        }
-    };
-
-    // Continue from a chapter (load it as current conversation)
-    const continueFromChapter = (chapterId) => {
-        loadPastConversation(chapterId);
-        setExpandedChapterId(null);
-        setExpandedChapterMessages([]);
+    // Close chapter modal
+    const closeChapterModal = () => {
+        setChapterModalOpen(false);
+        setSelectedChapterId(null);
     };
 
     // ============================================================
@@ -543,14 +511,7 @@ function JourneyView({ user, onUpdateProgress, loadedSessionId, sessionId, setSe
                 <ChapterTimeline
                     chapters={chapters}
                     loading={chaptersLoading}
-                    expandedId={expandedChapterId}
-                    expandedMessages={expandedChapterMessages}
-                    onToggle={toggleChapter}
-                    onContinue={continueFromChapter}
-                    onOpenReferences={(sources) => {
-                        setSidebarSources(sources);
-                        setSidebarOpen(true);
-                    }}
+                    onOpen={openChapterModal}
                 />
 
                 {/* Present Marker */}
@@ -601,6 +562,15 @@ function JourneyView({ user, onUpdateProgress, loadedSessionId, sessionId, setSe
                 onClose={() => setBlueprintPanelOpen(false)}
                 sources={blueprintPanelSources}
             />
+
+            {/* Chapter Modal (new window) */}
+            {chapterModalOpen && selectedChapterId && (
+                <ReflectionViewer
+                    conversationId={selectedChapterId}
+                    onClose={closeChapterModal}
+                    setSessionId={setSessionId}
+                />
+            )}
         </div>
     );
 }
@@ -637,7 +607,7 @@ function JourneyCanvas({ depth, chapterCount }) {
 // CHAPTER TIMELINE - Past Conversations
 // ============================================================
 
-function ChapterTimeline({ chapters, loading, expandedId, expandedMessages, onToggle, onContinue, onOpenReferences }) {
+function ChapterTimeline({ chapters, loading, onOpen }) {
     if (loading) {
         return (
             <div className="chapter-timeline-loading">
@@ -670,7 +640,7 @@ function ChapterTimeline({ chapters, loading, expandedId, expandedMessages, onTo
             {chapters.map((chapter, index) => (
                 <div
                     key={chapter.id}
-                    className={`chapter-node ${expandedId === chapter.id ? 'expanded' : ''}`}
+                    className="chapter-node"
                 >
                     {/* Timeline connector */}
                     <div
@@ -678,10 +648,10 @@ function ChapterTimeline({ chapters, loading, expandedId, expandedMessages, onTo
                         style={{ opacity: 0.2 + ((index / chapters.length) * 0.6) }}
                     />
 
-                    {/* Chapter marker */}
+                    {/* Chapter marker - opens in new window/modal */}
                     <button
                         className="chapter-marker"
-                        onClick={() => onToggle(chapter.id)}
+                        onClick={() => onOpen(chapter.id)}
                     >
                         <span className="chapter-date">
                             {formatDate(chapter.created_at || chapter.timestamp)}
@@ -693,32 +663,6 @@ function ChapterTimeline({ chapters, loading, expandedId, expandedMessages, onTo
                             {chapter.message_count || 0} exchanges
                         </span>
                     </button>
-
-                    {/* Expanded chapter content */}
-                    {expandedId === chapter.id && (
-                        <div className="chapter-content">
-                            <div className="chapter-messages">
-                                {expandedMessages.map((msg, idx) => (
-                                    msg.role === 'user' ? (
-                                        <UserExpression key={idx} content={msg.content} />
-                                    ) : (
-                                        <AuronResponse
-                                            key={idx}
-                                            message={msg}
-                                            isLatest={false}
-                                            onOpenReferences={onOpenReferences}
-                                        />
-                                    )
-                                ))}
-                            </div>
-                            <button
-                                className="chapter-continue"
-                                onClick={() => onContinue(chapter.id)}
-                            >
-                                Continue this exploration
-                            </button>
-                        </div>
-                    )}
                 </div>
             ))}
         </div>
@@ -726,7 +670,7 @@ function ChapterTimeline({ chapters, loading, expandedId, expandedMessages, onTo
 }
 
 // ============================================================
-// CURRENT EXPLORATION - Live Conversation (Bubble-Free)
+// CURRENT EXPLORATION - Live Conversation (Liquid Glass)
 // ============================================================
 
 function CurrentExploration({ messages, loading, isStreaming, onSend, onOpenReferences, onOpenBlueprintPanel }) {
@@ -734,9 +678,9 @@ function CurrentExploration({ messages, loading, isStreaming, onSend, onOpenRefe
         <div className="current-exploration">
             {messages.map((msg, idx) => (
                 msg.role === 'user' ? (
-                    <UserExpression key={idx} content={msg.content} />
+                    <UserBubble key={idx} content={msg.content} />
                 ) : (
-                    <AuronResponse
+                    <AuronBubble
                         key={idx}
                         message={msg}
                         isLatest={idx === messages.length - 1 && !loading}
@@ -762,22 +706,22 @@ function CurrentExploration({ messages, loading, isStreaming, onSend, onOpenRefe
 }
 
 // ============================================================
-// USER EXPRESSION - No Bubble, Right-Aligned
+// USER BUBBLE - Liquid Glass Design
 // ============================================================
 
-function UserExpression({ content }) {
+function UserBubble({ content }) {
     return (
-        <div className="user-expression">
+        <div className="user-bubble">
             <p>{content}</p>
         </div>
     );
 }
 
 // ============================================================
-// AURON RESPONSE - Flowing Text, No Bubble
+// AURON BUBBLE - Liquid Glass Design
 // ============================================================
 
-function AuronResponse({ message, isLatest, onRespond, onOpenReferences, onOpenBlueprintPanel }) {
+function AuronBubble({ message, isLatest, onRespond, onOpenReferences, onOpenBlueprintPanel }) {
     const dialogue = message.dialogue || {};
     const guidance = dialogue.guidance || message.content || '';
     const reflectiveQuestion = dialogue.reflective_question;
@@ -789,7 +733,7 @@ function AuronResponse({ message, isLatest, onRespond, onOpenReferences, onOpenB
     // Check if this is a streaming message
     if (message.isStreaming) {
         return (
-            <div className="auron-response streaming">
+            <div className="auron-bubble streaming">
                 <div className="guidance-flow">
                     {message.guidance || ''}
                     <span className="streaming-cursor">|</span>
@@ -799,7 +743,7 @@ function AuronResponse({ message, isLatest, onRespond, onOpenReferences, onOpenB
     }
 
     return (
-        <div className="auron-response">
+        <div className="auron-bubble">
             {/* Blueprint corner ribbon */}
             {blueprintSources && blueprintSources.length > 0 && (
                 <button
