@@ -1,0 +1,203 @@
+/* ============================================================
+   MEMORY CONSTELLATION STYLES
+   3D WebGL orb visualization for past conversations
+   ============================================================ */
+
+/* ===== CONTAINER ===== */
+.constellation-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, rgba(15, 20, 35, 1) 0%, rgba(0, 0, 0, 1) 100%);
+    overflow: hidden;
+}
+
+/* ===== CANVAS ===== */
+.constellation-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+}
+
+.constellation-canvas:active {
+    cursor: grabbing;
+}
+
+/* ===== HEADER OVERLAY ===== */
+.constellation-header {
+    position: absolute;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.constellation-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 0 30px rgba(96, 165, 250, 0.5);
+}
+
+.constellation-header p {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+}
+
+/* ===== TOOLTIP ===== */
+.constellation-tooltip {
+    position: absolute;
+    bottom: 6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(168, 127, 255, 0.1) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    z-index: 20;
+    animation: tooltip-fade-in 0.2s ease;
+}
+
+@keyframes tooltip-fade-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.tooltip-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.tooltip-meta {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ===== INSTRUCTIONS ===== */
+.constellation-instructions {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 2rem;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.constellation-instructions span {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.05em;
+}
+
+/* ===== LOADING STATE ===== */
+.constellation-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.constellation-loading p {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.constellation-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid rgba(96, 165, 250, 0.2);
+    border-top-color: rgba(96, 165, 250, 0.8);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===== EMPTY STATE ===== */
+.constellation-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+.constellation-empty-icon {
+    margin-bottom: 1rem;
+    animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.constellation-empty h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+}
+
+.constellation-empty p {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.5);
+    max-width: 400px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.constellation-hint {
+    font-size: 0.85rem !important;
+    color: rgba(96, 165, 250, 0.6) !important;
+    margin-top: 1rem !important;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .constellation-header h1 {
+        font-size: 1.25rem;
+    }
+
+    .constellation-instructions {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .constellation-tooltip {
+        padding: 0.75rem 1.5rem;
+        bottom: 8rem;
+    }
+}

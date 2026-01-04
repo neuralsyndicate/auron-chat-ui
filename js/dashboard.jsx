@@ -313,12 +313,9 @@ function Dashboard() {
                         onConversationUpdate={updateConversationInSidebar}
                     />
                 ) : currentView === 'reflections' ? (
-                    <ReflectionsView
+                    <MemoryConstellation
                         user={user}
-                        setCurrentView={setCurrentView}
                         setLoadedSessionId={setLoadedSessionId}
-                        conversations={conversations}
-                        setConversations={setConversations}
                     />
                 ) : currentView === 'memory' ? (
                     <MemoryView user={user} />
