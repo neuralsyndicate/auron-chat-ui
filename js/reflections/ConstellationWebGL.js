@@ -612,8 +612,24 @@ const ConstellationWebGL = (function() {
         resize() {
             const canvas = this.canvas;
             const dpr = window.devicePixelRatio || 1;
-            const width = canvas.clientWidth * dpr;
-            const height = canvas.clientHeight * dpr;
+            const rect = canvas.getBoundingClientRect();
+            const width = rect.width * dpr;
+            const height = rect.height * dpr;
+
+            console.log('Constellation resize:', {
+                clientWidth: canvas.clientWidth,
+                clientHeight: canvas.clientHeight,
+                rectWidth: rect.width,
+                rectHeight: rect.height,
+                width,
+                height,
+                orbCount: this.orbs.length
+            });
+
+            if (width === 0 || height === 0) {
+                console.warn('Constellation: Canvas has zero dimensions!');
+                return;
+            }
 
             if (canvas.width !== width || canvas.height !== height) {
                 canvas.width = width;
