@@ -16,7 +16,7 @@ const {
 
 function Dashboard() {
     const [user, setUser] = useState(null);
-    const [currentView, setCurrentView] = useState('chat');
+    const [currentView, setCurrentView] = useState('journey');
     const [conversationCount, setConversationCount] = useState(0);
     const [profileUnlocked, setProfileUnlocked] = useState(false);
     const [loadedSessionId, setLoadedSessionId] = useState(null);
@@ -224,22 +224,12 @@ function Dashboard() {
                     <nav className="flex items-center gap-8">
                         <button
                             className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                                currentView === 'chat'
+                                currentView === 'journey'
                                     ? 'bg-white/5 text-white'
                                     : 'text-gray-400 hover:text-white'
                             }`}
-                            onClick={() => setCurrentView('chat')}>
-                            Dialogue
-                        </button>
-
-                        <button
-                            className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                                currentView === 'reflections'
-                                    ? 'bg-white/5 text-white'
-                                    : 'text-gray-400 hover:text-white'
-                            }`}
-                            onClick={() => setCurrentView('reflections')}>
-                            Reflections
+                            onClick={() => setCurrentView('journey')}>
+                            Journey
                         </button>
 
                         <button
@@ -302,8 +292,8 @@ function Dashboard() {
 
             {/* Main Content - Generous whitespace, centered */}
             <main className="flex-1 pt-24 overflow-hidden">
-                {currentView === 'chat' ? (
-                    <ChatView
+                {currentView === 'journey' ? (
+                    <JourneyView
                         user={user}
                         onUpdateProgress={updateProgress}
                         loadedSessionId={loadedSessionId}
@@ -312,29 +302,12 @@ function Dashboard() {
                         setSyncing={setSyncing}
                         onConversationUpdate={updateConversationInSidebar}
                     />
-                ) : currentView === 'reflections' ? (
-                    <ReflectionsView
-                        user={user}
-                        setCurrentView={setCurrentView}
-                        setLoadedSessionId={setLoadedSessionId}
-                        conversations={conversations}
-                        setConversations={setConversations}
-                    />
                 ) : currentView === 'memory' ? (
                     <MemoryView user={user} />
                 ) : (
                     <ProfileView user={user} isLocked={!profileUnlocked} conversationCount={conversationCount} />
                 )}
             </main>
-
-            {/* Reflection Viewer Modal (Full Screen) */}
-            {loadedSessionId && (
-                <ReflectionViewer
-                    conversationId={loadedSessionId}
-                    onClose={() => setLoadedSessionId(null)}
-                    setSessionId={setSessionId}
-                />
-            )}
 
             {/* Memory Modal (from avatar dropdown) */}
             {showMemoryModal && (
