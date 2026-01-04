@@ -3,7 +3,7 @@
 // Floating memory orbs representing past conversations
 // ============================================================
 
-// Memory Constellation v6
+// Memory Constellation v7 - Holographic Memory Bubbles
 
 const ConstellationWebGL = (function() {
     'use strict';
@@ -22,10 +22,7 @@ const ConstellationWebGL = (function() {
         // Layout
         spreadRadius: 2.5,
 
-        // Shimmer intensity (0.0 - 1.0)
-        shimmerIntensity: 0.35,
-
-        // Professional Liquid Glass Colors (RGBA)
+        // Holographic Memory Orb Colors (RGBA)
         colors: {
             recent: [0.25, 0.55, 0.95, 0.65],     // Sapphire blue (< 7 days)
             moderate: [0.55, 0.35, 0.92, 0.6],    // Amethyst purple (7-30 days)
@@ -54,8 +51,8 @@ const ConstellationWebGL = (function() {
 
     const SHADERS = {
         // ═══════════════════════════════════════════════════════════════
-        // LIQUID GLASS ORB SHADER
-        // Features: Fresnel, chromatic aberration, iridescence, shimmer
+        // HOLOGRAPHIC MEMORY ORB SHADER
+        // Features: Dark interior, energy rim glow, scan lines, clean Fresnel
         // ═══════════════════════════════════════════════════════════════
         orb: {
             vertex: `
@@ -70,20 +67,17 @@ const ConstellationWebGL = (function() {
 
                 varying vec3 vNormal;
                 varying vec3 vPosition;
-                varying vec3 vLocalPos;
+                varying vec3 vWorldPos;
 
                 void main() {
-                    // Subtle surface ripple for liquid feel
-                    vec3 pos = aPosition;
-                    float ripple = sin(aPosition.x * 8.0 + uTime * 2.0) *
-                                   cos(aPosition.y * 8.0 + uTime * 1.5) *
-                                   sin(aPosition.z * 8.0 + uTime * 1.8) * 0.015;
-                    pos += aNormal * ripple;
+                    // Subtle breathing animation
+                    float breathe = 1.0 + sin(uTime * 0.8) * 0.008;
+                    vec3 pos = aPosition * breathe;
 
                     vec4 worldPos = uModel * vec4(pos * uScale, 1.0);
-                    vPosition = worldPos.xyz;
+                    vPosition = pos;
+                    vWorldPos = worldPos.xyz;
                     vNormal = normalize(mat3(uModel) * aNormal);
-                    vLocalPos = aPosition;
 
                     gl_Position = uProjection * uView * worldPos;
                 }
@@ -95,106 +89,59 @@ const ConstellationWebGL = (function() {
                 uniform vec3 uCameraPos;
                 uniform float uTime;
                 uniform float uHover;
-                uniform float uShimmer;
 
                 varying vec3 vNormal;
                 varying vec3 vPosition;
-                varying vec3 vLocalPos;
-
-                // Light direction (top-right-front)
-                const vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
-
-                // Noise functions for shimmer
-                float hash(vec3 p) {
-                    p = fract(p * 0.3183099 + 0.1);
-                    p *= 17.0;
-                    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
-                }
-
-                float noise(vec3 p) {
-                    vec3 i = floor(p);
-                    vec3 f = fract(p);
-                    f = f * f * (3.0 - 2.0 * f);
-
-                    return mix(
-                        mix(mix(hash(i + vec3(0,0,0)), hash(i + vec3(1,0,0)), f.x),
-                            mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
-                        mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x),
-                            mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y),
-                        f.z
-                    );
-                }
+                varying vec3 vWorldPos;
 
                 void main() {
                     vec3 normal = normalize(vNormal);
-                    vec3 viewDir = normalize(uCameraPos - vPosition);
+                    vec3 viewDir = normalize(uCameraPos - vWorldPos);
                     float NdotV = max(dot(normal, viewDir), 0.0);
 
-                    // === SCHLICK FRESNEL ===
-                    float F0 = 0.04; // Glass base reflectance
-                    float fresnel = F0 + (1.0 - F0) * pow(1.0 - NdotV, 5.0);
+                    // === FRESNEL (clean, no iridescence) ===
+                    float fresnel = pow(1.0 - NdotV, 3.0);
 
-                    // Enhanced edge glow
-                    float edgeGlow = pow(1.0 - NdotV, 3.0);
+                    // === ENERGY FIELD GLOW ===
+                    float energyPulse = sin(uTime * 1.2) * 0.5 + 0.5;
+                    vec3 energyColor1 = vec3(0.2, 0.6, 1.0);  // Cyan
+                    vec3 energyColor2 = vec3(0.5, 0.3, 0.9);  // Purple
+                    vec3 energyColor = mix(energyColor1, energyColor2, energyPulse);
 
-                    // === CHROMATIC ABERRATION ===
-                    float chromaticOffset = edgeGlow * 0.12;
-                    vec3 chromatic = vec3(chromaticOffset, 0.0, -chromaticOffset);
+                    // === HOLOGRAPHIC SCAN LINES ===
+                    float scanY = vWorldPos.y * 40.0 + uTime * 3.0;
+                    float scanline = smoothstep(0.4, 0.5, fract(scanY)) * 0.08;
 
-                    // === IRIDESCENCE ===
-                    float iridPhase = fresnel * 2.5 + uTime * 0.15;
-                    vec3 iridescence = 0.5 + 0.5 * cos(6.28318 * (iridPhase + vec3(0.0, 0.33, 0.67)));
-                    iridescence = mix(vec3(1.0), iridescence, edgeGlow * 0.35);
+                    // === CHROMATIC DISPERSION (subtle at edges) ===
+                    float dispersion = fresnel * 0.06;
+                    vec3 chromatic = vec3(dispersion, 0.0, -dispersion);
 
-                    // === SPECULAR HIGHLIGHTS ===
+                    // === SPECULAR HIGHLIGHT ===
+                    vec3 lightDir = normalize(vec3(0.5, 1.0, 0.8));
                     vec3 halfVec = normalize(lightDir + viewDir);
-                    float NdotH = max(dot(normal, halfVec), 0.0);
-                    float specularSharp = pow(NdotH, 128.0);
-                    float specularSoft = pow(NdotH, 32.0) * 0.25;
+                    float spec = pow(max(dot(normal, halfVec), 0.0), 64.0);
 
-                    // === SHIMMER ===
-                    float shimmerNoise = noise(vPosition * 12.0 + uTime * 0.4);
-                    float shimmer = shimmerNoise * uShimmer * (0.4 + fresnel * 0.6);
+                    // === DARK INTERIOR with rim glow ===
+                    vec3 coreColor = vec3(0.02, 0.04, 0.08); // Very dark blue-black
+                    vec3 rimGlow = energyColor * fresnel * 0.7;
 
-                    // Traveling shimmer wave
-                    float shimmerWave = sin(vLocalPos.y * 8.0 + vLocalPos.x * 4.0 + uTime * 2.5) * 0.5 + 0.5;
-                    shimmer += shimmerWave * uShimmer * 0.15 * edgeGlow;
+                    // === COMBINE ===
+                    vec3 color = coreColor;
+                    color += rimGlow;
+                    color += chromatic;
+                    color += energyColor * scanline;
+                    color += vec3(0.9, 0.95, 1.0) * spec * 0.5;
 
-                    // === INNER GLOW ===
-                    float innerGlow = pow(NdotV * 0.5 + 0.5, 0.6);
+                    // === HOVER ENHANCEMENT ===
+                    color += energyColor * fresnel * uHover * 0.4;
+                    color += vec3(0.1, 0.2, 0.3) * uHover * 0.2;
 
-                    // === COMBINE EFFECTS ===
-                    vec3 baseColor = uColor.rgb * innerGlow;
+                    // === ALPHA (transparent center, solid edge) ===
+                    float alpha = 0.15 + fresnel * 0.6;
+                    alpha += spec * 0.1;
+                    alpha = mix(alpha, min(alpha + 0.2, 0.9), uHover);
 
-                    // Add chromatic aberration
-                    baseColor += chromatic * 0.2;
-
-                    // Apply iridescence
-                    baseColor *= iridescence;
-
-                    // Rim color (cyan-white)
-                    vec3 rimColor = vec3(0.6, 0.88, 1.0);
-                    baseColor += rimColor * edgeGlow * 0.55;
-
-                    // Add shimmer
-                    baseColor += shimmer * 0.25;
-
-                    // Add specular
-                    baseColor += vec3(1.0) * specularSharp * 1.0;
-                    baseColor += rimColor * specularSoft;
-
-                    // === HOVER EFFECT ===
-                    float hoverBoost = 1.0 + uHover * 0.25;
-                    baseColor *= hoverBoost;
-                    baseColor += rimColor * edgeGlow * uHover * 0.35;
-
-                    // === ALPHA ===
-                    float alpha = uColor.a * (0.35 + fresnel * 0.45 + innerGlow * 0.25);
-                    alpha += specularSharp * 0.15;
-                    alpha = clamp(alpha, 0.0, 1.0);
-                    alpha = mix(alpha, min(alpha + 0.12, 1.0), uHover);
-
-                    gl_FragColor = vec4(baseColor, alpha);
+                    gl_FragColor = vec4(color, alpha);
                 }
             `
         },
@@ -399,95 +346,148 @@ const ConstellationWebGL = (function() {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // TEXT LABEL MANAGER
-    // Creates canvas-based text textures for orb labels
+    // MEMORY CONTENT RENDERER
+    // High-quality canvas-based content textures with DPI scaling
+    // Renders title + excerpt inside orbs
     // ═══════════════════════════════════════════════════════════════
 
-    class TextLabelManager {
+    class MemoryContentRenderer {
         constructor(gl) {
             this.gl = gl;
             this.cache = new Map();
+            this.dpr = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2x for performance
             this.canvas = document.createElement('canvas');
             this.ctx = this.canvas.getContext('2d');
         }
 
-        createLabel(text, id) {
+        createContent(conversation, id) {
             if (this.cache.has(id)) {
                 return this.cache.get(id);
             }
 
             const gl = this.gl;
             const ctx = this.ctx;
+            const dpr = this.dpr;
 
-            // Config
-            const fontSize = 13;
-            const fontFamily = '"Plus Jakarta Sans", -apple-system, sans-serif';
-            const padding = 10;
-            const maxWidth = 140;
+            // High-resolution canvas (256x256 base, scaled by DPI)
+            const baseSize = 256;
+            const size = baseSize * dpr;
+            this.canvas.width = size;
+            this.canvas.height = size;
 
-            // Measure text
-            ctx.font = `500 ${fontSize}px ${fontFamily}`;
-            let displayText = text || 'Untitled';
-            let metrics = ctx.measureText(displayText);
+            // Clear with transparent
+            ctx.clearRect(0, 0, size, size);
 
-            // Truncate if needed
-            if (metrics.width > maxWidth) {
-                while (ctx.measureText(displayText + '...').width > maxWidth && displayText.length > 1) {
-                    displayText = displayText.slice(0, -1);
-                }
-                displayText += '...';
-                metrics = ctx.measureText(displayText);
-            }
+            // Font settings
+            const fontFamily = '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif';
+            const titleSize = Math.round(16 * dpr);
+            const excerptSize = Math.round(11 * dpr);
+            const lineHeight = 1.4;
+            const padding = 20 * dpr;
+            const maxWidth = size - padding * 2;
 
-            // Canvas size (power of 2)
-            const textWidth = metrics.width;
-            const canvasW = Math.pow(2, Math.ceil(Math.log2(textWidth + padding * 2)));
-            const canvasH = Math.pow(2, Math.ceil(Math.log2(fontSize + padding * 2)));
+            // Get title and excerpt
+            const title = conversation.title || 'Memory';
+            const excerpt = this.getExcerpt(conversation);
 
-            this.canvas.width = canvasW;
-            this.canvas.height = canvasH;
-
-            // Clear
-            ctx.clearRect(0, 0, canvasW, canvasH);
-
-            // Background pill
-            const bgPadding = 4;
-            const bgWidth = textWidth + padding * 2 - bgPadding * 2;
-            const bgHeight = fontSize + padding - bgPadding * 2;
-            const bgX = (canvasW - bgWidth) / 2;
-            const bgY = (canvasH - bgHeight) / 2;
-            const radius = bgHeight / 2;
-
-            ctx.fillStyle = 'rgba(0, 15, 35, 0.75)';
-            ctx.beginPath();
-            ctx.roundRect(bgX, bgY, bgWidth, bgHeight, radius);
-            ctx.fill();
-
-            // Text
-            ctx.font = `500 ${fontSize}px ${fontFamily}`;
+            // === DRAW TITLE ===
+            ctx.font = `600 ${titleSize}px ${fontFamily}`;
             ctx.fillStyle = '#FFFFFF';
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(displayText, canvasW / 2, canvasH / 2);
+            ctx.textBaseline = 'top';
 
-            // Create texture
+            const titleY = size * 0.28;
+            const titleLines = this.wrapText(ctx, title, maxWidth, 2);
+            let currentY = titleY;
+
+            for (const line of titleLines) {
+                ctx.fillText(line, size / 2, currentY);
+                currentY += titleSize * lineHeight;
+            }
+
+            // === DRAW EXCERPT ===
+            if (excerpt) {
+                ctx.font = `400 ${excerptSize}px ${fontFamily}`;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+
+                const excerptY = currentY + 8 * dpr;
+                const excerptLines = this.wrapText(ctx, excerpt, maxWidth * 0.95, 3);
+                currentY = excerptY;
+
+                for (const line of excerptLines) {
+                    ctx.fillText(line, size / 2, currentY);
+                    currentY += excerptSize * lineHeight;
+                }
+            }
+
+            // === CREATE TEXTURE ===
             const texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+            // High-quality filtering with mipmaps
+            gl.generateMipmap(gl.TEXTURE_2D);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-            const labelData = {
+            const contentData = {
                 texture,
-                width: canvasW,
-                height: canvasH,
-                aspectRatio: canvasW / canvasH
+                width: size,
+                height: size,
+                aspectRatio: 1.0
             };
 
-            this.cache.set(id, labelData);
-            return labelData;
+            this.cache.set(id, contentData);
+            return contentData;
+        }
+
+        getExcerpt(conversation) {
+            // Try to get preview/summary from conversation
+            if (conversation.summary) return conversation.summary;
+            if (conversation.preview) return conversation.preview;
+
+            // Fallback: use message count info
+            const count = conversation.message_count || 0;
+            if (count > 0) {
+                return `${count} exchange${count !== 1 ? 's' : ''} in this conversation`;
+            }
+            return '';
+        }
+
+        wrapText(ctx, text, maxWidth, maxLines) {
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = '';
+
+            for (const word of words) {
+                const testLine = currentLine ? `${currentLine} ${word}` : word;
+                const metrics = ctx.measureText(testLine);
+
+                if (metrics.width > maxWidth && currentLine) {
+                    lines.push(currentLine);
+                    currentLine = word;
+
+                    if (lines.length >= maxLines) {
+                        // Truncate last line with ellipsis
+                        let lastLine = lines[lines.length - 1];
+                        while (ctx.measureText(lastLine + '...').width > maxWidth && lastLine.length > 1) {
+                            lastLine = lastLine.slice(0, -1);
+                        }
+                        lines[lines.length - 1] = lastLine + '...';
+                        return lines;
+                    }
+                } else {
+                    currentLine = testLine;
+                }
+            }
+
+            if (currentLine && lines.length < maxLines) {
+                lines.push(currentLine);
+            }
+
+            return lines;
         }
 
         destroy() {
@@ -590,8 +590,8 @@ const ConstellationWebGL = (function() {
                 count: textQuad.indices.length
             };
 
-            // Text label manager
-            this.textLabelManager = new TextLabelManager(gl);
+            // Memory content renderer (high-quality text inside orbs)
+            this.contentRenderer = new MemoryContentRenderer(gl);
 
             // Create particle system
             this.initParticles(200);
@@ -685,11 +685,13 @@ const ConstellationWebGL = (function() {
         setConversations(conversations) {
             this.orbs = this.positionOrbs(conversations);
 
-            // Create text labels for each orb
-            if (this.textLabelManager) {
+            // Create content textures for each orb
+            if (this.contentRenderer) {
                 for (const orb of this.orbs) {
-                    const title = orb.conversation.title || 'Conversation';
-                    orb.label = this.textLabelManager.createLabel(title, orb.conversation.id);
+                    orb.content = this.contentRenderer.createContent(
+                        orb.conversation,
+                        orb.conversation.id
+                    );
                 }
             }
         }
@@ -957,15 +959,13 @@ const ConstellationWebGL = (function() {
             gl.depthMask(false);
             this.renderGlows();
 
-            // Draw orbs
+            // Draw content INSIDE orbs (before shells, no depth write)
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            this.renderContent();
+
+            // Draw holographic orb shells (with depth)
             gl.depthMask(true);
             this.renderOrbs();
-
-            // Draw text labels (only on hover)
-            gl.depthMask(false);
-            this.renderLabels();
-            gl.depthMask(true);
         }
 
         renderOrbs() {
@@ -999,7 +999,6 @@ const ConstellationWebGL = (function() {
             gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uView'), false, this.viewMatrix);
             gl.uniform3fv(gl.getUniformLocation(program, 'uCameraPos'), this.cameraPosition);
             gl.uniform1f(gl.getUniformLocation(program, 'uTime'), this.time);
-            gl.uniform1f(gl.getUniformLocation(program, 'uShimmer'), this.config.shimmerIntensity);
 
             // Draw orbs
             for (const orb of this.orbs) {
@@ -1067,14 +1066,14 @@ const ConstellationWebGL = (function() {
             gl.drawArrays(gl.POINTS, 0, this.particleBuffers.count);
         }
 
-        renderLabels() {
+        renderContent() {
             const gl = this.gl;
             const program = this.programs.textLabel;
 
             if (!program) return;
 
             // Check if any orb is being hovered
-            const hoveredOrbs = this.orbs.filter(orb => orb.hover > 0.1 && orb.label);
+            const hoveredOrbs = this.orbs.filter(orb => orb.hover > 0.1 && orb.content);
             if (hoveredOrbs.length === 0) return;
 
             gl.useProgram(program);
@@ -1097,24 +1096,21 @@ const ConstellationWebGL = (function() {
             // Set shared uniforms
             gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uProjection'), false, this.projectionMatrix);
             gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uView'), false, this.viewMatrix);
-            gl.uniform3fv(gl.getUniformLocation(program, 'uGlowColor'), [0.2, 0.5, 0.9]);
+            gl.uniform3fv(gl.getUniformLocation(program, 'uGlowColor'), [0.3, 0.6, 1.0]);
 
-            // Draw labels for hovered orbs
+            // Draw content for hovered orbs (INSIDE the orb)
             for (const orb of hoveredOrbs) {
-                // Position label slightly above orb
-                const labelCenter = [
-                    orb.position[0],
-                    orb.position[1] + orb.radius * 1.8,
-                    orb.position[2]
-                ];
+                // Position content AT orb center (inside the bubble)
+                const contentCenter = orb.position;
 
                 gl.activeTexture(gl.TEXTURE0);
-                gl.bindTexture(gl.TEXTURE_2D, orb.label.texture);
+                gl.bindTexture(gl.TEXTURE_2D, orb.content.texture);
                 gl.uniform1i(gl.getUniformLocation(program, 'uTexture'), 0);
 
-                gl.uniform3fv(gl.getUniformLocation(program, 'uCenter'), labelCenter);
-                gl.uniform1f(gl.getUniformLocation(program, 'uScale'), 0.35);
-                gl.uniform1f(gl.getUniformLocation(program, 'uAspect'), orb.label.aspectRatio);
+                gl.uniform3fv(gl.getUniformLocation(program, 'uCenter'), contentCenter);
+                // Scale to fit inside orb (70% of diameter)
+                gl.uniform1f(gl.getUniformLocation(program, 'uScale'), orb.radius * 1.4);
+                gl.uniform1f(gl.getUniformLocation(program, 'uAspect'), orb.content.aspectRatio);
                 gl.uniform1f(gl.getUniformLocation(program, 'uOpacity'), orb.hover);
 
                 gl.drawElements(gl.TRIANGLES, this.textQuadBuffers.count, gl.UNSIGNED_SHORT, 0);
@@ -1148,9 +1144,9 @@ const ConstellationWebGL = (function() {
         destroy() {
             this.stop();
             // Cleanup WebGL resources
-            if (this.textLabelManager) {
-                this.textLabelManager.destroy();
-                this.textLabelManager = null;
+            if (this.contentRenderer) {
+                this.contentRenderer.destroy();
+                this.contentRenderer = null;
             }
         }
     }
