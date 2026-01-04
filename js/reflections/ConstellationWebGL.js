@@ -342,10 +342,16 @@ const ConstellationWebGL = (function() {
             const vs = gl.createShader(gl.VERTEX_SHADER);
             gl.shaderSource(vs, vertexSrc);
             gl.compileShader(vs);
+            if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
+                console.error('Vertex shader error:', gl.getShaderInfoLog(vs));
+            }
 
             const fs = gl.createShader(gl.FRAGMENT_SHADER);
             gl.shaderSource(fs, fragmentSrc);
             gl.compileShader(fs);
+            if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
+                console.error('Fragment shader error:', gl.getShaderInfoLog(fs));
+            }
 
             const program = gl.createProgram();
             gl.attachShader(program, vs);
@@ -405,7 +411,9 @@ const ConstellationWebGL = (function() {
         // ─────────────────────────────────────────────────────────────
 
         setConversations(conversations) {
+            console.log('Constellation: Setting conversations:', conversations?.length);
             this.orbs = this.positionOrbs(conversations);
+            console.log('Constellation: Created orbs:', this.orbs.length, this.orbs.slice(0, 2));
         }
 
         positionOrbs(conversations) {
@@ -699,6 +707,14 @@ const ConstellationWebGL = (function() {
         renderOrbs() {
             const gl = this.gl;
             const program = this.programs.orb;
+
+            if (this.orbs.length === 0) return;
+
+            if (!this._loggedOnce) {
+                console.log('Constellation: Rendering orbs:', this.orbs.length);
+                console.log('Constellation: First orb:', this.orbs[0]);
+                this._loggedOnce = true;
+            }
 
             gl.useProgram(program);
 
