@@ -3,6 +3,8 @@
 // Floating memory orbs representing past conversations
 // ============================================================
 
+console.log('=== CONSTELLATION v3 LOADED ===');
+
 const ConstellationWebGL = (function() {
     'use strict';
 
@@ -690,8 +692,8 @@ const ConstellationWebGL = (function() {
                 this._renderLogOnce = true;
             }
 
-            // Clear
-            gl.clearColor(0, 0, 0, 0);
+            // Clear - BRIGHT MAGENTA to prove WebGL works
+            gl.clearColor(1.0, 0.0, 1.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             // Update hover animations
