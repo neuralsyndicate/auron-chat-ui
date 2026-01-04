@@ -50,8 +50,8 @@ const ConstellationWebGL = (function() {
 
         // Quality settings
         icosphereDetail: 4,     // 5,120 triangles (smooth)
-        bloomIntensity: 0.35,
-        bloomThreshold: 0.5
+        bloomIntensity: 0.5,
+        bloomThreshold: 0.3
     };
 
     // ═══════════════════════════════════════════════════════════════
@@ -130,20 +130,20 @@ const ConstellationWebGL = (function() {
 
                     // === ENVIRONMENT REFLECTION (premium quality) ===
                     vec3 reflectDir = reflect(-V, N);
-                    vec3 envReflection = textureCube(uEnvMap, reflectDir).rgb * 0.25;
+                    vec3 envReflection = textureCube(uEnvMap, reflectDir).rgb * 0.4;
 
                     // === SIMULATED REFRACTION (glass IOR ~1.45) ===
                     vec3 refractDir = refract(-V, N, 1.0 / 1.45);
-                    vec3 envRefraction = textureCube(uEnvMap, refractDir).rgb * 0.15;
+                    vec3 envRefraction = textureCube(uEnvMap, refractDir).rgb * 0.25;
 
                     // === FRESNEL-BASED GLASS ===
                     vec3 F0 = vec3(0.04); // Glass IOR
                     vec3 fresnel = fresnelSchlick(NdotV, F0);
 
-                    // === ENERGY COLORS (smooth pulsing cyan-purple) ===
+                    // === ENERGY COLORS (bright pulsing cyan-purple) ===
                     float pulse = sin(uTime * 0.8) * 0.5 + 0.5;
-                    vec3 energyCyan = vec3(0.15, 0.65, 1.0);
-                    vec3 energyPurple = vec3(0.55, 0.25, 0.9);
+                    vec3 energyCyan = vec3(0.25, 0.75, 1.0);
+                    vec3 energyPurple = vec3(0.65, 0.35, 0.95);
                     vec3 energyColor = mix(energyCyan, energyPurple, pulse);
 
                     // === HOLOGRAPHIC SCAN LINES (subtle, premium) ===
@@ -165,14 +165,14 @@ const ConstellationWebGL = (function() {
                     float spec2 = pow(max(dot(N, H2), 0.0), 64.0) * 0.3;
 
                     // === BUILD FINAL COLOR ===
-                    // Start with very dark blue-black core
-                    vec3 color = vec3(0.01, 0.02, 0.04);
+                    // Blue-tinted core with shimmer
+                    vec3 color = vec3(0.03, 0.06, 0.12);
 
                     // Add environment (mix refraction/reflection by Fresnel)
                     color += mix(envRefraction, envReflection, fresnel.r);
 
                     // Add rim glow (energy at edges)
-                    color += energyColor * vFresnel * 0.55;
+                    color += energyColor * vFresnel * 0.75;
 
                     // Add subtle scanlines
                     color += energyColor * scanline;
@@ -191,8 +191,8 @@ const ConstellationWebGL = (function() {
                     color *= 1.0 + uHover * 0.1;
 
                     // === ALPHA (glass transparency) ===
-                    float alpha = 0.1 + vFresnel * 0.55 + spec1 * 0.08;
-                    alpha = mix(alpha, min(alpha + 0.18, 0.88), uHover);
+                    float alpha = 0.25 + vFresnel * 0.5 + spec1 * 0.12;
+                    alpha = mix(alpha, min(alpha + 0.2, 0.92), uHover);
 
                     gl_FragColor = vec4(color, alpha);
                 }
