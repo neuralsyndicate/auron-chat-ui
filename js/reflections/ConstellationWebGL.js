@@ -1,9 +1,10 @@
 // ============================================================
 // MEMORY CONSTELLATION - WebGL 3D Orb Renderer
-// Floating memory orbs representing past conversations
+// Premium 2025-quality holographic memory bubbles
 // ============================================================
 
-// Memory Constellation v7 - Holographic Memory Bubbles
+// Memory Constellation v8 - Next-Gen Holographic Memory Orbs
+// Features: Icosphere geometry, PBR glass shader, environment mapping, bloom post-processing
 
 const ConstellationWebGL = (function() {
     'use strict';
@@ -16,33 +17,41 @@ const ConstellationWebGL = (function() {
 
     const CONFIG = {
         // Orb sizing
-        minRadius: 0.12,
-        maxRadius: 0.35,
+        minRadius: 0.15,
+        maxRadius: 0.4,
 
-        // Layout
-        spreadRadius: 2.5,
+        // Layout - Timeline spiral
+        centerRadius: 0.5,      // Recent conversations near center
+        maxSpiralRadius: 3.0,   // Older conversations spiral outward
+        spiralTurns: 2.5,       // Number of spiral rotations
 
-        // Holographic Memory Orb Colors (RGBA)
+        // Premium Holographic Colors (RGBA)
         colors: {
-            recent: [0.25, 0.55, 0.95, 0.65],     // Sapphire blue (< 7 days)
-            moderate: [0.55, 0.35, 0.92, 0.6],    // Amethyst purple (7-30 days)
-            older: [0.38, 0.48, 0.68, 0.5],       // Moonstone gray-blue (> 30 days)
-            hover: [0.7, 0.9, 1.0, 0.85],         // Bright cyan on hover
-            glow: [0.25, 0.55, 0.9, 0.3]          // Soft blue aura
+            recent: [0.3, 0.65, 1.0, 0.7],        // Bright azure (< 7 days)
+            moderate: [0.6, 0.4, 0.95, 0.65],     // Vivid amethyst (7-30 days)
+            older: [0.45, 0.55, 0.75, 0.55],      // Cool silver-blue (> 30 days)
+            hover: [0.8, 0.95, 1.0, 0.9],         // Brilliant white-cyan on hover
+            glow: [0.3, 0.6, 0.95, 0.35],         // Soft blue aura
+            energy: [0.2, 0.7, 1.0, 1.0]          // Energy pulse color
         },
 
         // Camera
         camera: {
-            distance: 5.0,
+            distance: 5.5,
             minDistance: 2.5,
-            maxDistance: 8.0,
-            autoRotateSpeed: 0.05,
+            maxDistance: 10.0,
+            autoRotateSpeed: 0.03,
             dragSensitivity: 0.005
         },
 
         // Animation
-        pulseSpeed: 1.5,
-        hoverScale: 1.15
+        pulseSpeed: 1.2,
+        hoverScale: 1.12,
+
+        // Quality settings
+        icosphereDetail: 4,     // 5,120 triangles (smooth)
+        bloomIntensity: 0.35,
+        bloomThreshold: 0.5
     };
 
     // ═══════════════════════════════════════════════════════════════
@@ -51,8 +60,10 @@ const ConstellationWebGL = (function() {
 
     const SHADERS = {
         // ═══════════════════════════════════════════════════════════════
-        // HOLOGRAPHIC MEMORY ORB SHADER
-        // Features: Dark interior, energy rim glow, scan lines, clean Fresnel
+        // PREMIUM PBR GLASS ORB SHADER
+        // Features: Physically-based rendering, environment mapping,
+        //           Fresnel-Schlick approximation, subsurface glow,
+        //           soft scanlines, specular highlights
         // ═══════════════════════════════════════════════════════════════
         orb: {
             vertex: `
@@ -64,20 +75,30 @@ const ConstellationWebGL = (function() {
                 uniform mat4 uModel;
                 uniform float uScale;
                 uniform float uTime;
+                uniform vec3 uCameraPos;
 
                 varying vec3 vNormal;
                 varying vec3 vPosition;
                 varying vec3 vWorldPos;
+                varying vec3 vViewDir;
+                varying float vFresnel;
 
                 void main() {
-                    // Subtle breathing animation
-                    float breathe = 1.0 + sin(uTime * 0.8) * 0.008;
+                    // Subtle breathing animation (premium feel)
+                    float breathe = 1.0 + sin(uTime * 0.6) * 0.004;
                     vec3 pos = aPosition * breathe;
 
                     vec4 worldPos = uModel * vec4(pos * uScale, 1.0);
                     vPosition = pos;
                     vWorldPos = worldPos.xyz;
                     vNormal = normalize(mat3(uModel) * aNormal);
+
+                    // Pre-calculate view direction
+                    vViewDir = normalize(uCameraPos - worldPos.xyz);
+
+                    // Pre-calculate Fresnel for fragment shader (performance)
+                    float NdotV = max(dot(vNormal, vViewDir), 0.0);
+                    vFresnel = pow(1.0 - NdotV, 4.0);
 
                     gl_Position = uProjection * uView * worldPos;
                 }
@@ -89,57 +110,89 @@ const ConstellationWebGL = (function() {
                 uniform vec3 uCameraPos;
                 uniform float uTime;
                 uniform float uHover;
+                uniform samplerCube uEnvMap;
 
                 varying vec3 vNormal;
                 varying vec3 vPosition;
                 varying vec3 vWorldPos;
+                varying vec3 vViewDir;
+                varying float vFresnel;
+
+                // Fresnel-Schlick approximation (PBR standard)
+                vec3 fresnelSchlick(float cosTheta, vec3 F0) {
+                    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+                }
 
                 void main() {
-                    vec3 normal = normalize(vNormal);
-                    vec3 viewDir = normalize(uCameraPos - vWorldPos);
-                    float NdotV = max(dot(normal, viewDir), 0.0);
+                    vec3 N = normalize(vNormal);
+                    vec3 V = normalize(vViewDir);
+                    float NdotV = max(dot(N, V), 0.0);
 
-                    // === FRESNEL (clean, no iridescence) ===
-                    float fresnel = pow(1.0 - NdotV, 3.0);
+                    // === ENVIRONMENT REFLECTION (premium quality) ===
+                    vec3 reflectDir = reflect(-V, N);
+                    vec3 envReflection = textureCube(uEnvMap, reflectDir).rgb * 0.25;
 
-                    // === ENERGY FIELD GLOW ===
-                    float energyPulse = sin(uTime * 1.2) * 0.5 + 0.5;
-                    vec3 energyColor1 = vec3(0.2, 0.6, 1.0);  // Cyan
-                    vec3 energyColor2 = vec3(0.5, 0.3, 0.9);  // Purple
-                    vec3 energyColor = mix(energyColor1, energyColor2, energyPulse);
+                    // === SIMULATED REFRACTION (glass IOR ~1.45) ===
+                    vec3 refractDir = refract(-V, N, 1.0 / 1.45);
+                    vec3 envRefraction = textureCube(uEnvMap, refractDir).rgb * 0.15;
 
-                    // === HOLOGRAPHIC SCAN LINES ===
-                    float scanY = vWorldPos.y * 40.0 + uTime * 3.0;
-                    float scanline = smoothstep(0.4, 0.5, fract(scanY)) * 0.08;
+                    // === FRESNEL-BASED GLASS ===
+                    vec3 F0 = vec3(0.04); // Glass IOR
+                    vec3 fresnel = fresnelSchlick(NdotV, F0);
 
-                    // === CHROMATIC DISPERSION (subtle at edges) ===
-                    float dispersion = fresnel * 0.06;
-                    vec3 chromatic = vec3(dispersion, 0.0, -dispersion);
+                    // === ENERGY COLORS (smooth pulsing cyan-purple) ===
+                    float pulse = sin(uTime * 0.8) * 0.5 + 0.5;
+                    vec3 energyCyan = vec3(0.15, 0.65, 1.0);
+                    vec3 energyPurple = vec3(0.55, 0.25, 0.9);
+                    vec3 energyColor = mix(energyCyan, energyPurple, pulse);
 
-                    // === SPECULAR HIGHLIGHT ===
-                    vec3 lightDir = normalize(vec3(0.5, 1.0, 0.8));
-                    vec3 halfVec = normalize(lightDir + viewDir);
-                    float spec = pow(max(dot(normal, halfVec), 0.0), 64.0);
+                    // === HOLOGRAPHIC SCAN LINES (subtle, premium) ===
+                    float scanY = vWorldPos.y * 50.0 + uTime * 2.0;
+                    float scanline = smoothstep(0.45, 0.55, fract(scanY)) * 0.035;
 
-                    // === DARK INTERIOR with rim glow ===
-                    vec3 coreColor = vec3(0.02, 0.04, 0.08); // Very dark blue-black
-                    vec3 rimGlow = energyColor * fresnel * 0.7;
+                    // === SUBSURFACE ENERGY GLOW ===
+                    float subsurface = pow(max(dot(-N, V), 0.0), 2.0) * 0.15;
 
-                    // === COMBINE ===
-                    vec3 color = coreColor;
-                    color += rimGlow;
-                    color += chromatic;
+                    // === MULTI-LIGHT SPECULAR ===
+                    // Primary light (top-right)
+                    vec3 lightDir1 = normalize(vec3(0.6, 1.0, 0.5));
+                    vec3 H1 = normalize(lightDir1 + V);
+                    float spec1 = pow(max(dot(N, H1), 0.0), 128.0);
+
+                    // Secondary light (left-back)
+                    vec3 lightDir2 = normalize(vec3(-0.5, 0.3, -0.8));
+                    vec3 H2 = normalize(lightDir2 + V);
+                    float spec2 = pow(max(dot(N, H2), 0.0), 64.0) * 0.3;
+
+                    // === BUILD FINAL COLOR ===
+                    // Start with very dark blue-black core
+                    vec3 color = vec3(0.01, 0.02, 0.04);
+
+                    // Add environment (mix refraction/reflection by Fresnel)
+                    color += mix(envRefraction, envReflection, fresnel.r);
+
+                    // Add rim glow (energy at edges)
+                    color += energyColor * vFresnel * 0.55;
+
+                    // Add subtle scanlines
                     color += energyColor * scanline;
-                    color += vec3(0.9, 0.95, 1.0) * spec * 0.5;
+
+                    // Add subsurface glow
+                    color += energyColor * subsurface;
+
+                    // Add specular highlights
+                    color += vec3(1.0, 0.98, 0.95) * spec1 * 0.55;
+                    color += vec3(0.8, 0.85, 1.0) * spec2;
 
                     // === HOVER ENHANCEMENT ===
-                    color += energyColor * fresnel * uHover * 0.4;
-                    color += vec3(0.1, 0.2, 0.3) * uHover * 0.2;
+                    float hoverGlow = uHover * 0.35;
+                    color += energyColor * vFresnel * hoverGlow;
+                    color += vec3(0.1, 0.15, 0.25) * uHover * 0.2;
+                    color *= 1.0 + uHover * 0.1;
 
-                    // === ALPHA (transparent center, solid edge) ===
-                    float alpha = 0.15 + fresnel * 0.6;
-                    alpha += spec * 0.1;
-                    alpha = mix(alpha, min(alpha + 0.2, 0.9), uHover);
+                    // === ALPHA (glass transparency) ===
+                    float alpha = 0.1 + vFresnel * 0.55 + spec1 * 0.08;
+                    alpha = mix(alpha, min(alpha + 0.18, 0.88), uHover);
 
                     gl_FragColor = vec4(color, alpha);
                 }
@@ -276,48 +329,211 @@ const ConstellationWebGL = (function() {
                     gl_FragColor = vec4(color, alpha);
                 }
             `
+        },
+
+        // ═══════════════════════════════════════════════════════════════
+        // BLOOM POST-PROCESSING SHADERS
+        // ═══════════════════════════════════════════════════════════════
+        bloomExtract: {
+            vertex: `
+                attribute vec2 aPosition;
+                varying vec2 vUV;
+                void main() {
+                    vUV = aPosition * 0.5 + 0.5;
+                    gl_Position = vec4(aPosition, 0.0, 1.0);
+                }
+            `,
+            fragment: `
+                precision highp float;
+                uniform sampler2D uScene;
+                uniform float uThreshold;
+                varying vec2 vUV;
+
+                void main() {
+                    vec4 color = texture2D(uScene, vUV);
+                    float brightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
+
+                    // Extract only bright parts (energy glow areas)
+                    if (brightness > uThreshold) {
+                        gl_FragColor = color * (brightness - uThreshold);
+                    } else {
+                        gl_FragColor = vec4(0.0);
+                    }
+                }
+            `
+        },
+        bloomBlur: {
+            vertex: `
+                attribute vec2 aPosition;
+                varying vec2 vUV;
+                void main() {
+                    vUV = aPosition * 0.5 + 0.5;
+                    gl_Position = vec4(aPosition, 0.0, 1.0);
+                }
+            `,
+            fragment: `
+                precision highp float;
+                uniform sampler2D uTexture;
+                uniform vec2 uDirection;
+                uniform vec2 uResolution;
+                varying vec2 vUV;
+
+                void main() {
+                    vec2 texelSize = 1.0 / uResolution;
+                    vec4 result = vec4(0.0);
+
+                    // 9-tap Gaussian blur (optimized weights)
+                    float weights[5];
+                    weights[0] = 0.227027;
+                    weights[1] = 0.1945946;
+                    weights[2] = 0.1216216;
+                    weights[3] = 0.054054;
+                    weights[4] = 0.016216;
+
+                    result += texture2D(uTexture, vUV) * weights[0];
+
+                    for (int i = 1; i < 5; i++) {
+                        vec2 offset = uDirection * texelSize * float(i) * 1.5;
+                        result += texture2D(uTexture, vUV + offset) * weights[i];
+                        result += texture2D(uTexture, vUV - offset) * weights[i];
+                    }
+
+                    gl_FragColor = result;
+                }
+            `
+        },
+        bloomComposite: {
+            vertex: `
+                attribute vec2 aPosition;
+                varying vec2 vUV;
+                void main() {
+                    vUV = aPosition * 0.5 + 0.5;
+                    gl_Position = vec4(aPosition, 0.0, 1.0);
+                }
+            `,
+            fragment: `
+                precision highp float;
+                uniform sampler2D uScene;
+                uniform sampler2D uBloom;
+                uniform float uIntensity;
+                varying vec2 vUV;
+
+                void main() {
+                    vec4 scene = texture2D(uScene, vUV);
+                    vec4 bloom = texture2D(uBloom, vUV);
+                    gl_FragColor = scene + bloom * uIntensity;
+                }
+            `
         }
     };
 
     // ═══════════════════════════════════════════════════════════════
-    // SPHERE GEOMETRY
+    // ICOSPHERE GEOMETRY (Premium quality - evenly distributed triangles)
+    // Detail 4 = 5,120 triangles (ultra smooth, no faceting)
     // ═══════════════════════════════════════════════════════════════
 
-    function createSphereGeometry(segments = 24, rings = 16) {
+    function createIcosphereGeometry(detail = 4) {
+        // Golden ratio
+        const t = (1 + Math.sqrt(5)) / 2;
+
+        // Initial icosahedron vertices (12 vertices)
+        let vertices = [
+            [-1,  t,  0], [ 1,  t,  0], [-1, -t,  0], [ 1, -t,  0],
+            [ 0, -1,  t], [ 0,  1,  t], [ 0, -1, -t], [ 0,  1, -t],
+            [ t,  0, -1], [ t,  0,  1], [-t,  0, -1], [-t,  0,  1]
+        ];
+
+        // Normalize initial vertices to unit sphere
+        vertices = vertices.map(v => {
+            const len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+            return [v[0]/len, v[1]/len, v[2]/len];
+        });
+
+        // Initial icosahedron faces (20 faces)
+        let faces = [
+            [0,11,5], [0,5,1], [0,1,7], [0,7,10], [0,10,11],
+            [1,5,9], [5,11,4], [11,10,2], [10,7,6], [7,1,8],
+            [3,9,4], [3,4,2], [3,2,6], [3,6,8], [3,8,9],
+            [4,9,5], [2,4,11], [6,2,10], [8,6,7], [9,8,1]
+        ];
+
+        // Vertex cache for subdivision (avoid duplicates)
+        const midpointCache = new Map();
+
+        function getMidpoint(v1Idx, v2Idx) {
+            const key = v1Idx < v2Idx ? `${v1Idx}_${v2Idx}` : `${v2Idx}_${v1Idx}`;
+            if (midpointCache.has(key)) {
+                return midpointCache.get(key);
+            }
+
+            const v1 = vertices[v1Idx];
+            const v2 = vertices[v2Idx];
+
+            // Midpoint
+            let mid = [
+                (v1[0] + v2[0]) / 2,
+                (v1[1] + v2[1]) / 2,
+                (v1[2] + v2[2]) / 2
+            ];
+
+            // Normalize to sphere surface
+            const len = Math.sqrt(mid[0]*mid[0] + mid[1]*mid[1] + mid[2]*mid[2]);
+            mid = [mid[0]/len, mid[1]/len, mid[2]/len];
+
+            const idx = vertices.length;
+            vertices.push(mid);
+            midpointCache.set(key, idx);
+            return idx;
+        }
+
+        // Subdivide 'detail' times
+        for (let d = 0; d < detail; d++) {
+            const newFaces = [];
+            midpointCache.clear();
+
+            for (const face of faces) {
+                const a = face[0];
+                const b = face[1];
+                const c = face[2];
+
+                // Get midpoints
+                const ab = getMidpoint(a, b);
+                const bc = getMidpoint(b, c);
+                const ca = getMidpoint(c, a);
+
+                // Create 4 new faces
+                newFaces.push([a, ab, ca]);
+                newFaces.push([b, bc, ab]);
+                newFaces.push([c, ca, bc]);
+                newFaces.push([ab, bc, ca]);
+            }
+
+            faces = newFaces;
+        }
+
+        // Convert to flat arrays
         const positions = [];
         const normals = [];
         const indices = [];
 
-        for (let ring = 0; ring <= rings; ring++) {
-            const theta = (ring / rings) * Math.PI;
-            const sinTheta = Math.sin(theta);
-            const cosTheta = Math.cos(theta);
-
-            for (let seg = 0; seg <= segments; seg++) {
-                const phi = (seg / segments) * Math.PI * 2;
-                const sinPhi = Math.sin(phi);
-                const cosPhi = Math.cos(phi);
-
-                const x = cosPhi * sinTheta;
-                const y = cosTheta;
-                const z = sinPhi * sinTheta;
-
-                positions.push(x, y, z);
-                normals.push(x, y, z);
-            }
+        for (const v of vertices) {
+            positions.push(v[0], v[1], v[2]);
+            // For a unit sphere, position === normal
+            normals.push(v[0], v[1], v[2]);
         }
 
-        for (let ring = 0; ring < rings; ring++) {
-            for (let seg = 0; seg < segments; seg++) {
-                const a = ring * (segments + 1) + seg;
-                const b = a + segments + 1;
-
-                indices.push(a, b, a + 1);
-                indices.push(b, b + 1, a + 1);
-            }
+        for (const face of faces) {
+            indices.push(face[0], face[1], face[2]);
         }
+
+        console.log(`Icosphere: ${vertices.length} vertices, ${faces.length} triangles`);
 
         return { positions, normals, indices };
+    }
+
+    // Legacy fallback (kept for reference)
+    function createSphereGeometry(segments = 24, rings = 16) {
+        return createIcosphereGeometry(CONFIG.icosphereDetail);
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -345,10 +561,150 @@ const ConstellationWebGL = (function() {
         };
     }
 
+    // Full-screen quad for post-processing
+    function createFullscreenQuadGeometry() {
+        return {
+            positions: [-1, -1, 1, -1, 1, 1, -1, 1],
+            indices: [0, 1, 2, 0, 2, 3]
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // ENVIRONMENT CUBEMAP (Procedural starfield for reflections)
+    // ═══════════════════════════════════════════════════════════════
+
+    function createEnvironmentCubemap(gl) {
+        const size = 256;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+
+        // Generate face textures
+        const faceImages = [];
+
+        for (let face = 0; face < 6; face++) {
+            // Deep space gradient background
+            const gradient = ctx.createRadialGradient(
+                size/2, size/2, 0,
+                size/2, size/2, size * 0.8
+            );
+            gradient.addColorStop(0, '#0a1525');   // Dark blue center
+            gradient.addColorStop(0.5, '#050a15'); // Darker mid
+            gradient.addColorStop(1, '#020306');   // Nearly black edge
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // Add nebula-like color variations
+            const nebulaGradient = ctx.createRadialGradient(
+                size * (0.3 + Math.random() * 0.4),
+                size * (0.3 + Math.random() * 0.4),
+                0,
+                size * 0.5, size * 0.5, size * 0.6
+            );
+            nebulaGradient.addColorStop(0, 'rgba(60, 100, 180, 0.08)');
+            nebulaGradient.addColorStop(0.5, 'rgba(100, 60, 150, 0.04)');
+            nebulaGradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = nebulaGradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // Add stars
+            const starCount = 40 + Math.floor(Math.random() * 30);
+            for (let s = 0; s < starCount; s++) {
+                const x = Math.random() * size;
+                const y = Math.random() * size;
+                const brightness = 0.25 + Math.random() * 0.75;
+                const starSize = 0.3 + Math.random() * 1.2;
+
+                // Star glow
+                const starGradient = ctx.createRadialGradient(x, y, 0, x, y, starSize * 3);
+                starGradient.addColorStop(0, `rgba(200, 220, 255, ${brightness})`);
+                starGradient.addColorStop(0.3, `rgba(180, 200, 255, ${brightness * 0.3})`);
+                starGradient.addColorStop(1, 'transparent');
+
+                ctx.fillStyle = starGradient;
+                ctx.beginPath();
+                ctx.arc(x, y, starSize * 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Star core
+                ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
+                ctx.beginPath();
+                ctx.arc(x, y, starSize * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Add a few brighter stars with color variation
+            for (let s = 0; s < 5; s++) {
+                const x = Math.random() * size;
+                const y = Math.random() * size;
+                const hue = Math.random() > 0.5 ? 200 + Math.random() * 40 : 20 + Math.random() * 30;
+                ctx.fillStyle = `hsla(${hue}, 60%, 80%, 0.6)`;
+                ctx.beginPath();
+                ctx.arc(x, y, 1 + Math.random(), 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            faceImages.push(ctx.getImageData(0, 0, size, size));
+        }
+
+        // Create WebGL cubemap texture
+        const texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+
+        const targets = [
+            gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
+            gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+            gl.TEXTURE_CUBE_MAP_POSITIVE_Z, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+        ];
+
+        for (let i = 0; i < 6; i++) {
+            gl.texImage2D(targets[i], 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(faceImages[i].data.buffer));
+        }
+
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        console.log('Created environment cubemap (256x256 per face)');
+        return texture;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // FRAMEBUFFER HELPER (for bloom post-processing)
+    // ═══════════════════════════════════════════════════════════════
+
+    function createFramebuffer(gl, width, height) {
+        const framebuffer = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+        const texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+        // Add depth buffer
+        const depthBuffer = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        return { framebuffer, texture, depthBuffer, width, height };
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // MEMORY CONTENT RENDERER
     // High-quality canvas-based content textures with DPI scaling
-    // Renders title + excerpt inside orbs
+    // Supports: Preview mode (title + count) and Full mode (first Q&A)
     // ═══════════════════════════════════════════════════════════════
 
     class MemoryContentRenderer {
@@ -358,10 +714,12 @@ const ConstellationWebGL = (function() {
             this.dpr = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2x for performance
             this.canvas = document.createElement('canvas');
             this.ctx = this.canvas.getContext('2d');
+            this.fontFamily = '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif';
         }
 
-        createContent(conversation, id) {
-            if (this.cache.has(id)) {
+        // Create preview content (shown by default - title + message count)
+        createPreviewContent(conversation, id) {
+            if (this.cache.has(id) && this.cache.get(id).isLoaded) {
                 return this.cache.get(id);
             }
 
@@ -375,52 +733,102 @@ const ConstellationWebGL = (function() {
             this.canvas.width = size;
             this.canvas.height = size;
 
-            // Clear with transparent
             ctx.clearRect(0, 0, size, size);
 
-            // Font settings
-            const fontFamily = '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif';
-            const titleSize = Math.round(16 * dpr);
-            const excerptSize = Math.round(11 * dpr);
-            const lineHeight = 1.4;
-            const padding = 20 * dpr;
-            const maxWidth = size - padding * 2;
-
-            // Get title and excerpt
             const title = conversation.title || 'Memory';
-            const excerpt = this.getExcerpt(conversation);
+            const count = conversation.message_count || 0;
 
-            // === DRAW TITLE ===
-            ctx.font = `600 ${titleSize}px ${fontFamily}`;
-            ctx.fillStyle = '#FFFFFF';
+            // === DRAW TITLE (centered, prominent) ===
+            const titleSize = Math.round(14 * dpr);
+            ctx.font = `600 ${titleSize}px ${this.fontFamily}`;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
 
-            const titleY = size * 0.28;
+            const maxWidth = size * 0.85;
+            let y = size * 0.32;
             const titleLines = this.wrapText(ctx, title, maxWidth, 2);
-            let currentY = titleY;
 
             for (const line of titleLines) {
-                ctx.fillText(line, size / 2, currentY);
-                currentY += titleSize * lineHeight;
+                ctx.fillText(line, size / 2, y);
+                y += titleSize * 1.35;
             }
 
-            // === DRAW EXCERPT ===
-            if (excerpt) {
-                ctx.font = `400 ${excerptSize}px ${fontFamily}`;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            // === DRAW MESSAGE COUNT ===
+            const countSize = Math.round(10 * dpr);
+            ctx.font = `400 ${countSize}px ${this.fontFamily}`;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.fillText(`${count} exchange${count !== 1 ? 's' : ''}`, size / 2, y + 8 * dpr);
 
-                const excerptY = currentY + 8 * dpr;
-                const excerptLines = this.wrapText(ctx, excerpt, maxWidth * 0.95, 3);
-                currentY = excerptY;
+            return this.createTexture(id, false);
+        }
 
-                for (const line of excerptLines) {
-                    ctx.fillText(line, size / 2, currentY);
-                    currentY += excerptSize * lineHeight;
+        // Create full content (shown after loading - first Q&A exchange)
+        createFullContent(conversation, id, fullData) {
+            const gl = this.gl;
+            const ctx = this.ctx;
+            const dpr = this.dpr;
+
+            const baseSize = 256;
+            const size = baseSize * dpr;
+            this.canvas.width = size;
+            this.canvas.height = size;
+
+            ctx.clearRect(0, 0, size, size);
+
+            // Get first user message and Auron response
+            const messages = fullData?.messages || [];
+            const userMsg = messages.find(m => m.role === 'user');
+            const auronMsg = messages.find(m => m.role === 'auron' || m.role === 'assistant');
+
+            let y = size * 0.18;
+
+            // === USER QUESTION (dimmer, italic, quoted) ===
+            if (userMsg) {
+                const userSize = Math.round(9 * dpr);
+                ctx.font = `italic 400 ${userSize}px ${this.fontFamily}`;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+
+                const userText = this.truncate(userMsg.content, 60);
+                const lines = this.wrapText(ctx, `"${userText}"`, size * 0.88, 2);
+
+                for (const line of lines) {
+                    ctx.fillText(line, size / 2, y);
+                    y += userSize * 1.35;
+                }
+
+                y += 6 * dpr;
+            }
+
+            // === AURON RESPONSE (brighter, bolder) ===
+            if (auronMsg) {
+                const auronSize = Math.round(11 * dpr);
+                ctx.font = `500 ${auronSize}px ${this.fontFamily}`;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+
+                // Try to get dialogue.guidance first, then content
+                let text = auronMsg.dialogue?.guidance || auronMsg.content || '';
+                text = this.truncate(text, 80);
+                const lines = this.wrapText(ctx, text, size * 0.9, 3);
+
+                for (const line of lines) {
+                    ctx.fillText(line, size / 2, y);
+                    y += auronSize * 1.4;
                 }
             }
 
-            // === CREATE TEXTURE ===
+            // Delete old texture if exists
+            if (this.cache.has(id)) {
+                gl.deleteTexture(this.cache.get(id).texture);
+            }
+
+            return this.createTexture(id, true);
+        }
+
+        createTexture(id, isLoaded) {
+            const gl = this.gl;
             const texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
@@ -434,26 +842,21 @@ const ConstellationWebGL = (function() {
 
             const contentData = {
                 texture,
-                width: size,
-                height: size,
-                aspectRatio: 1.0
+                width: this.canvas.width,
+                height: this.canvas.height,
+                aspectRatio: 1.0,
+                isLoaded
             };
 
             this.cache.set(id, contentData);
             return contentData;
         }
 
-        getExcerpt(conversation) {
-            // Try to get preview/summary from conversation
-            if (conversation.summary) return conversation.summary;
-            if (conversation.preview) return conversation.preview;
-
-            // Fallback: use message count info
-            const count = conversation.message_count || 0;
-            if (count > 0) {
-                return `${count} exchange${count !== 1 ? 's' : ''} in this conversation`;
-            }
-            return '';
+        truncate(text, maxLength) {
+            if (!text) return '';
+            text = text.replace(/\n/g, ' ').trim();
+            if (text.length <= maxLength) return text;
+            return text.slice(0, maxLength - 3).trim() + '...';
         }
 
         wrapText(ctx, text, maxWidth, maxLines) {
@@ -470,7 +873,6 @@ const ConstellationWebGL = (function() {
                     currentLine = word;
 
                     if (lines.length >= maxLines) {
-                        // Truncate last line with ellipsis
                         let lastLine = lines[lines.length - 1];
                         while (ctx.measureText(lastLine + '...').width > maxWidth && lastLine.length > 1) {
                             lastLine = lastLine.slice(0, -1);
@@ -565,8 +967,8 @@ const ConstellationWebGL = (function() {
                 this.programs[name] = this.createProgram(source.vertex, source.fragment);
             }
 
-            // Create geometry buffers
-            const sphere = createSphereGeometry();
+            // Create high-quality icosphere geometry (5,120 triangles)
+            const sphere = createIcosphereGeometry(this.config.icosphereDetail);
             this.sphereBuffers = {
                 position: this.createBuffer(new Float32Array(sphere.positions)),
                 normal: this.createBuffer(new Float32Array(sphere.normals)),
@@ -590,6 +992,17 @@ const ConstellationWebGL = (function() {
                 count: textQuad.indices.length
             };
 
+            // Fullscreen quad for post-processing
+            const fsQuad = createFullscreenQuadGeometry();
+            this.fullscreenQuadBuffers = {
+                position: this.createBuffer(new Float32Array(fsQuad.positions)),
+                index: this.createIndexBuffer(new Uint16Array(fsQuad.indices)),
+                count: fsQuad.indices.length
+            };
+
+            // Create environment cubemap for reflections
+            this.envMap = createEnvironmentCubemap(gl);
+
             // Memory content renderer (high-quality text inside orbs)
             this.contentRenderer = new MemoryContentRenderer(gl);
 
@@ -601,11 +1014,40 @@ const ConstellationWebGL = (function() {
             this.viewMatrix = mat4.create();
             this.modelMatrix = mat4.create();
 
+            // Bloom framebuffers (initialized in resize)
+            this.bloomEnabled = true;
+            this.bloomFramebuffers = null;
+
             // GL state
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             gl.enable(gl.DEPTH_TEST);
             gl.depthFunc(gl.LEQUAL);
+        }
+
+        initBloomFramebuffers(width, height) {
+            const gl = this.gl;
+
+            // Clean up old framebuffers
+            if (this.bloomFramebuffers) {
+                gl.deleteFramebuffer(this.bloomFramebuffers.scene.framebuffer);
+                gl.deleteTexture(this.bloomFramebuffers.scene.texture);
+                gl.deleteRenderbuffer(this.bloomFramebuffers.scene.depthBuffer);
+                gl.deleteFramebuffer(this.bloomFramebuffers.blur1.framebuffer);
+                gl.deleteTexture(this.bloomFramebuffers.blur1.texture);
+                gl.deleteFramebuffer(this.bloomFramebuffers.blur2.framebuffer);
+                gl.deleteTexture(this.bloomFramebuffers.blur2.texture);
+            }
+
+            // Half resolution for bloom (performance)
+            const bloomWidth = Math.floor(width / 2);
+            const bloomHeight = Math.floor(height / 2);
+
+            this.bloomFramebuffers = {
+                scene: createFramebuffer(gl, width, height),
+                blur1: createFramebuffer(gl, bloomWidth, bloomHeight),
+                blur2: createFramebuffer(gl, bloomWidth, bloomHeight)
+            };
         }
 
         createProgram(vertexSrc, fragmentSrc) {
@@ -685,34 +1127,94 @@ const ConstellationWebGL = (function() {
         setConversations(conversations) {
             this.orbs = this.positionOrbs(conversations);
 
-            // Create content textures for each orb
+            // Create preview content textures for each orb (title + count)
             if (this.contentRenderer) {
                 for (const orb of this.orbs) {
-                    orb.content = this.contentRenderer.createContent(
+                    orb.content = this.contentRenderer.createPreviewContent(
                         orb.conversation,
                         orb.conversation.id
                     );
+                    orb.contentState = 'preview';  // preview | loading | loaded
+                    orb.fullData = null;
+                    orb.visibleSince = null;
                 }
             }
+        }
+
+        // Update orb content when full data is loaded
+        updateOrbContent(orbId, fullData) {
+            const orb = this.orbs.find(o => o.conversation.id === orbId);
+            if (orb && this.contentRenderer) {
+                orb.content = this.contentRenderer.createFullContent(
+                    orb.conversation,
+                    orb.conversation.id,
+                    fullData
+                );
+                orb.contentState = 'loaded';
+                orb.fullData = fullData;
+            }
+        }
+
+        // Get orbs that are visible and need loading
+        getOrbsToLoad() {
+            const now = performance.now();
+            const toLoad = [];
+
+            for (const orb of this.orbs) {
+                if (orb.contentState !== 'preview') continue;
+
+                // Check if orb is facing camera (simple visibility check)
+                const screenPos = this.getOrbScreenPosition(orb);
+                const isVisible = screenPos &&
+                    screenPos.z > 0 &&
+                    Math.abs(screenPos.x) < 1.3 &&
+                    Math.abs(screenPos.y) < 1.3;
+
+                if (isVisible) {
+                    if (!orb.visibleSince) orb.visibleSince = now;
+
+                    // Debounce: load after 200ms visibility
+                    if (now - orb.visibleSince > 200) {
+                        orb.contentState = 'loading';
+                        toLoad.push(orb.conversation);
+                    }
+                } else {
+                    orb.visibleSince = null;
+                }
+            }
+
+            return toLoad;
         }
 
         positionOrbs(conversations) {
             if (!conversations || conversations.length === 0) return [];
 
-            return conversations.map((conv, i) => {
-                const total = conversations.length;
+            // Sort by updated_at (most recent first) for timeline spiral
+            const sorted = [...conversations].sort((a, b) =>
+                new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at)
+            );
 
-                // Golden ratio spiral distribution
-                const phi = Math.acos(1 - 2 * (i + 0.5) / total);
-                const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+            const { centerRadius, maxSpiralRadius, spiralTurns } = this.config;
 
-                // Randomized radius for organic feel
-                const r = this.config.spreadRadius * (0.7 + Math.random() * 0.3);
+            return sorted.map((conv, i) => {
+                const total = sorted.length;
+                const progress = i / Math.max(total - 1, 1);  // 0 = center (recent), 1 = edge (older)
+
+                // Archimedean spiral: recent at center, older spiral outward
+                const radius = centerRadius + (maxSpiralRadius - centerRadius) * Math.pow(progress, 0.7);
+                const theta = progress * spiralTurns * Math.PI * 2;
+
+                // Slight Z variation for depth (sine wave pattern)
+                const zVariation = Math.sin(progress * Math.PI * 2) * 0.35;
+
+                // Small random offset for organic feel
+                const jitterX = (Math.random() - 0.5) * 0.15;
+                const jitterY = (Math.random() - 0.5) * 0.15;
 
                 const position = [
-                    r * Math.sin(phi) * Math.cos(theta),
-                    r * Math.sin(phi) * Math.sin(theta),
-                    r * Math.cos(phi)
+                    radius * Math.cos(theta) + jitterX,
+                    radius * Math.sin(theta) + jitterY,
+                    zVariation
                 ];
 
                 return {
@@ -720,14 +1222,15 @@ const ConstellationWebGL = (function() {
                     position: position,
                     radius: this.getOrbRadius(conv.message_count || 1),
                     color: this.getOrbColor(conv.created_at),
-                    hover: 0
+                    hover: 0,
+                    sortIndex: i  // Track position for reference
                 };
             });
         }
 
         getOrbRadius(messageCount) {
             const { minRadius, maxRadius } = this.config;
-            const scale = Math.sqrt(messageCount) * 0.03;
+            const scale = Math.sqrt(messageCount) * 0.025;
             return Math.min(minRadius + scale, maxRadius);
         }
 
@@ -738,6 +1241,65 @@ const ConstellationWebGL = (function() {
             if (ageInDays < 7) return colors.recent;
             if (ageInDays < 30) return colors.moderate;
             return colors.older;
+        }
+
+        // Get orb's screen position (for hover card positioning)
+        getOrbScreenPosition(orb) {
+            if (!orb) return null;
+
+            // Transform orb position to clip space
+            const pos = { x: orb.position[0], y: orb.position[1], z: orb.position[2] };
+
+            // Apply view matrix
+            const viewPos = [
+                this.viewMatrix[0] * pos.x + this.viewMatrix[4] * pos.y + this.viewMatrix[8] * pos.z + this.viewMatrix[12],
+                this.viewMatrix[1] * pos.x + this.viewMatrix[5] * pos.y + this.viewMatrix[9] * pos.z + this.viewMatrix[13],
+                this.viewMatrix[2] * pos.x + this.viewMatrix[6] * pos.y + this.viewMatrix[10] * pos.z + this.viewMatrix[14],
+                this.viewMatrix[3] * pos.x + this.viewMatrix[7] * pos.y + this.viewMatrix[11] * pos.z + this.viewMatrix[15]
+            ];
+
+            // Apply projection matrix
+            const clipPos = [
+                this.projectionMatrix[0] * viewPos[0] + this.projectionMatrix[4] * viewPos[1] + this.projectionMatrix[8] * viewPos[2] + this.projectionMatrix[12] * viewPos[3],
+                this.projectionMatrix[1] * viewPos[0] + this.projectionMatrix[5] * viewPos[1] + this.projectionMatrix[9] * viewPos[2] + this.projectionMatrix[13] * viewPos[3],
+                this.projectionMatrix[2] * viewPos[0] + this.projectionMatrix[6] * viewPos[1] + this.projectionMatrix[10] * viewPos[2] + this.projectionMatrix[14] * viewPos[3],
+                this.projectionMatrix[3] * viewPos[0] + this.projectionMatrix[7] * viewPos[1] + this.projectionMatrix[11] * viewPos[2] + this.projectionMatrix[15] * viewPos[3]
+            ];
+
+            // Perspective divide
+            if (Math.abs(clipPos[3]) < 0.001) return null;
+
+            const ndcX = clipPos[0] / clipPos[3];
+            const ndcY = clipPos[1] / clipPos[3];
+            const ndcZ = clipPos[2] / clipPos[3];
+
+            // Convert to screen coordinates
+            const rect = this.canvas.getBoundingClientRect();
+            const screenX = (ndcX * 0.5 + 0.5) * rect.width + rect.left;
+            const screenY = (-ndcY * 0.5 + 0.5) * rect.height + rect.top;
+
+            return {
+                x: screenX,
+                y: screenY,
+                z: ndcZ,  // Depth for visibility check
+                ndcX,
+                ndcY
+            };
+        }
+
+        // Get currently hovered orb with screen position
+        getHoveredOrbInfo() {
+            if (!this.hoveredOrb) return null;
+
+            const screenPos = this.getOrbScreenPosition(this.hoveredOrb);
+            if (!screenPos) return null;
+
+            return {
+                conversation: this.hoveredOrb.conversation,
+                screenX: screenPos.x,
+                screenY: screenPos.y,
+                radius: this.hoveredOrb.radius
+            };
         }
 
         // ─────────────────────────────────────────────────────────────
@@ -888,8 +1450,8 @@ const ConstellationWebGL = (function() {
             const canvas = this.canvas;
             const dpr = window.devicePixelRatio || 1;
             const rect = canvas.getBoundingClientRect();
-            const width = rect.width * dpr;
-            const height = rect.height * dpr;
+            const width = Math.floor(rect.width * dpr);
+            const height = Math.floor(rect.height * dpr);
 
             if (width === 0 || height === 0) {
                 console.warn('Constellation: Canvas has zero dimensions!');
@@ -904,6 +1466,11 @@ const ConstellationWebGL = (function() {
                 // Update projection
                 const aspect = width / height;
                 mat4.perspective(this.projectionMatrix, degToRad(45), aspect, 0.1, 100);
+
+                // Initialize/resize bloom framebuffers
+                if (this.bloomEnabled) {
+                    this.initBloomFramebuffers(width, height);
+                }
             }
         }
 
@@ -941,15 +1508,39 @@ const ConstellationWebGL = (function() {
             this.resize();
             this.updateCamera(deltaTime);
 
-            // Clear to transparent
-            gl.clearColor(0, 0, 0, 0);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
             // Update hover animations
             for (const orb of this.orbs) {
                 const targetHover = orb === this.hoveredOrb ? 1 : 0;
                 orb.hover = lerp(orb.hover, targetHover, 0.15);
             }
+
+            // Check for orbs that need lazy loading
+            const orbsToLoad = this.getOrbsToLoad();
+            if (orbsToLoad.length > 0 && this.options.onOrbsNeedLoading) {
+                this.options.onOrbsNeedLoading(orbsToLoad);
+            }
+
+            // Render with bloom if enabled
+            if (this.bloomEnabled && this.bloomFramebuffers) {
+                this.renderWithBloom();
+            } else {
+                this.renderScene(null);
+            }
+        }
+
+        renderScene(framebuffer) {
+            const gl = this.gl;
+
+            if (framebuffer) {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+                gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            } else {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            }
+
+            // Clear to transparent
+            gl.clearColor(0, 0, 0, 0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             // Draw particles (background)
             this.renderParticles();
@@ -959,13 +1550,92 @@ const ConstellationWebGL = (function() {
             gl.depthMask(false);
             this.renderGlows();
 
-            // Draw content INSIDE orbs (before shells, no depth write)
+            // Draw content INSIDE orbs (always visible, no depth write)
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             this.renderContent();
 
             // Draw holographic orb shells (with depth)
             gl.depthMask(true);
             this.renderOrbs();
+        }
+
+        renderWithBloom() {
+            const gl = this.gl;
+            const fb = this.bloomFramebuffers;
+
+            // 1. Render scene to framebuffer
+            this.renderScene(fb.scene.framebuffer);
+
+            // 2. Extract bright areas
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fb.blur1.framebuffer);
+            gl.viewport(0, 0, fb.blur1.width, fb.blur1.height);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            const extractProg = this.programs.bloomExtract;
+            gl.useProgram(extractProg);
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, fb.scene.texture);
+            gl.uniform1i(gl.getUniformLocation(extractProg, 'uScene'), 0);
+            gl.uniform1f(gl.getUniformLocation(extractProg, 'uThreshold'), this.config.bloomThreshold);
+
+            this.drawFullscreenQuad(extractProg);
+
+            // 3. Blur horizontally
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fb.blur2.framebuffer);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            const blurProg = this.programs.bloomBlur;
+            gl.useProgram(blurProg);
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, fb.blur1.texture);
+            gl.uniform1i(gl.getUniformLocation(blurProg, 'uTexture'), 0);
+            gl.uniform2fv(gl.getUniformLocation(blurProg, 'uDirection'), [1.0, 0.0]);
+            gl.uniform2fv(gl.getUniformLocation(blurProg, 'uResolution'), [fb.blur1.width, fb.blur1.height]);
+
+            this.drawFullscreenQuad(blurProg);
+
+            // 4. Blur vertically
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fb.blur1.framebuffer);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            gl.bindTexture(gl.TEXTURE_2D, fb.blur2.texture);
+            gl.uniform2fv(gl.getUniformLocation(blurProg, 'uDirection'), [0.0, 1.0]);
+
+            this.drawFullscreenQuad(blurProg);
+
+            // 5. Composite to screen
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            const compositeProg = this.programs.bloomComposite;
+            gl.useProgram(compositeProg);
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, fb.scene.texture);
+            gl.uniform1i(gl.getUniformLocation(compositeProg, 'uScene'), 0);
+
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, fb.blur1.texture);
+            gl.uniform1i(gl.getUniformLocation(compositeProg, 'uBloom'), 1);
+
+            gl.uniform1f(gl.getUniformLocation(compositeProg, 'uIntensity'), this.config.bloomIntensity);
+
+            this.drawFullscreenQuad(compositeProg);
+        }
+
+        drawFullscreenQuad(program) {
+            const gl = this.gl;
+            const posLoc = gl.getAttribLocation(program, 'aPosition');
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.fullscreenQuadBuffers.position);
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.fullscreenQuadBuffers.index);
+            gl.drawElements(gl.TRIANGLES, this.fullscreenQuadBuffers.count, gl.UNSIGNED_SHORT, 0);
         }
 
         renderOrbs() {
@@ -993,6 +1663,11 @@ const ConstellationWebGL = (function() {
             gl.vertexAttribPointer(normLoc, 3, gl.FLOAT, false, 0, 0);
 
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.sphereBuffers.index);
+
+            // Bind environment cubemap for reflections
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.envMap);
+            gl.uniform1i(gl.getUniformLocation(program, 'uEnvMap'), 0);
 
             // Set uniforms
             gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uProjection'), false, this.projectionMatrix);
@@ -1072,9 +1747,9 @@ const ConstellationWebGL = (function() {
 
             if (!program) return;
 
-            // Check if any orb is being hovered
-            const hoveredOrbs = this.orbs.filter(orb => orb.hover > 0.1 && orb.content);
-            if (hoveredOrbs.length === 0) return;
+            // Get all orbs with content
+            const orbsWithContent = this.orbs.filter(orb => orb.content);
+            if (orbsWithContent.length === 0) return;
 
             gl.useProgram(program);
 
@@ -1098,20 +1773,35 @@ const ConstellationWebGL = (function() {
             gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uView'), false, this.viewMatrix);
             gl.uniform3fv(gl.getUniformLocation(program, 'uGlowColor'), [0.3, 0.6, 1.0]);
 
-            // Draw content for hovered orbs (INSIDE the orb)
-            for (const orb of hoveredOrbs) {
-                // Position content AT orb center (inside the bubble)
-                const contentCenter = orb.position;
+            // Draw content for ALL orbs (always visible inside bubbles)
+            for (const orb of orbsWithContent) {
+                // Calculate distance-based opacity (closer = brighter)
+                const camPos = this.cameraPosition;
+                const orbPos = orb.position;
+                const dx = camPos[0] - orbPos[0];
+                const dy = camPos[1] - orbPos[1];
+                const dz = camPos[2] - orbPos[2];
+                const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+                // Normalize distance: close orbs (< 3) are fully visible, far orbs (> 8) fade
+                const distFade = 1.0 - Math.min(Math.max((distance - 3) / 5, 0), 1);
+
+                // Base opacity + distance fade + hover boost
+                const baseOpacity = 0.5 + distFade * 0.35;
+                const opacity = Math.min(baseOpacity + orb.hover * 0.3, 1.0);
+
+                // Skip if too faint
+                if (opacity < 0.15) continue;
 
                 gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, orb.content.texture);
                 gl.uniform1i(gl.getUniformLocation(program, 'uTexture'), 0);
 
-                gl.uniform3fv(gl.getUniformLocation(program, 'uCenter'), contentCenter);
+                gl.uniform3fv(gl.getUniformLocation(program, 'uCenter'), orb.position);
                 // Scale to fit inside orb (70% of diameter)
                 gl.uniform1f(gl.getUniformLocation(program, 'uScale'), orb.radius * 1.4);
                 gl.uniform1f(gl.getUniformLocation(program, 'uAspect'), orb.content.aspectRatio);
-                gl.uniform1f(gl.getUniformLocation(program, 'uOpacity'), orb.hover);
+                gl.uniform1f(gl.getUniformLocation(program, 'uOpacity'), opacity);
 
                 gl.drawElements(gl.TRIANGLES, this.textQuadBuffers.count, gl.UNSIGNED_SHORT, 0);
             }

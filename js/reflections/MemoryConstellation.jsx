@@ -1,6 +1,7 @@
 // ============================================================
 // MEMORY CONSTELLATION - React Component
-// 3D floating orbs visualization for past conversations
+// Premium 3D holographic orbs visualization for past conversations
+// v8: Timeline spiral, lazy-loading, hover cards
 // ============================================================
 
 const { useState, useEffect, useRef, useCallback } = React;
@@ -8,11 +9,12 @@ const { useState, useEffect, useRef, useCallback } = React;
 function MemoryConstellation({ user, setLoadedSessionId }) {
     const canvasRef = useRef(null);
     const rendererRef = useRef(null);
+    const loadingQueueRef = useRef(new Set());
 
     // State
     const [loading, setLoading] = useState(true);
     const [conversations, setConversations] = useState([]);
-    const [hoveredConversation, setHoveredConversation] = useState(null);
+    const [hoveredInfo, setHoveredInfo] = useState(null);  // {conversation, screenX, screenY}
     const [selectedConversationId, setSelectedConversationId] = useState(null);
 
     // Load conversations
@@ -46,21 +48,88 @@ function MemoryConstellation({ user, setLoadedSessionId }) {
         loadConversations();
     }, [user?.sub, user?.id]);
 
+    // Load full conversation data for an orb
+    const loadConversationData = useCallback(async (conversation) => {
+        if (!conversation?.id) return null;
+
+        try {
+            const entry = conversationIndex.getConversation(conversation.id);
+            if (!entry?.bunny_key) {
+                console.warn('No bunny_key for conversation:', conversation.id);
+                return null;
+            }
+
+            const token = await getAuthToken();
+            const response = await fetch(
+                `${BFF_API_BASE}/cdn-proxy?path=${encodeURIComponent(entry.bunny_key)}`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const encrypted = await response.arrayBuffer();
+            const data = await decryptData(encrypted, conversationIndex.encryptionKey);
+
+            return {
+                messages: data.messages || [],
+                title: data.title
+            };
+        } catch (err) {
+            console.error('Failed to load conversation data:', conversation.id, err);
+            return null;
+        }
+    }, []);
+
+    // Handle orbs needing lazy load
+    const handleOrbsNeedLoading = useCallback(async (conversationsToLoad) => {
+        const renderer = rendererRef.current;
+        if (!renderer) return;
+
+        for (const conv of conversationsToLoad) {
+            // Skip if already loading
+            if (loadingQueueRef.current.has(conv.id)) continue;
+            loadingQueueRef.current.add(conv.id);
+
+            // Load asynchronously
+            loadConversationData(conv).then(fullData => {
+                loadingQueueRef.current.delete(conv.id);
+                if (fullData && rendererRef.current) {
+                    rendererRef.current.updateOrbContent(conv.id, fullData);
+                }
+            });
+        }
+    }, [loadConversationData]);
+
     // Initialize WebGL renderer
     useEffect(() => {
         if (loading || !canvasRef.current) return;
 
         const canvas = canvasRef.current;
 
-        // Create renderer
+        // Create renderer with callbacks
         const renderer = new ConstellationWebGL.ConstellationRenderer(canvas, {
             onOrbClick: (conversation) => {
                 console.log('Orb clicked:', conversation.title);
                 setSelectedConversationId(conversation.id);
             },
             onOrbHover: (conversation) => {
-                setHoveredConversation(conversation);
-            }
+                if (!conversation) {
+                    setHoveredInfo(null);
+                    return;
+                }
+                // Get screen position from renderer
+                const info = rendererRef.current?.getHoveredOrbInfo();
+                if (info) {
+                    setHoveredInfo({
+                        conversation: info.conversation,
+                        screenX: info.screenX,
+                        screenY: info.screenY
+                    });
+                } else {
+                    setHoveredInfo({ conversation, screenX: 0, screenY: 0 });
+                }
+            },
+            onOrbsNeedLoading: handleOrbsNeedLoading
         });
 
         // Set conversation data
@@ -74,7 +143,28 @@ function MemoryConstellation({ user, setLoadedSessionId }) {
             renderer.destroy();
             rendererRef.current = null;
         };
-    }, [loading, conversations]);
+    }, [loading, conversations, handleOrbsNeedLoading]);
+
+    // Update hover position on animation frame
+    useEffect(() => {
+        if (!hoveredInfo) return;
+
+        let rafId;
+        const updatePosition = () => {
+            const info = rendererRef.current?.getHoveredOrbInfo();
+            if (info) {
+                setHoveredInfo(prev => prev ? {
+                    ...prev,
+                    screenX: info.screenX,
+                    screenY: info.screenY
+                } : null);
+            }
+            rafId = requestAnimationFrame(updatePosition);
+        };
+
+        rafId = requestAnimationFrame(updatePosition);
+        return () => cancelAnimationFrame(rafId);
+    }, [!!hoveredInfo]);
 
     // Handle window resize
     useEffect(() => {
@@ -92,6 +182,31 @@ function MemoryConstellation({ user, setLoadedSessionId }) {
     const handleCloseModal = useCallback(() => {
         setSelectedConversationId(null);
     }, []);
+
+    // Open conversation handler
+    const handleOpenConversation = useCallback((conversationId) => {
+        setSelectedConversationId(conversationId);
+    }, []);
+
+    // Delete conversation handler
+    const handleDeleteConversation = useCallback(async (conversationId) => {
+        if (!confirm('Delete this memory? This cannot be undone.')) return;
+
+        try {
+            await conversationIndex.delete(conversationId);
+            setConversations(prev => prev.filter(c => c.id !== conversationId));
+            setHoveredInfo(null);
+
+            // Update renderer
+            if (rendererRef.current) {
+                rendererRef.current.setConversations(
+                    conversations.filter(c => c.id !== conversationId)
+                );
+            }
+        } catch (err) {
+            console.error('Failed to delete conversation:', err);
+        }
+    }, [conversations]);
 
     // Loading state
     if (loading) {
@@ -127,16 +242,15 @@ function MemoryConstellation({ user, setLoadedSessionId }) {
             {/* WebGL Canvas */}
             <canvas ref={canvasRef} className="constellation-canvas" />
 
-            {/* Hover Tooltip */}
-            {hoveredConversation && (
-                <div className="constellation-tooltip">
-                    <span className="tooltip-title">{hoveredConversation.title || 'Conversation'}</span>
-                    <span className="tooltip-meta">
-                        {hoveredConversation.message_count || 0} exchanges
-                        {' · '}
-                        {formatRelativeDate(hoveredConversation.created_at)}
-                    </span>
-                </div>
+            {/* Hover Card (positioned to the right of orb) */}
+            {hoveredInfo && (
+                <ConstellationHoverCard
+                    conversation={hoveredInfo.conversation}
+                    screenX={hoveredInfo.screenX}
+                    screenY={hoveredInfo.screenY}
+                    onOpen={() => handleOpenConversation(hoveredInfo.conversation.id)}
+                    onDelete={() => handleDeleteConversation(hoveredInfo.conversation.id)}
+                />
             )}
 
             {/* Header Overlay */}
@@ -160,6 +274,62 @@ function MemoryConstellation({ user, setLoadedSessionId }) {
                     setSessionId={() => {}}
                 />
             )}
+        </div>
+    );
+}
+
+// ============================================================
+// HOVER CARD COMPONENT
+// Appears to the right of hovered orb with metadata + actions
+// ============================================================
+
+function ConstellationHoverCard({ conversation, screenX, screenY, onOpen, onDelete }) {
+    // Calculate position (to the right of orb, clamped to viewport)
+    const cardWidth = 260;
+    const cardHeight = 140;
+    const offset = 80;  // Distance from orb center
+
+    let left = screenX + offset;
+    let top = screenY - cardHeight / 2;
+
+    // Clamp to viewport
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // If card would go off right edge, position to left of orb
+    if (left + cardWidth > viewportWidth - 20) {
+        left = screenX - offset - cardWidth;
+    }
+
+    // Clamp top/bottom
+    top = Math.max(20, Math.min(viewportHeight - cardHeight - 20, top));
+
+    return (
+        <div
+            className="constellation-hover-card"
+            style={{
+                left: `${left}px`,
+                top: `${top}px`
+            }}
+        >
+            <div className="hover-card-inner">
+                <h3>{conversation.title || 'Conversation'}</h3>
+
+                <div className="hover-card-meta">
+                    <span>{formatRelativeDate(conversation.created_at)}</span>
+                    <span className="meta-dot">·</span>
+                    <span>{conversation.message_count || 0} messages</span>
+                </div>
+
+                <div className="hover-card-actions">
+                    <button className="btn-open" onClick={onOpen}>
+                        Open
+                    </button>
+                    <button className="btn-delete" onClick={onDelete}>
+                        Delete
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
