@@ -680,6 +680,16 @@ const ConstellationWebGL = (function() {
             this.resize();
             this.updateCamera(deltaTime);
 
+            // Log once
+            if (!this._renderLogOnce) {
+                console.log('Constellation render():', {
+                    orbs: this.orbs.length,
+                    cameraPos: this.cameraPosition,
+                    glError: gl.getError()
+                });
+                this._renderLogOnce = true;
+            }
+
             // Clear
             gl.clearColor(0, 0, 0, 0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -713,6 +723,13 @@ const ConstellationWebGL = (function() {
             if (!this._loggedOnce) {
                 console.log('Constellation: Rendering orbs:', this.orbs.length);
                 console.log('Constellation: First orb:', this.orbs[0]);
+                console.log('Constellation: Program valid:', !!program);
+                console.log('Constellation: Sphere buffers:', {
+                    pos: !!this.sphereBuffers.position,
+                    norm: !!this.sphereBuffers.normal,
+                    idx: !!this.sphereBuffers.index,
+                    count: this.sphereBuffers.count
+                });
                 this._loggedOnce = true;
             }
 
