@@ -13,20 +13,20 @@ const ConstellationWebGL = (function() {
     // ═══════════════════════════════════════════════════════════════
 
     const CONFIG = {
-        // Orb sizing
-        minRadius: 0.08,
-        maxRadius: 0.25,
+        // Orb sizing - TESTING: Made huge for visibility
+        minRadius: 0.3,
+        maxRadius: 0.8,
 
         // Layout
         spreadRadius: 2.5,
 
-        // Colors (RGBA)
+        // Colors (RGBA) - TESTING: Made fully opaque and bright
         colors: {
-            recent: [0.37, 0.65, 0.98, 0.85],     // Bright blue (< 7 days)
-            moderate: [0.55, 0.36, 0.98, 0.75],   // Purple (7-30 days)
-            older: [0.38, 0.51, 0.74, 0.65],      // Muted blue-gray (> 30 days)
-            hover: [0.6, 0.85, 1.0, 1.0],         // Bright cyan on hover
-            glow: [0.2, 0.6, 1.0, 0.3]            // Outer glow
+            recent: [1.0, 0.2, 0.2, 1.0],         // BRIGHT RED for testing
+            moderate: [0.2, 1.0, 0.2, 1.0],       // BRIGHT GREEN for testing
+            older: [0.2, 0.2, 1.0, 1.0],          // BRIGHT BLUE for testing
+            hover: [1.0, 1.0, 0.0, 1.0],          // YELLOW on hover
+            glow: [1.0, 1.0, 1.0, 0.5]            // White glow
         },
 
         // Camera
