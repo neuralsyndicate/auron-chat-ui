@@ -211,10 +211,10 @@ function UserAvatarDropdown({ username, onOpenMemory, onNavigate }) {
 
     // Menu items with click handlers
     const menuItems = [
-        { label: '✨ Journey', action: () => onNavigate?.('journey') },
         { label: '👤 Profile', action: () => onNavigate?.('profile') },
         { label: '🧠 Memory', action: () => onOpenMemory?.() },
-        { label: '⚙️ Settings', action: null }
+        { label: '⚙️ Settings', action: null },
+        { label: '📚 Reflections', action: () => onNavigate?.('reflections') }
     ];
 
     // Get first letter of username (uppercase)
