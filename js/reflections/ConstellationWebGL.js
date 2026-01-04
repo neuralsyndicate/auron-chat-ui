@@ -22,13 +22,16 @@ const ConstellationWebGL = (function() {
         // Layout
         spreadRadius: 2.5,
 
-        // Colors (RGBA)
+        // Shimmer intensity (0.0 - 1.0)
+        shimmerIntensity: 0.35,
+
+        // Professional Liquid Glass Colors (RGBA)
         colors: {
-            recent: [0.4, 0.7, 1.0, 0.9],         // Bright blue (< 7 days)
-            moderate: [0.6, 0.4, 1.0, 0.85],      // Purple (7-30 days)
-            older: [0.4, 0.55, 0.8, 0.75],        // Muted blue-gray (> 30 days)
-            hover: [0.7, 0.9, 1.0, 1.0],          // Bright cyan on hover
-            glow: [0.3, 0.6, 1.0, 0.4]            // Blue glow
+            recent: [0.25, 0.55, 0.95, 0.65],     // Sapphire blue (< 7 days)
+            moderate: [0.55, 0.35, 0.92, 0.6],    // Amethyst purple (7-30 days)
+            older: [0.38, 0.48, 0.68, 0.5],       // Moonstone gray-blue (> 30 days)
+            hover: [0.7, 0.9, 1.0, 0.85],         // Bright cyan on hover
+            glow: [0.25, 0.55, 0.9, 0.3]          // Soft blue aura
         },
 
         // Camera
@@ -50,6 +53,10 @@ const ConstellationWebGL = (function() {
     // ═══════════════════════════════════════════════════════════════
 
     const SHADERS = {
+        // ═══════════════════════════════════════════════════════════════
+        // LIQUID GLASS ORB SHADER
+        // Features: Fresnel, chromatic aberration, iridescence, shimmer
+        // ═══════════════════════════════════════════════════════════════
         orb: {
             vertex: `
                 attribute vec3 aPosition;
@@ -59,51 +66,135 @@ const ConstellationWebGL = (function() {
                 uniform mat4 uView;
                 uniform mat4 uModel;
                 uniform float uScale;
+                uniform float uTime;
 
                 varying vec3 vNormal;
                 varying vec3 vPosition;
+                varying vec3 vLocalPos;
 
                 void main() {
-                    vec4 worldPos = uModel * vec4(aPosition * uScale, 1.0);
+                    // Subtle surface ripple for liquid feel
+                    vec3 pos = aPosition;
+                    float ripple = sin(aPosition.x * 8.0 + uTime * 2.0) *
+                                   cos(aPosition.y * 8.0 + uTime * 1.5) *
+                                   sin(aPosition.z * 8.0 + uTime * 1.8) * 0.015;
+                    pos += aNormal * ripple;
+
+                    vec4 worldPos = uModel * vec4(pos * uScale, 1.0);
                     vPosition = worldPos.xyz;
-                    vNormal = mat3(uModel) * aNormal;
+                    vNormal = normalize(mat3(uModel) * aNormal);
+                    vLocalPos = aPosition;
+
                     gl_Position = uProjection * uView * worldPos;
                 }
             `,
             fragment: `
-                precision mediump float;
+                precision highp float;
 
                 uniform vec4 uColor;
                 uniform vec3 uCameraPos;
                 uniform float uTime;
                 uniform float uHover;
+                uniform float uShimmer;
 
                 varying vec3 vNormal;
                 varying vec3 vPosition;
+                varying vec3 vLocalPos;
+
+                // Light direction (top-right-front)
+                const vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
+
+                // Noise functions for shimmer
+                float hash(vec3 p) {
+                    p = fract(p * 0.3183099 + 0.1);
+                    p *= 17.0;
+                    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+                }
+
+                float noise(vec3 p) {
+                    vec3 i = floor(p);
+                    vec3 f = fract(p);
+                    f = f * f * (3.0 - 2.0 * f);
+
+                    return mix(
+                        mix(mix(hash(i + vec3(0,0,0)), hash(i + vec3(1,0,0)), f.x),
+                            mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
+                        mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x),
+                            mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y),
+                        f.z
+                    );
+                }
 
                 void main() {
                     vec3 normal = normalize(vNormal);
                     vec3 viewDir = normalize(uCameraPos - vPosition);
+                    float NdotV = max(dot(normal, viewDir), 0.0);
 
-                    // Fresnel effect for glass-like edge glow
-                    float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 2.5);
+                    // === SCHLICK FRESNEL ===
+                    float F0 = 0.04; // Glass base reflectance
+                    float fresnel = F0 + (1.0 - F0) * pow(1.0 - NdotV, 5.0);
 
-                    // Inner glow gradient
-                    float innerGlow = 0.6 + 0.4 * max(dot(normal, viewDir), 0.0);
+                    // Enhanced edge glow
+                    float edgeGlow = pow(1.0 - NdotV, 3.0);
 
-                    // Pulse animation
-                    float pulse = 0.9 + 0.1 * sin(uTime * 2.0);
+                    // === CHROMATIC ABERRATION ===
+                    float chromaticOffset = edgeGlow * 0.12;
+                    vec3 chromatic = vec3(chromaticOffset, 0.0, -chromaticOffset);
 
-                    // Hover brightness boost
-                    float hoverBoost = 1.0 + uHover * 0.4;
+                    // === IRIDESCENCE ===
+                    float iridPhase = fresnel * 2.5 + uTime * 0.15;
+                    vec3 iridescence = 0.5 + 0.5 * cos(6.28318 * (iridPhase + vec3(0.0, 0.33, 0.67)));
+                    iridescence = mix(vec3(1.0), iridescence, edgeGlow * 0.35);
 
-                    // Combine effects
-                    vec3 color = uColor.rgb * innerGlow * pulse * hoverBoost;
-                    color += vec3(0.3, 0.6, 1.0) * fresnel * 0.5;
+                    // === SPECULAR HIGHLIGHTS ===
+                    vec3 halfVec = normalize(lightDir + viewDir);
+                    float NdotH = max(dot(normal, halfVec), 0.0);
+                    float specularSharp = pow(NdotH, 128.0);
+                    float specularSoft = pow(NdotH, 32.0) * 0.25;
 
-                    float alpha = uColor.a * (0.7 + fresnel * 0.3);
+                    // === SHIMMER ===
+                    float shimmerNoise = noise(vPosition * 12.0 + uTime * 0.4);
+                    float shimmer = shimmerNoise * uShimmer * (0.4 + fresnel * 0.6);
 
-                    gl_FragColor = vec4(color, alpha);
+                    // Traveling shimmer wave
+                    float shimmerWave = sin(vLocalPos.y * 8.0 + vLocalPos.x * 4.0 + uTime * 2.5) * 0.5 + 0.5;
+                    shimmer += shimmerWave * uShimmer * 0.15 * edgeGlow;
+
+                    // === INNER GLOW ===
+                    float innerGlow = pow(NdotV * 0.5 + 0.5, 0.6);
+
+                    // === COMBINE EFFECTS ===
+                    vec3 baseColor = uColor.rgb * innerGlow;
+
+                    // Add chromatic aberration
+                    baseColor += chromatic * 0.2;
+
+                    // Apply iridescence
+                    baseColor *= iridescence;
+
+                    // Rim color (cyan-white)
+                    vec3 rimColor = vec3(0.6, 0.88, 1.0);
+                    baseColor += rimColor * edgeGlow * 0.55;
+
+                    // Add shimmer
+                    baseColor += shimmer * 0.25;
+
+                    // Add specular
+                    baseColor += vec3(1.0) * specularSharp * 1.0;
+                    baseColor += rimColor * specularSoft;
+
+                    // === HOVER EFFECT ===
+                    float hoverBoost = 1.0 + uHover * 0.25;
+                    baseColor *= hoverBoost;
+                    baseColor += rimColor * edgeGlow * uHover * 0.35;
+
+                    // === ALPHA ===
+                    float alpha = uColor.a * (0.35 + fresnel * 0.45 + innerGlow * 0.25);
+                    alpha += specularSharp * 0.15;
+                    alpha = clamp(alpha, 0.0, 1.0);
+                    alpha = mix(alpha, min(alpha + 0.12, 1.0), uHover);
+
+                    gl_FragColor = vec4(baseColor, alpha);
                 }
             `
         },
@@ -181,6 +272,63 @@ const ConstellationWebGL = (function() {
                     gl_FragColor = vec4(uColor.rgb, alpha * vAlpha * uColor.a);
                 }
             `
+        },
+
+        // ═══════════════════════════════════════════════════════════════
+        // TEXT LABEL SHADER (Billboard)
+        // ═══════════════════════════════════════════════════════════════
+        textLabel: {
+            vertex: `
+                attribute vec2 aPosition;
+                attribute vec2 aTexCoord;
+
+                uniform mat4 uProjection;
+                uniform mat4 uView;
+                uniform vec3 uCenter;
+                uniform float uScale;
+                uniform float uAspect;
+
+                varying vec2 vTexCoord;
+
+                void main() {
+                    // Billboard: position in view space, always faces camera
+                    vec4 viewCenter = uView * vec4(uCenter, 1.0);
+
+                    // Offset in view space
+                    vec2 offset = aPosition * uScale;
+                    offset.x *= uAspect;
+                    viewCenter.xy += offset;
+
+                    gl_Position = uProjection * viewCenter;
+                    vTexCoord = aTexCoord;
+                }
+            `,
+            fragment: `
+                precision mediump float;
+
+                uniform sampler2D uTexture;
+                uniform float uOpacity;
+                uniform vec3 uGlowColor;
+
+                varying vec2 vTexCoord;
+
+                void main() {
+                    vec4 texColor = texture2D(uTexture, vTexCoord);
+
+                    // Text with subtle glow
+                    float textAlpha = texColor.a;
+
+                    // Glow effect
+                    float glowAlpha = smoothstep(0.0, 0.4, textAlpha) * 0.2;
+                    vec3 color = mix(uGlowColor, texColor.rgb, step(0.1, textAlpha));
+
+                    float alpha = max(textAlpha, glowAlpha) * uOpacity;
+
+                    if (alpha < 0.01) discard;
+
+                    gl_FragColor = vec4(color, alpha);
+                }
+            `
         }
     };
 
@@ -239,6 +387,116 @@ const ConstellationWebGL = (function() {
             ],
             indices: [0, 1, 2, 0, 2, 3]
         };
+    }
+
+    // Text label quad with UVs
+    function createTextQuadGeometry() {
+        return {
+            positions: [-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5],
+            texCoords: [0, 1, 1, 1, 1, 0, 0, 0],
+            indices: [0, 1, 2, 0, 2, 3]
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // TEXT LABEL MANAGER
+    // Creates canvas-based text textures for orb labels
+    // ═══════════════════════════════════════════════════════════════
+
+    class TextLabelManager {
+        constructor(gl) {
+            this.gl = gl;
+            this.cache = new Map();
+            this.canvas = document.createElement('canvas');
+            this.ctx = this.canvas.getContext('2d');
+        }
+
+        createLabel(text, id) {
+            if (this.cache.has(id)) {
+                return this.cache.get(id);
+            }
+
+            const gl = this.gl;
+            const ctx = this.ctx;
+
+            // Config
+            const fontSize = 13;
+            const fontFamily = '"Plus Jakarta Sans", -apple-system, sans-serif';
+            const padding = 10;
+            const maxWidth = 140;
+
+            // Measure text
+            ctx.font = `500 ${fontSize}px ${fontFamily}`;
+            let displayText = text || 'Untitled';
+            let metrics = ctx.measureText(displayText);
+
+            // Truncate if needed
+            if (metrics.width > maxWidth) {
+                while (ctx.measureText(displayText + '...').width > maxWidth && displayText.length > 1) {
+                    displayText = displayText.slice(0, -1);
+                }
+                displayText += '...';
+                metrics = ctx.measureText(displayText);
+            }
+
+            // Canvas size (power of 2)
+            const textWidth = metrics.width;
+            const canvasW = Math.pow(2, Math.ceil(Math.log2(textWidth + padding * 2)));
+            const canvasH = Math.pow(2, Math.ceil(Math.log2(fontSize + padding * 2)));
+
+            this.canvas.width = canvasW;
+            this.canvas.height = canvasH;
+
+            // Clear
+            ctx.clearRect(0, 0, canvasW, canvasH);
+
+            // Background pill
+            const bgPadding = 4;
+            const bgWidth = textWidth + padding * 2 - bgPadding * 2;
+            const bgHeight = fontSize + padding - bgPadding * 2;
+            const bgX = (canvasW - bgWidth) / 2;
+            const bgY = (canvasH - bgHeight) / 2;
+            const radius = bgHeight / 2;
+
+            ctx.fillStyle = 'rgba(0, 15, 35, 0.75)';
+            ctx.beginPath();
+            ctx.roundRect(bgX, bgY, bgWidth, bgHeight, radius);
+            ctx.fill();
+
+            // Text
+            ctx.font = `500 ${fontSize}px ${fontFamily}`;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(displayText, canvasW / 2, canvasH / 2);
+
+            // Create texture
+            const texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            const labelData = {
+                texture,
+                width: canvasW,
+                height: canvasH,
+                aspectRatio: canvasW / canvasH
+            };
+
+            this.cache.set(id, labelData);
+            return labelData;
+        }
+
+        destroy() {
+            const gl = this.gl;
+            for (const data of this.cache.values()) {
+                gl.deleteTexture(data.texture);
+            }
+            this.cache.clear();
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -322,6 +580,18 @@ const ConstellationWebGL = (function() {
                 index: this.createIndexBuffer(new Uint16Array(quad.indices)),
                 count: quad.indices.length
             };
+
+            // Text quad buffers (for labels)
+            const textQuad = createTextQuadGeometry();
+            this.textQuadBuffers = {
+                position: this.createBuffer(new Float32Array(textQuad.positions)),
+                texCoord: this.createBuffer(new Float32Array(textQuad.texCoords)),
+                index: this.createIndexBuffer(new Uint16Array(textQuad.indices)),
+                count: textQuad.indices.length
+            };
+
+            // Text label manager
+            this.textLabelManager = new TextLabelManager(gl);
 
             // Create particle system
             this.initParticles(200);
@@ -414,6 +684,14 @@ const ConstellationWebGL = (function() {
 
         setConversations(conversations) {
             this.orbs = this.positionOrbs(conversations);
+
+            // Create text labels for each orb
+            if (this.textLabelManager) {
+                for (const orb of this.orbs) {
+                    const title = orb.conversation.title || 'Conversation';
+                    orb.label = this.textLabelManager.createLabel(title, orb.conversation.id);
+                }
+            }
         }
 
         positionOrbs(conversations) {
@@ -568,40 +846,27 @@ const ConstellationWebGL = (function() {
         }
 
         screenToRay(x, y) {
-            // Unproject screen coordinates to ray
-            const invProj = mat4.create();
-            mat4.invert(invProj, this.projectionMatrix);
+            // Combine view and projection matrices
+            const viewProjMatrix = mat4.create();
+            mat4.multiply(viewProjMatrix, this.projectionMatrix, this.viewMatrix);
 
-            const invView = mat4.create();
-            mat4.invert(invView, this.viewMatrix);
+            // Invert combined matrix
+            const invViewProj = mat4.create();
+            mat4.invert(invViewProj, viewProjMatrix);
 
-            // Near plane point
-            const nearPoint = [x, y, -1, 1];
-            const worldNear = [];
-            mat4.transformVec4(worldNear, invProj, nearPoint);
-            worldNear[0] /= worldNear[3];
-            worldNear[1] /= worldNear[3];
-            worldNear[2] /= worldNear[3];
-            mat4.transformVec4(worldNear, invView, [...worldNear.slice(0, 3), 1]);
-
-            // Far plane point
-            const farPoint = [x, y, 1, 1];
-            const worldFar = [];
-            mat4.transformVec4(worldFar, invProj, farPoint);
-            worldFar[0] /= worldFar[3];
-            worldFar[1] /= worldFar[3];
-            worldFar[2] /= worldFar[3];
-            mat4.transformVec4(worldFar, invView, [...worldFar.slice(0, 3), 1]);
-
-            const origin = worldNear.slice(0, 3);
-            const direction = vec3.normalize([], vec3.subtract([], worldFar.slice(0, 3), origin));
-
-            return { origin, direction };
+            // Use MatrixMath.unprojectRay which returns {origin: {x,y,z}, direction: {x,y,z}}
+            return MatrixMath.unprojectRay(x, y, invViewProj);
         }
 
         rayOrbIntersect(ray, orb) {
-            // Ray-sphere intersection
-            const oc = vec3.subtract([], ray.origin, orb.position);
+            // Ray-sphere intersection using {x,y,z} objects
+            const orbCenter = {
+                x: orb.position[0],
+                y: orb.position[1],
+                z: orb.position[2]
+            };
+
+            const oc = vec3.subtract(ray.origin, orbCenter);
             const a = vec3.dot(ray.direction, ray.direction);
             const b = 2 * vec3.dot(oc, ray.direction);
             const c = vec3.dot(oc, oc) - orb.radius * orb.radius;
@@ -696,6 +961,11 @@ const ConstellationWebGL = (function() {
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             gl.depthMask(true);
             this.renderOrbs();
+
+            // Draw text labels (only on hover)
+            gl.depthMask(false);
+            this.renderLabels();
+            gl.depthMask(true);
         }
 
         renderOrbs() {
@@ -729,6 +999,7 @@ const ConstellationWebGL = (function() {
             gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uView'), false, this.viewMatrix);
             gl.uniform3fv(gl.getUniformLocation(program, 'uCameraPos'), this.cameraPosition);
             gl.uniform1f(gl.getUniformLocation(program, 'uTime'), this.time);
+            gl.uniform1f(gl.getUniformLocation(program, 'uShimmer'), this.config.shimmerIntensity);
 
             // Draw orbs
             for (const orb of this.orbs) {
@@ -796,6 +1067,60 @@ const ConstellationWebGL = (function() {
             gl.drawArrays(gl.POINTS, 0, this.particleBuffers.count);
         }
 
+        renderLabels() {
+            const gl = this.gl;
+            const program = this.programs.textLabel;
+
+            if (!program) return;
+
+            // Check if any orb is being hovered
+            const hoveredOrbs = this.orbs.filter(orb => orb.hover > 0.1 && orb.label);
+            if (hoveredOrbs.length === 0) return;
+
+            gl.useProgram(program);
+
+            // Get attribute locations
+            const posLoc = gl.getAttribLocation(program, 'aPosition');
+            const texLoc = gl.getAttribLocation(program, 'aTexCoord');
+
+            // Bind geometry
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.textQuadBuffers.position);
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.textQuadBuffers.texCoord);
+            gl.enableVertexAttribArray(texLoc);
+            gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 0, 0);
+
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.textQuadBuffers.index);
+
+            // Set shared uniforms
+            gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uProjection'), false, this.projectionMatrix);
+            gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uView'), false, this.viewMatrix);
+            gl.uniform3fv(gl.getUniformLocation(program, 'uGlowColor'), [0.2, 0.5, 0.9]);
+
+            // Draw labels for hovered orbs
+            for (const orb of hoveredOrbs) {
+                // Position label slightly above orb
+                const labelCenter = [
+                    orb.position[0],
+                    orb.position[1] + orb.radius * 1.8,
+                    orb.position[2]
+                ];
+
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, orb.label.texture);
+                gl.uniform1i(gl.getUniformLocation(program, 'uTexture'), 0);
+
+                gl.uniform3fv(gl.getUniformLocation(program, 'uCenter'), labelCenter);
+                gl.uniform1f(gl.getUniformLocation(program, 'uScale'), 0.35);
+                gl.uniform1f(gl.getUniformLocation(program, 'uAspect'), orb.label.aspectRatio);
+                gl.uniform1f(gl.getUniformLocation(program, 'uOpacity'), orb.hover);
+
+                gl.drawElements(gl.TRIANGLES, this.textQuadBuffers.count, gl.UNSIGNED_SHORT, 0);
+            }
+        }
+
         // ─────────────────────────────────────────────────────────────
         // LIFECYCLE
         // ─────────────────────────────────────────────────────────────
@@ -822,7 +1147,11 @@ const ConstellationWebGL = (function() {
 
         destroy() {
             this.stop();
-            // Cleanup WebGL resources if needed
+            // Cleanup WebGL resources
+            if (this.textLabelManager) {
+                this.textLabelManager.destroy();
+                this.textLabelManager = null;
+            }
         }
     }
 
