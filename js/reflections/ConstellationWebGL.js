@@ -3,7 +3,7 @@
 // Floating memory orbs representing past conversations
 // ============================================================
 
-console.log('=== CONSTELLATION v5 LOADED ===');
+// Memory Constellation v6
 
 const ConstellationWebGL = (function() {
     'use strict';
@@ -15,20 +15,20 @@ const ConstellationWebGL = (function() {
     // ═══════════════════════════════════════════════════════════════
 
     const CONFIG = {
-        // Orb sizing - TESTING: Made huge for visibility
-        minRadius: 0.3,
-        maxRadius: 0.8,
+        // Orb sizing
+        minRadius: 0.12,
+        maxRadius: 0.35,
 
         // Layout
         spreadRadius: 2.5,
 
-        // Colors (RGBA) - TESTING: Made fully opaque and bright
+        // Colors (RGBA)
         colors: {
-            recent: [1.0, 0.2, 0.2, 1.0],         // BRIGHT RED for testing
-            moderate: [0.2, 1.0, 0.2, 1.0],       // BRIGHT GREEN for testing
-            older: [0.2, 0.2, 1.0, 1.0],          // BRIGHT BLUE for testing
-            hover: [1.0, 1.0, 0.0, 1.0],          // YELLOW on hover
-            glow: [1.0, 1.0, 1.0, 0.5]            // White glow
+            recent: [0.4, 0.7, 1.0, 0.9],         // Bright blue (< 7 days)
+            moderate: [0.6, 0.4, 1.0, 0.85],      // Purple (7-30 days)
+            older: [0.4, 0.55, 0.8, 0.75],        // Muted blue-gray (> 30 days)
+            hover: [0.7, 0.9, 1.0, 1.0],          // Bright cyan on hover
+            glow: [0.3, 0.6, 1.0, 0.4]            // Blue glow
         },
 
         // Camera
@@ -413,9 +413,7 @@ const ConstellationWebGL = (function() {
         // ─────────────────────────────────────────────────────────────
 
         setConversations(conversations) {
-            console.log('Constellation: Setting conversations:', conversations?.length);
             this.orbs = this.positionOrbs(conversations);
-            console.log('Constellation: Created orbs:', this.orbs.length, this.orbs.slice(0, 2));
         }
 
         positionOrbs(conversations) {
@@ -626,11 +624,6 @@ const ConstellationWebGL = (function() {
             const width = rect.width * dpr;
             const height = rect.height * dpr;
 
-            if (!this._resizeLogged) {
-                console.log('Constellation resize:', { width, height, orbCount: this.orbs.length });
-                this._resizeLogged = true;
-            }
-
             if (width === 0 || height === 0) {
                 console.warn('Constellation: Canvas has zero dimensions!');
                 return;
@@ -681,18 +674,8 @@ const ConstellationWebGL = (function() {
             this.resize();
             this.updateCamera(deltaTime);
 
-            // Log once
-            if (!this._renderLogOnce) {
-                console.log('Constellation render():', {
-                    orbs: this.orbs.length,
-                    cameraPos: this.cameraPosition,
-                    glError: gl.getError()
-                });
-                this._renderLogOnce = true;
-            }
-
-            // Clear - BRIGHT MAGENTA to prove WebGL works
-            gl.clearColor(1.0, 0.0, 1.0, 1.0);
+            // Clear to transparent
+            gl.clearColor(0, 0, 0, 0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             // Update hover animations
@@ -726,24 +709,9 @@ const ConstellationWebGL = (function() {
 
             gl.useProgram(program);
 
-            // Check attribute locations
+            // Get attribute locations
             const posLoc = gl.getAttribLocation(program, 'aPosition');
             const normLoc = gl.getAttribLocation(program, 'aNormal');
-
-            if (!this._loggedOnce) {
-                console.log('Orb shader attribs:', { posLoc, normLoc });
-                console.log('Matrices:', {
-                    proj: this.projectionMatrix?.slice(0, 4),
-                    view: this.viewMatrix?.slice(0, 4),
-                    camPos: this.cameraPosition
-                });
-                this._loggedOnce = true;
-            }
-
-            if (posLoc === -1 || normLoc === -1) {
-                console.error('Invalid attribute locations!');
-                return;
-            }
 
             // Bind geometry
             gl.bindBuffer(gl.ARRAY_BUFFER, this.sphereBuffers.position);
@@ -762,16 +730,7 @@ const ConstellationWebGL = (function() {
             gl.uniform3fv(gl.getUniformLocation(program, 'uCameraPos'), this.cameraPosition);
             gl.uniform1f(gl.getUniformLocation(program, 'uTime'), this.time);
 
-            // Draw ONE test orb at origin first
-            mat4.identity(this.modelMatrix);
-            gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uModel'), false, this.modelMatrix);
-            gl.uniform1f(gl.getUniformLocation(program, 'uScale'), 1.0); // Big sphere
-            gl.uniform1f(gl.getUniformLocation(program, 'uHover'), 0);
-            gl.uniform4fv(gl.getUniformLocation(program, 'uColor'), [1, 1, 1, 1]); // White
-
-            gl.drawElements(gl.TRIANGLES, this.sphereBuffers.count, gl.UNSIGNED_SHORT, 0);
-
-            // Now draw actual orbs
+            // Draw orbs
             for (const orb of this.orbs) {
                 // MatrixMath.mat4.translate takes (out, {x,y,z})
                 const pos = { x: orb.position[0], y: orb.position[1], z: orb.position[2] };
