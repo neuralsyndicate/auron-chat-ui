@@ -3,7 +3,7 @@
 // Floating memory orbs representing past conversations
 // ============================================================
 
-console.log('=== CONSTELLATION v3 LOADED ===');
+console.log('=== CONSTELLATION v4 LOADED ===');
 
 const ConstellationWebGL = (function() {
     'use strict';
@@ -626,15 +626,10 @@ const ConstellationWebGL = (function() {
             const width = rect.width * dpr;
             const height = rect.height * dpr;
 
-            console.log('Constellation resize:', {
-                clientWidth: canvas.clientWidth,
-                clientHeight: canvas.clientHeight,
-                rectWidth: rect.width,
-                rectHeight: rect.height,
-                width,
-                height,
-                orbCount: this.orbs.length
-            });
+            if (!this._resizeLogged) {
+                console.log('Constellation resize:', { width, height, orbCount: this.orbs.length });
+                this._resizeLogged = true;
+            }
 
             if (width === 0 || height === 0) {
                 console.warn('Constellation: Canvas has zero dimensions!');
@@ -720,27 +715,33 @@ const ConstellationWebGL = (function() {
             const gl = this.gl;
             const program = this.programs.orb;
 
-            if (this.orbs.length === 0) return;
-
-            if (!this._loggedOnce) {
-                console.log('Constellation: Rendering orbs:', this.orbs.length);
-                console.log('Constellation: First orb:', this.orbs[0]);
-                console.log('Constellation: Program valid:', !!program);
-                console.log('Constellation: Sphere buffers:', {
-                    pos: !!this.sphereBuffers.position,
-                    norm: !!this.sphereBuffers.normal,
-                    idx: !!this.sphereBuffers.index,
-                    count: this.sphereBuffers.count
-                });
-                this._loggedOnce = true;
+            if (!program) {
+                console.error('No orb program!');
+                return;
             }
 
             gl.useProgram(program);
 
-            // Bind sphere geometry
+            // Check attribute locations
             const posLoc = gl.getAttribLocation(program, 'aPosition');
             const normLoc = gl.getAttribLocation(program, 'aNormal');
 
+            if (!this._loggedOnce) {
+                console.log('Orb shader attribs:', { posLoc, normLoc });
+                console.log('Matrices:', {
+                    proj: this.projectionMatrix?.slice(0, 4),
+                    view: this.viewMatrix?.slice(0, 4),
+                    camPos: this.cameraPosition
+                });
+                this._loggedOnce = true;
+            }
+
+            if (posLoc === -1 || normLoc === -1) {
+                console.error('Invalid attribute locations!');
+                return;
+            }
+
+            // Bind geometry
             gl.bindBuffer(gl.ARRAY_BUFFER, this.sphereBuffers.position);
             gl.enableVertexAttribArray(posLoc);
             gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 0, 0);
@@ -751,26 +752,30 @@ const ConstellationWebGL = (function() {
 
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.sphereBuffers.index);
 
-            // Set shared uniforms
+            // Set uniforms
             gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uProjection'), false, this.projectionMatrix);
             gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uView'), false, this.viewMatrix);
             gl.uniform3fv(gl.getUniformLocation(program, 'uCameraPos'), this.cameraPosition);
             gl.uniform1f(gl.getUniformLocation(program, 'uTime'), this.time);
 
-            // Draw each orb
+            // Draw ONE test orb at origin first
+            mat4.identity(this.modelMatrix);
+            gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uModel'), false, this.modelMatrix);
+            gl.uniform1f(gl.getUniformLocation(program, 'uScale'), 1.0); // Big sphere
+            gl.uniform1f(gl.getUniformLocation(program, 'uHover'), 0);
+            gl.uniform4fv(gl.getUniformLocation(program, 'uColor'), [1, 1, 1, 1]); // White
+
+            gl.drawElements(gl.TRIANGLES, this.sphereBuffers.count, gl.UNSIGNED_SHORT, 0);
+
+            // Now draw actual orbs
             for (const orb of this.orbs) {
                 mat4.identity(this.modelMatrix);
                 mat4.translate(this.modelMatrix, this.modelMatrix, orb.position);
 
-                const scale = orb.radius * (1 + orb.hover * (this.config.hoverScale - 1));
-
                 gl.uniformMatrix4fv(gl.getUniformLocation(program, 'uModel'), false, this.modelMatrix);
-                gl.uniform1f(gl.getUniformLocation(program, 'uScale'), scale);
+                gl.uniform1f(gl.getUniformLocation(program, 'uScale'), orb.radius);
                 gl.uniform1f(gl.getUniformLocation(program, 'uHover'), orb.hover);
-
-                // Blend between base color and hover color
-                const color = orb.hover > 0.5 ? this.config.colors.hover : orb.color;
-                gl.uniform4fv(gl.getUniformLocation(program, 'uColor'), color);
+                gl.uniform4fv(gl.getUniformLocation(program, 'uColor'), orb.color);
 
                 gl.drawElements(gl.TRIANGLES, this.sphereBuffers.count, gl.UNSIGNED_SHORT, 0);
             }
