@@ -463,9 +463,9 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     console.log('newSessionId:', newSessionId, 'sessionId state:', sessionId);
                     if (result.metadata && result.metadata.session_id) setSessionId(result.metadata.session_id);
 
-                    // Extract TEE verification from agent_analysis
-                    const teeVerification = result.agent_analysis?.tee_verification || result.analysis?.tee_verification || null;
-                    console.log('TEE extraction:', { agent_analysis: result.agent_analysis, analysis: result.analysis, extracted: teeVerification });
+                    // Extract TEE verification (top-level field in response)
+                    const teeVerification = result.tee_verification || null;
+                    console.log('TEE extraction:', { tee_verification: result.tee_verification, extracted: teeVerification });
                     if (teeVerification) {
                         // Set session baseline on first TEE response
                         if (sessionTeeStatus === null) {
@@ -475,9 +475,17 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     }
 
                     const currentIndex = streamingMessageIndexRef.current;
-                    if (currentIndex !== null && result.sources) {
+                    // Update message with sources, analysis, and TEE verification
+                    if (currentIndex !== null && (result.sources || teeVerification)) {
                         setMessages(msgs => msgs.map((msg, idx) => idx === currentIndex && msg.dialogue ? {
-                            ...msg, dialogue: { ...msg.dialogue, sources: result.sources || msg.dialogue.sources, research_quality: result.analysis?.web_search?.research_quality || msg.dialogue.research_quality, cited_references: result.analysis?.cited_references || msg.dialogue.cited_references, research_synthesis: result.research_synthesis || msg.dialogue.research_synthesis, tee_verification: teeVerification }
+                            ...msg, dialogue: {
+                                ...msg.dialogue,
+                                sources: result.sources || msg.dialogue.sources,
+                                research_quality: result.analysis?.web_search?.research_quality || msg.dialogue.research_quality,
+                                cited_references: result.analysis?.cited_references || msg.dialogue.cited_references,
+                                research_synthesis: result.research_synthesis || msg.dialogue.research_synthesis,
+                                tee_verification: teeVerification || msg.dialogue.tee_verification
+                            }
                         } : msg));
                     }
 
