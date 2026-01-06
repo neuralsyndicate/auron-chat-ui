@@ -95,24 +95,17 @@ function TEESessionBadge({ teeVerification, onClick }) {
 function TEEMessageBadge({ teeVerification, sessionDefault, onClick }) {
     if (!teeVerification) return null;
 
-    // Smart display: only show if different from session default
-    if (!shouldShowMessageBadge(teeVerification, sessionDefault)) {
-        return null;
-    }
-
     const isVerified = teeVerification.all_verified;
 
+    // Always show - compact indicator next to Auron label
     return (
         <button
             onClick={onClick}
             className={`tee-message-badge ${isVerified ? 'verified' : 'unverified'}`}
-            title={isVerified ? 'Verified by TEE' : 'Not TEE verified'}
+            title={isVerified ? 'Verified by TEE - Click for details' : 'Not TEE verified - Click for details'}
         >
             <span className="tee-badge-icon-small">
                 {isVerified ? '◉' : '○'}
-            </span>
-            <span className="tee-badge-text-small">
-                {isVerified ? 'TEE' : 'Unverified'}
             </span>
         </button>
     );

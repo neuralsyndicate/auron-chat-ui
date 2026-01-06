@@ -601,13 +601,6 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
             )}
 
             <div className="flex-1 overflow-y-auto py-16 px-8" style={{ scrollbarWidth: 'thin', scrollbarColor: '#00A8FF #1a1a1a' }} onDragOver={handleDragOver} onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDrop={handleDrop}>
-                {/* TEE Session Badge - Fixed bottom-right via CSS */}
-                {sessionTeeVerification && window.TEEVerification && (
-                    <TEEVerification.TEESessionBadge
-                        teeVerification={sessionTeeVerification}
-                        onClick={() => setShowTeeModal(true)}
-                    />
-                )}
                 <div className="max-w-4xl mx-auto space-y-8">
                     {messages.map((msg, idx) => (
                         <DialogueMessage key={idx} message={msg} onOpenDialogue={(dialogue) => setCurrentDialogue(dialogue)} onOpenReferences={(sources) => { setSidebarSources(sources); setSidebarOpen(true); }} onOpenBlueprintPanel={(sources) => { setBlueprintPanelSources(sources); setBlueprintPanelOpen(true); }} onCloseBlueprintPanel={() => setBlueprintPanelOpen(false)} sendMessage={handleSendMessage} sessionTeeStatus={sessionTeeStatus} onOpenTeeModal={(teeData) => { setSessionTeeVerification(teeData); setShowTeeModal(true); }} />

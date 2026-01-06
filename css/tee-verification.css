@@ -117,62 +117,54 @@
     color: rgba(96, 165, 250, 0.5);
 }
 
-/* ===== MESSAGE BADGE (Inline) ===== */
+/* ===== MESSAGE BADGE (Inline next to Auron label) ===== */
 .tee-message-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.25rem 0.625rem;
-    border-radius: 10px;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border-radius: 50%;
     cursor: pointer;
-    margin-left: 0.5rem;
+    margin-left: 0.375rem;
     font-family: inherit;
     transition: all 0.3s ease;
     vertical-align: middle;
 
-    background: rgba(96, 165, 250, 0.06);
-    border: 1px solid rgba(96, 165, 250, 0.12);
+    background: transparent;
+    border: none;
 }
 
 .tee-message-badge.verified {
-    box-shadow: 0 0 15px rgba(96, 165, 250, 0.08);
+    /* Subtle glow on hover */
 }
 
 .tee-message-badge.unverified {
-    opacity: 0.7;
+    opacity: 0.5;
 }
 
 .tee-message-badge:hover {
-    transform: scale(1.05);
-    background: rgba(96, 165, 250, 0.1);
-    border-color: rgba(96, 165, 250, 0.2);
+    transform: scale(1.15);
+}
+
+.tee-message-badge:hover .tee-badge-icon-small {
+    filter: drop-shadow(0 0 6px rgba(96, 165, 250, 0.6));
 }
 
 .tee-badge-icon-small {
-    font-size: 0.75rem;
+    font-size: 0.625rem;
+    line-height: 1;
+    transition: all 0.2s ease;
 }
 
 .tee-message-badge.verified .tee-badge-icon-small {
     color: #60A5FA;
+    filter: drop-shadow(0 0 4px rgba(96, 165, 250, 0.4));
 }
 
 .tee-message-badge.unverified .tee-badge-icon-small {
-    color: rgba(96, 165, 250, 0.5);
-}
-
-.tee-badge-text-small {
-    font-size: 0.5625rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.tee-message-badge.verified .tee-badge-text-small {
-    color: rgba(96, 165, 250, 0.85);
-}
-
-.tee-message-badge.unverified .tee-badge-text-small {
-    color: rgba(96, 165, 250, 0.5);
+    color: rgba(96, 165, 250, 0.4);
 }
 
 /* ===== HOVER INDICATOR (Constellation) ===== */
