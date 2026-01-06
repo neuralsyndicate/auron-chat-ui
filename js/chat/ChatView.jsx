@@ -464,7 +464,8 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     if (result.metadata && result.metadata.session_id) setSessionId(result.metadata.session_id);
 
                     // Extract TEE verification from agent_analysis
-                    const teeVerification = result.analysis?.tee_verification || null;
+                    const teeVerification = result.agent_analysis?.tee_verification || result.analysis?.tee_verification || null;
+                    console.log('TEE extraction:', { agent_analysis: result.agent_analysis, analysis: result.analysis, extracted: teeVerification });
                     if (teeVerification) {
                         // Set session baseline on first TEE response
                         if (sessionTeeStatus === null) {
