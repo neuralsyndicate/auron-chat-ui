@@ -97,8 +97,9 @@ const ConstellationWebGL = (function() {
                     vViewDir = normalize(uCameraPos - worldPos.xyz);
 
                     // Pre-calculate Fresnel for fragment shader (performance)
+                    // Lower power = wider edge glow for better visibility
                     float NdotV = max(dot(vNormal, vViewDir), 0.0);
-                    vFresnel = pow(1.0 - NdotV, 4.0);
+                    vFresnel = pow(1.0 - NdotV, 3.0);
 
                     gl_Position = uProjection * uView * worldPos;
                 }
@@ -165,17 +166,17 @@ const ConstellationWebGL = (function() {
                     float spec2 = pow(max(dot(N, H2), 0.0), 64.0) * 0.3;
 
                     // === BUILD FINAL COLOR ===
-                    // DEBUG: Bright neon test - should be VERY visible
-                    vec3 color = vec3(0.2, 0.8, 0.4);  // Bright green-cyan
+                    // Rich blue glass base
+                    vec3 color = vec3(0.1, 0.18, 0.32);
 
-                    // Add ambient environment glow (always visible, not just at edges)
-                    color += textureCube(uEnvMap, N).rgb * 0.5;
+                    // Add ambient environment glow (always visible)
+                    color += textureCube(uEnvMap, N).rgb * 0.35;
 
                     // Add environment (mix refraction/reflection by Fresnel)
-                    color += mix(envRefraction, envReflection, fresnel.r) * 1.2;
+                    color += mix(envRefraction, envReflection, fresnel.r);
 
-                    // Add rim glow (energy at edges)
-                    color += energyColor * vFresnel * 0.75;
+                    // Add rim glow (energy at edges) - strong for visibility
+                    color += energyColor * vFresnel * 1.2;
 
                     // Add subtle scanlines
                     color += energyColor * scanline;
@@ -183,9 +184,9 @@ const ConstellationWebGL = (function() {
                     // Add subsurface glow
                     color += energyColor * subsurface;
 
-                    // Add specular highlights
-                    color += vec3(1.0, 0.98, 0.95) * spec1 * 0.55;
-                    color += vec3(0.8, 0.85, 1.0) * spec2;
+                    // Add specular highlights - bright for glass reflections
+                    color += vec3(1.0, 0.98, 0.95) * spec1 * 0.9;
+                    color += vec3(0.8, 0.85, 1.0) * spec2 * 1.5;
 
                     // === HOVER ENHANCEMENT ===
                     float hoverGlow = uHover * 0.35;
@@ -194,9 +195,8 @@ const ConstellationWebGL = (function() {
                     color *= 1.0 + uHover * 0.1;
 
                     // === ALPHA (glass transparency) ===
-                    // DEBUG: High alpha for visibility test
-                    float alpha = 0.7 + vFresnel * 0.2 + spec1 * 0.1;
-                    alpha = mix(alpha, min(alpha + 0.1, 0.98), uHover);
+                    float alpha = 0.55 + vFresnel * 0.3 + spec1 * 0.12;
+                    alpha = mix(alpha, min(alpha + 0.15, 0.95), uHover);
 
                     gl_FragColor = vec4(color, alpha);
                 }
@@ -1791,7 +1791,7 @@ const ConstellationWebGL = (function() {
                 const distFade = 1.0 - Math.min(Math.max((distance - 3) / 5, 0), 1);
 
                 // Base opacity + distance fade + hover boost
-                const baseOpacity = 0.5 + distFade * 0.35;
+                const baseOpacity = 0.7 + distFade * 0.25;
                 const opacity = Math.min(baseOpacity + orb.hover * 0.3, 1.0);
 
                 // Skip if too faint

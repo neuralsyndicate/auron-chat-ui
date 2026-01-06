@@ -12,8 +12,27 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: radial-gradient(ellipse at center, rgba(15, 20, 35, 1) 0%, rgba(0, 0, 0, 1) 100%);
+    /* Animated blue shimmer background */
+    background:
+        radial-gradient(ellipse at 30% 20%, rgba(60, 120, 200, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(100, 80, 180, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(40, 100, 180, 0.1) 0%, transparent 60%),
+        radial-gradient(ellipse at center, rgba(15, 25, 50, 1) 0%, rgba(5, 8, 15, 1) 100%);
+    background-size: 200% 200%, 200% 200%, 150% 150%, 100% 100%;
+    animation: constellation-shimmer 12s ease-in-out infinite;
     overflow: hidden;
+}
+
+@keyframes constellation-shimmer {
+    0%, 100% {
+        background-position: 0% 0%, 100% 100%, 50% 50%, center;
+    }
+    33% {
+        background-position: 100% 50%, 0% 50%, 30% 70%, center;
+    }
+    66% {
+        background-position: 50% 100%, 50% 0%, 70% 30%, center;
+    }
 }
 
 /* Ensure main element can contain absolute children */
