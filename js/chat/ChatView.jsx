@@ -64,6 +64,11 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
     const [conversationTitle, setConversationTitle] = useState(null);
     const isFirstMessageRef = useRef(true);
 
+    // TEE Verification State
+    const [sessionTeeStatus, setSessionTeeStatus] = useState(null);
+    const [sessionTeeVerification, setSessionTeeVerification] = useState(null);
+    const [showTeeModal, setShowTeeModal] = useState(false);
+
     // Initialize frontend encryption and conversation index
     useEffect(() => {
         const initEncryption = async () => {
@@ -305,10 +310,14 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     content: m.role === 'auron' ? (m.dialogue?.guidance || m.content || '') : (m.content || ''),
                     timestamp: m.timestamp || new Date().toISOString(),
                     // Preserve full dialogue data for past conversation display
-                    ...(m.dialogue && { dialogue: m.dialogue, isDialogue: true })
+                    ...(m.dialogue && { dialogue: m.dialogue, isDialogue: true }),
+                    // Include TEE verification for Auron messages
+                    ...(m.dialogue?.tee_verification && { tee_verification: m.dialogue.tee_verification })
                 })),
                 created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
+                updated_at: new Date().toISOString(),
+                // Session-level TEE verification status
+                session_tee_verification: sessionTeeVerification
             };
 
             // Encrypt and upload
@@ -454,10 +463,20 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     console.log('newSessionId:', newSessionId, 'sessionId state:', sessionId);
                     if (result.metadata && result.metadata.session_id) setSessionId(result.metadata.session_id);
 
+                    // Extract TEE verification from agent_analysis
+                    const teeVerification = result.analysis?.tee_verification || null;
+                    if (teeVerification) {
+                        // Set session baseline on first TEE response
+                        if (sessionTeeStatus === null) {
+                            setSessionTeeStatus(teeVerification.all_verified);
+                            setSessionTeeVerification(teeVerification);
+                        }
+                    }
+
                     const currentIndex = streamingMessageIndexRef.current;
                     if (currentIndex !== null && result.sources) {
                         setMessages(msgs => msgs.map((msg, idx) => idx === currentIndex && msg.dialogue ? {
-                            ...msg, dialogue: { ...msg.dialogue, sources: result.sources || msg.dialogue.sources, research_quality: result.analysis?.web_search?.research_quality || msg.dialogue.research_quality, cited_references: result.analysis?.cited_references || msg.dialogue.cited_references, research_synthesis: result.research_synthesis || msg.dialogue.research_synthesis }
+                            ...msg, dialogue: { ...msg.dialogue, sources: result.sources || msg.dialogue.sources, research_quality: result.analysis?.web_search?.research_quality || msg.dialogue.research_quality, cited_references: result.analysis?.cited_references || msg.dialogue.cited_references, research_synthesis: result.research_synthesis || msg.dialogue.research_synthesis, tee_verification: teeVerification }
                         } : msg));
                     }
 
@@ -548,6 +567,10 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                 <NeuralQuestionnaireModal uploadId={questionnaireUploadId} dspComplete={dspComplete} onComplete={handleQuestionnaireComplete} onClose={handleQuestionnaireClose} />
             )}
 
+            {showTeeModal && sessionTeeVerification && (
+                <TEEVerification.TEEAttestationModal teeVerification={sessionTeeVerification} onClose={() => setShowTeeModal(false)} />
+            )}
+
             {(isStreaming || isPanelFading) && (
                 <ThinkingPanel stage={sseCurrentStage} progress={sseProgress} completedStages={sseCompletedStages} isFading={isPanelFading} />
             )}
@@ -571,7 +594,7 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
             <div className="flex-1 overflow-y-auto py-16 px-8" style={{ scrollbarWidth: 'thin', scrollbarColor: '#00A8FF #1a1a1a' }} onDragOver={handleDragOver} onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDrop={handleDrop}>
                 <div className="max-w-4xl mx-auto space-y-8">
                     {messages.map((msg, idx) => (
-                        <DialogueMessage key={idx} message={msg} onOpenDialogue={(dialogue) => setCurrentDialogue(dialogue)} onOpenReferences={(sources) => { setSidebarSources(sources); setSidebarOpen(true); }} onOpenBlueprintPanel={(sources) => { setBlueprintPanelSources(sources); setBlueprintPanelOpen(true); }} onCloseBlueprintPanel={() => setBlueprintPanelOpen(false)} sendMessage={handleSendMessage} />
+                        <DialogueMessage key={idx} message={msg} onOpenDialogue={(dialogue) => setCurrentDialogue(dialogue)} onOpenReferences={(sources) => { setSidebarSources(sources); setSidebarOpen(true); }} onOpenBlueprintPanel={(sources) => { setBlueprintPanelSources(sources); setBlueprintPanelOpen(true); }} onCloseBlueprintPanel={() => setBlueprintPanelOpen(false)} sendMessage={handleSendMessage} sessionTeeStatus={sessionTeeStatus} onOpenTeeModal={(teeData) => { setSessionTeeVerification(teeData); setShowTeeModal(true); }} />
                     ))}
                     <div ref={messagesEndRef} />
                 </div>

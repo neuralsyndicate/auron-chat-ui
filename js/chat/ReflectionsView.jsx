@@ -238,6 +238,11 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
     const [blueprintPanelOpen, setBlueprintPanelOpen] = useState(false);
     const [blueprintPanelSources, setBlueprintPanelSources] = useState([]);
 
+    // TEE Verification State
+    const [sessionTeeStatus, setSessionTeeStatus] = useState(null);
+    const [sessionTeeVerification, setSessionTeeVerification] = useState(null);
+    const [showTeeModal, setShowTeeModal] = useState(false);
+
     useEffect(() => {
         loadConversation();
     }, [conversationId]);
@@ -317,6 +322,12 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
 
             console.log('Loaded conversation via E2E:', conversationId);
             setMessages(conversationData.messages || []);
+
+            // Extract session TEE verification from stored data
+            if (conversationData.session_tee_verification) {
+                setSessionTeeVerification(conversationData.session_tee_verification);
+                setSessionTeeStatus(conversationData.session_tee_verification.all_verified);
+            }
         } catch (err) {
             console.error('Failed to load reflection:', err);
             setError(err.message);
@@ -420,9 +431,18 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
 
                 {/* Header */}
                 <div className="py-6 border-b border-white/10 mb-6">
-                    <h2 className="text-2xl font-semibold text-center text-primary glow">
-                        Reflection
-                    </h2>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
+                        <h2 className="text-2xl font-semibold text-center text-primary glow">
+                            Reflection
+                        </h2>
+                        {/* TEE Session Badge */}
+                        {sessionTeeVerification && window.TEEVerification && (
+                            <TEEVerification.TEESessionBadge
+                                teeVerification={sessionTeeVerification}
+                                onClick={() => setShowTeeModal(true)}
+                            />
+                        )}
+                    </div>
                 </div>
 
                 {/* Messages Container */}
@@ -459,6 +479,8 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
                                     }}
                                     onCloseBlueprintPanel={() => setBlueprintPanelOpen(false)}
                                     sendMessage={handleSendMessage}
+                                    sessionTeeStatus={sessionTeeStatus}
+                                    onOpenTeeModal={(teeData) => { setSessionTeeVerification(teeData); setShowTeeModal(true); }}
                                 />
                             ))}
 
@@ -525,6 +547,14 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
                 onClose={() => setBlueprintPanelOpen(false)}
                 sources={blueprintPanelSources}
             />
+
+            {/* TEE Verification Modal */}
+            {showTeeModal && sessionTeeVerification && window.TEEVerification && (
+                <TEEVerification.TEEAttestationModal
+                    teeVerification={sessionTeeVerification}
+                    onClose={() => setShowTeeModal(false)}
+                />
+            )}
         </div>
     );
 }

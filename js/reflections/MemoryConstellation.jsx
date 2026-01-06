@@ -313,7 +313,15 @@ function ConstellationHoverCard({ conversation, screenX, screenY, onOpen, onDele
             }}
         >
             <div className="hover-card-inner">
-                <h3>{conversation.title || 'Conversation'}</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <h3 style={{ margin: 0 }}>{conversation.title || 'Conversation'}</h3>
+                    {/* TEE Indicator */}
+                    {conversation.session_tee_verification && window.TEEVerification && (
+                        <TEEVerification.TEEHoverIndicator
+                            teeVerification={conversation.session_tee_verification}
+                        />
+                    )}
+                </div>
 
                 <div className="hover-card-meta">
                     <span>{formatRelativeDate(conversation.created_at)}</span>
