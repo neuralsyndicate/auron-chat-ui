@@ -130,11 +130,11 @@ const ConstellationWebGL = (function() {
 
                     // === ENVIRONMENT REFLECTION (premium quality) ===
                     vec3 reflectDir = reflect(-V, N);
-                    vec3 envReflection = textureCube(uEnvMap, reflectDir).rgb * 0.4;
+                    vec3 envReflection = textureCube(uEnvMap, reflectDir).rgb * 0.6;
 
                     // === SIMULATED REFRACTION (glass IOR ~1.45) ===
                     vec3 refractDir = refract(-V, N, 1.0 / 1.45);
-                    vec3 envRefraction = textureCube(uEnvMap, refractDir).rgb * 0.25;
+                    vec3 envRefraction = textureCube(uEnvMap, refractDir).rgb * 0.4;
 
                     // === FRESNEL-BASED GLASS ===
                     vec3 F0 = vec3(0.04); // Glass IOR
@@ -166,7 +166,7 @@ const ConstellationWebGL = (function() {
 
                     // === BUILD FINAL COLOR ===
                     // Blue-tinted core with shimmer
-                    vec3 color = vec3(0.03, 0.06, 0.12);
+                    vec3 color = vec3(0.06, 0.12, 0.22);
 
                     // Add environment (mix refraction/reflection by Fresnel)
                     color += mix(envRefraction, envReflection, fresnel.r);
@@ -589,9 +589,9 @@ const ConstellationWebGL = (function() {
                 size/2, size/2, 0,
                 size/2, size/2, size * 0.8
             );
-            gradient.addColorStop(0, '#0a1525');   // Dark blue center
-            gradient.addColorStop(0.5, '#050a15'); // Darker mid
-            gradient.addColorStop(1, '#020306');   // Nearly black edge
+            gradient.addColorStop(0, '#1a3055');   // Brighter blue center
+            gradient.addColorStop(0.5, '#0f1a30'); // Rich deep blue mid
+            gradient.addColorStop(1, '#080c18');   // Deep blue edge
 
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, size, size);
@@ -603,8 +603,8 @@ const ConstellationWebGL = (function() {
                 0,
                 size * 0.5, size * 0.5, size * 0.6
             );
-            nebulaGradient.addColorStop(0, 'rgba(60, 100, 180, 0.08)');
-            nebulaGradient.addColorStop(0.5, 'rgba(100, 60, 150, 0.04)');
+            nebulaGradient.addColorStop(0, 'rgba(80, 140, 220, 0.25)');
+            nebulaGradient.addColorStop(0.5, 'rgba(120, 80, 180, 0.15)');
             nebulaGradient.addColorStop(1, 'transparent');
             ctx.fillStyle = nebulaGradient;
             ctx.fillRect(0, 0, size, size);
@@ -617,10 +617,10 @@ const ConstellationWebGL = (function() {
                 const brightness = 0.25 + Math.random() * 0.75;
                 const starSize = 0.3 + Math.random() * 1.2;
 
-                // Star glow
+                // Star glow - brighter, bluer
                 const starGradient = ctx.createRadialGradient(x, y, 0, x, y, starSize * 3);
-                starGradient.addColorStop(0, `rgba(200, 220, 255, ${brightness})`);
-                starGradient.addColorStop(0.3, `rgba(180, 200, 255, ${brightness * 0.3})`);
+                starGradient.addColorStop(0, `rgba(220, 240, 255, ${Math.min(brightness * 1.3, 1)})`);
+                starGradient.addColorStop(0.4, `rgba(150, 200, 255, ${brightness * 0.5})`);
                 starGradient.addColorStop(1, 'transparent');
 
                 ctx.fillStyle = starGradient;
