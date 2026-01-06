@@ -165,14 +165,14 @@ const ConstellationWebGL = (function() {
                     float spec2 = pow(max(dot(N, H2), 0.0), 64.0) * 0.3;
 
                     // === BUILD FINAL COLOR ===
-                    // Bright blue core with ambient shimmer
-                    vec3 color = vec3(0.1, 0.2, 0.35);
+                    // DEBUG: Bright neon test - should be VERY visible
+                    vec3 color = vec3(0.2, 0.8, 0.4);  // Bright green-cyan
 
                     // Add ambient environment glow (always visible, not just at edges)
-                    color += textureCube(uEnvMap, N).rgb * 0.3;
+                    color += textureCube(uEnvMap, N).rgb * 0.5;
 
                     // Add environment (mix refraction/reflection by Fresnel)
-                    color += mix(envRefraction, envReflection, fresnel.r);
+                    color += mix(envRefraction, envReflection, fresnel.r) * 1.2;
 
                     // Add rim glow (energy at edges)
                     color += energyColor * vFresnel * 0.75;
@@ -194,8 +194,9 @@ const ConstellationWebGL = (function() {
                     color *= 1.0 + uHover * 0.1;
 
                     // === ALPHA (glass transparency) ===
-                    float alpha = 0.4 + vFresnel * 0.4 + spec1 * 0.15;
-                    alpha = mix(alpha, min(alpha + 0.15, 0.95), uHover);
+                    // DEBUG: High alpha for visibility test
+                    float alpha = 0.7 + vFresnel * 0.2 + spec1 * 0.1;
+                    alpha = mix(alpha, min(alpha + 0.1, 0.98), uHover);
 
                     gl_FragColor = vec4(color, alpha);
                 }
