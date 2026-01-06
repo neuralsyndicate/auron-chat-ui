@@ -925,23 +925,13 @@ function DialogueMessage({ message, onOpenDialogue, onOpenReferences, onOpenBlue
                             fontSize: '1.75rem',
                             filter: 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.2))'
                         }}>🧠</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <p className="text-xs font-semibold uppercase tracking-wide glow" style={{
+                        <p className="text-xs font-semibold uppercase tracking-wide glow" style={{
                                 color: 'rgba(96, 165, 250, 0.9)',
                                 letterSpacing: '0.1em',
                                 margin: 0
                             }}>
                                 Auron
                             </p>
-                            {/* TEE Verification Badge - Only shows when status differs from session */}
-                            {message.dialogue?.tee_verification && window.TEEVerification && (
-                                <TEEVerification.TEEMessageBadge
-                                    teeVerification={message.dialogue.tee_verification}
-                                    sessionDefault={sessionTeeStatus}
-                                    onClick={() => onOpenTeeModal && onOpenTeeModal(message.dialogue.tee_verification)}
-                                />
-                            )}
-                        </div>
                     </div>
 
                     {/* Guidance Text - Flowing naturally */}

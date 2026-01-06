@@ -69,6 +69,9 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
     const [sessionTeeVerification, setSessionTeeVerification] = useState(null);
     const [showTeeModal, setShowTeeModal] = useState(false);
 
+    // Privacy Panel State
+    const [showPrivacyPanel, setShowPrivacyPanel] = useState(false);
+
     // Initialize frontend encryption and conversation index
     useEffect(() => {
         const initEncryption = async () => {
@@ -580,6 +583,18 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                 <TEEVerification.TEEAttestationModal teeVerification={sessionTeeVerification} onClose={() => setShowTeeModal(false)} />
             )}
 
+            {/* Privacy Panel Modal */}
+            {showPrivacyPanel && window.PrivacyIndicator && (
+                <PrivacyIndicator.PrivacyPanel
+                    onClose={() => setShowPrivacyPanel(false)}
+                    teeVerification={sessionTeeVerification}
+                    onOpenTeeDetails={() => {
+                        setShowPrivacyPanel(false);
+                        setShowTeeModal(true);
+                    }}
+                />
+            )}
+
             {(isStreaming || isPanelFading) && (
                 <ThinkingPanel stage={sseCurrentStage} progress={sseProgress} completedStages={sseCompletedStages} isFading={isPanelFading} />
             )}
@@ -610,6 +625,15 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
             </div>
 
             <div className="py-8 px-8 border-t border-white/5">
+                {/* Privacy Indicator - Above input */}
+                {window.PrivacyIndicator && (
+                    <div className="privacy-indicator-container">
+                        <PrivacyIndicator.PrivacyIndicator
+                            onClick={() => setShowPrivacyPanel(true)}
+                            teeVerified={sessionTeeStatus === true}
+                        />
+                    </div>
+                )}
                 <div className="max-w-4xl mx-auto flex gap-4">
                     <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSend()} placeholder="Share what's on your mind..." className="flex-1 px-5 py-4 bg-black/40 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                     <button onClick={handleAudioUpload} disabled={uploadingAudio} className="px-5 py-4 font-medium text-white transition-all flex items-center gap-3" style={{ fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif", fontSize: '0.9375rem', fontWeight: '500', letterSpacing: '-0.01em', background: uploadingAudio ? 'rgba(10, 10, 31, 0.5)' : 'rgba(10, 10, 31, 0.65)', backdropFilter: 'blur(20px)', border: uploadingAudio ? '1px solid rgba(0, 217, 255, 0.4)' : '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '0', boxShadow: uploadingAudio ? '0 0 30px rgba(0, 217, 255, 0.3)' : '0 0 0 1px rgba(255, 255, 255, 0.05) inset', cursor: uploadingAudio ? 'not-allowed' : 'pointer', color: uploadingAudio ? 'rgba(0, 217, 255, 0.95)' : 'rgba(255, 255, 255, 0.85)' }} onMouseEnter={(e) => { if (!uploadingAudio) { e.currentTarget.style.borderColor = 'rgba(0, 217, 255, 0.5)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 217, 255, 0.2)'; e.currentTarget.style.color = 'rgba(0, 217, 255, 0.95)'; } }} onMouseLeave={(e) => { if (!uploadingAudio) { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.boxShadow = '0 0 0 1px rgba(255, 255, 255, 0.05) inset'; e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)'; } }}>
