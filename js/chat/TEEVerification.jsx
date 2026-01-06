@@ -1,7 +1,10 @@
 // ============================================================
 // TEE VERIFICATION COMPONENTS
 // Trusted Execution Environment verification badges and modal
+// Blue bioluminescent theme
 // ============================================================
+
+const { useState } = React;
 
 // ═══════════════════════════════════════════════════════════════
 // UTILITY FUNCTIONS
@@ -18,8 +21,48 @@ function shouldShowMessageBadge(msgTee, sessionDefault) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// COPYABLE HASH COMPONENT
+// Shows truncated hash with copy-to-clipboard functionality
+// ═══════════════════════════════════════════════════════════════
+
+function CopyableHash({ label, value, maxLength = 80 }) {
+    const [copied, setCopied] = useState(false);
+
+    if (!value) return null;
+
+    const truncated = value.length > maxLength
+        ? value.slice(0, maxLength) + '...'
+        : value;
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(value);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    };
+
+    return (
+        <div className="tee-hash-field">
+            <div className="tee-hash-header">
+                <span className="tee-hash-label">{label}</span>
+                <button
+                    onClick={handleCopy}
+                    className={`tee-copy-btn ${copied ? 'copied' : ''}`}
+                >
+                    {copied ? '✓ Copied' : 'Copy'}
+                </button>
+            </div>
+            <code className="tee-hash-value">{truncated}</code>
+        </div>
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // TEE SESSION BADGE
-// Shows in header area - always visible when TEE data exists
+// Fixed bottom-right, compact by default, expands on hover
 // ═══════════════════════════════════════════════════════════════
 
 function TEESessionBadge({ teeVerification, onClick }) {
@@ -35,10 +78,10 @@ function TEESessionBadge({ teeVerification, onClick }) {
             title={isVerified ? 'All inference verified by TEE' : 'Verification incomplete'}
         >
             <span className="tee-badge-icon">
-                {isVerified ? '✓' : '⚠'}
+                {isVerified ? '◉' : '○'}
             </span>
             <span className="tee-badge-text">
-                {isVerified ? 'TEE Verified' : isFallback ? 'Fallback' : 'Unverified'}
+                {isVerified ? 'TEE' : isFallback ? 'Fallback' : 'Unverified'}
             </span>
         </button>
     );
@@ -66,10 +109,10 @@ function TEEMessageBadge({ teeVerification, sessionDefault, onClick }) {
             title={isVerified ? 'Verified by TEE' : 'Not TEE verified'}
         >
             <span className="tee-badge-icon-small">
-                {isVerified ? '✓' : '⚠'}
+                {isVerified ? '◉' : '○'}
             </span>
             <span className="tee-badge-text-small">
-                {isVerified ? 'Verified' : 'Unverified'}
+                {isVerified ? 'TEE' : 'Unverified'}
             </span>
         </button>
     );
@@ -87,7 +130,7 @@ function TEEHoverIndicator({ teeVerification }) {
 
     return (
         <span className={`tee-hover-indicator ${isVerified ? 'verified' : 'unverified'}`}>
-            {isVerified ? '✓ TEE' : '⚠'}
+            {isVerified ? '◉ TEE' : '○'}
         </span>
     );
 }
@@ -112,7 +155,7 @@ function ComponentRow({ name, verified }) {
         <div className="tee-component-row">
             <span className="tee-component-name">{name}</span>
             <span className={`tee-component-status ${verified ? 'verified' : 'unverified'}`}>
-                {verified ? '✓ Verified' : '⚠ Unverified'}
+                {verified ? '◉ Verified' : '○ Unverified'}
             </span>
         </div>
     );
@@ -131,7 +174,7 @@ function AttestationField({ label, value, monospace = false, truncate = false })
 
 // ═══════════════════════════════════════════════════════════════
 // TEE ATTESTATION MODAL
-// Detailed verification information with glassmorphic styling
+// Detailed verification information with hash verification
 // ═══════════════════════════════════════════════════════════════
 
 function TEEAttestationModal({ teeVerification, onClose }) {
@@ -169,7 +212,7 @@ function TEEAttestationModal({ teeVerification, onClose }) {
                 <div className="tee-modal-header">
                     <div className="tee-modal-title-area">
                         <span className={`tee-modal-icon ${all_verified ? 'verified' : 'unverified'}`}>
-                            {all_verified ? '🔒' : '⚠️'}
+                            {all_verified ? '◉' : '○'}
                         </span>
                         <div>
                             <h2 className="tee-modal-title">TEE Verification</h2>
@@ -188,7 +231,7 @@ function TEEAttestationModal({ teeVerification, onClose }) {
                 <div className="tee-modal-content">
                     {/* Privacy Message */}
                     <div className={`tee-privacy-message ${all_verified ? 'verified' : 'unverified'}`}>
-                        <span className="tee-privacy-icon">{all_verified ? '🛡️' : '⚠️'}</span>
+                        <span className="tee-privacy-icon">{all_verified ? '◉' : '○'}</span>
                         <p>
                             {all_verified
                                 ? 'Your conversation is confidential. All inference ran in a hardware-isolated Trusted Execution Environment.'
@@ -258,14 +301,26 @@ function TEEAttestationModal({ teeVerification, onClose }) {
                                             label="Architecture"
                                             value={attestation.nvidia.architecture}
                                         />
-                                        <a
-                                            href={attestation.nvidia.verify_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="tee-verify-link"
-                                        >
-                                            Verify GPU Attestation →
-                                        </a>
+
+                                        {/* NVIDIA Payload - Copyable */}
+                                        {attestation.nvidia.payload && (
+                                            <CopyableHash
+                                                label="Attestation Payload"
+                                                value={attestation.nvidia.payload}
+                                                maxLength={100}
+                                            />
+                                        )}
+
+                                        {attestation.nvidia.verify_url && (
+                                            <a
+                                                href={attestation.nvidia.verify_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="tee-verify-link"
+                                            >
+                                                Verify GPU Attestation →
+                                            </a>
+                                        )}
                                     </div>
                                 )}
 
@@ -273,14 +328,26 @@ function TEEAttestationModal({ teeVerification, onClose }) {
                                 {attestation.intel_tdx && (
                                     <div className="tee-attestation-subsection">
                                         <p className="tee-subsection-title">Intel TDX Attestation</p>
-                                        <a
-                                            href={attestation.intel_tdx.verify_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="tee-verify-link"
-                                        >
-                                            Verify TDX Quote →
-                                        </a>
+
+                                        {/* Intel TDX Quote - Copyable */}
+                                        {attestation.intel_tdx.quote && (
+                                            <CopyableHash
+                                                label="TDX Quote"
+                                                value={attestation.intel_tdx.quote}
+                                                maxLength={100}
+                                            />
+                                        )}
+
+                                        {attestation.intel_tdx.verify_url && (
+                                            <a
+                                                href={attestation.intel_tdx.verify_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="tee-verify-link"
+                                            >
+                                                Verify TDX Quote →
+                                            </a>
+                                        )}
                                     </div>
                                 )}
 
@@ -308,28 +375,28 @@ function TEEAttestationModal({ teeVerification, onClose }) {
                             <h3 className="tee-section-title">Privacy Guarantees</h3>
                             <div className="tee-guarantees">
                                 <div className="tee-guarantee-item">
-                                    <span className="tee-guarantee-icon">🔐</span>
+                                    <span className="tee-guarantee-icon">◉</span>
                                     <div>
                                         <p className="tee-guarantee-title">Hardware Isolation</p>
                                         <p className="tee-guarantee-desc">Code runs in Intel TDX Trust Domain</p>
                                     </div>
                                 </div>
                                 <div className="tee-guarantee-item">
-                                    <span className="tee-guarantee-icon">🎮</span>
+                                    <span className="tee-guarantee-icon">◉</span>
                                     <div>
                                         <p className="tee-guarantee-title">GPU Encryption</p>
                                         <p className="tee-guarantee-desc">NVIDIA H100 encrypts all GPU memory</p>
                                     </div>
                                 </div>
                                 <div className="tee-guarantee-item">
-                                    <span className="tee-guarantee-icon">🚫</span>
+                                    <span className="tee-guarantee-icon">◉</span>
                                     <div>
                                         <p className="tee-guarantee-title">Zero Retention</p>
                                         <p className="tee-guarantee-desc">No logs, prompts, or outputs stored</p>
                                     </div>
                                 </div>
                                 <div className="tee-guarantee-item">
-                                    <span className="tee-guarantee-icon">📝</span>
+                                    <span className="tee-guarantee-icon">◉</span>
                                     <div>
                                         <p className="tee-guarantee-title">Cryptographic Proof</p>
                                         <p className="tee-guarantee-desc">Every response has signed attestation</p>
@@ -354,5 +421,6 @@ window.TEEVerification = {
     TEEMessageBadge,
     TEEHoverIndicator,
     TEEAttestationModal,
+    CopyableHash,
     shouldShowMessageBadge
 };
