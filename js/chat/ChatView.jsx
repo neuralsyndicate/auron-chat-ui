@@ -591,7 +591,24 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                 </div>
             )}
 
-            <div className="flex-1 overflow-y-auto py-16 px-8" style={{ scrollbarWidth: 'thin', scrollbarColor: '#00A8FF #1a1a1a' }} onDragOver={handleDragOver} onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDrop={handleDrop}>
+            <div className="flex-1 overflow-y-auto py-16 px-8" style={{ scrollbarWidth: 'thin', scrollbarColor: '#00A8FF #1a1a1a', position: 'relative' }} onDragOver={handleDragOver} onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDrop={handleDrop}>
+                {/* TEE Session Badge - Floating in top-right of chat area */}
+                {sessionTeeVerification && window.TEEVerification && (
+                    <div style={{ position: 'sticky', top: '1rem', zIndex: 10, display: 'flex', justifyContent: 'flex-end', marginBottom: '-2.5rem', paddingRight: '1rem' }}>
+                        <TEEVerification.TEESessionBadge
+                            teeVerification={sessionTeeVerification}
+                            onClick={() => setShowTeeModal(true)}
+                        />
+                    </div>
+                )}
+                {/* DEBUG: TEE Code Loaded Indicator - Remove after testing */}
+                {window.TEEVerification && (
+                    <div style={{ position: 'sticky', top: sessionTeeVerification ? '3.5rem' : '1rem', zIndex: 9, display: 'flex', justifyContent: 'flex-end', marginBottom: '-1.5rem', paddingRight: '1rem' }}>
+                        <span style={{ fontSize: '0.625rem', color: 'rgba(96, 165, 250, 0.5)', fontFamily: 'monospace' }}>
+                            TEE:{sessionTeeStatus === null ? 'waiting' : sessionTeeStatus ? 'verified' : 'unverified'}
+                        </span>
+                    </div>
+                )}
                 <div className="max-w-4xl mx-auto space-y-8">
                     {messages.map((msg, idx) => (
                         <DialogueMessage key={idx} message={msg} onOpenDialogue={(dialogue) => setCurrentDialogue(dialogue)} onOpenReferences={(sources) => { setSidebarSources(sources); setSidebarOpen(true); }} onOpenBlueprintPanel={(sources) => { setBlueprintPanelSources(sources); setBlueprintPanelOpen(true); }} onCloseBlueprintPanel={() => setBlueprintPanelOpen(false)} sendMessage={handleSendMessage} sessionTeeStatus={sessionTeeStatus} onOpenTeeModal={(teeData) => { setSessionTeeVerification(teeData); setShowTeeModal(true); }} />
