@@ -1,0 +1,431 @@
+/* ============================================================
+   CONVERSATION STREAM STYLES
+   Immersive flowing conversation layout for Auron chat
+   ============================================================ */
+
+/* ===== CSS Variables ===== */
+:root {
+    --stream-border-user: rgba(96, 165, 250, 0.25);
+    --stream-border-auron: rgba(59, 130, 246, 0.4);
+    --stream-bg-auron: linear-gradient(90deg, rgba(15, 20, 30, 0.12) 0%, transparent 100%);
+    --stream-glow-soft: 0 0 40px rgba(59, 130, 246, 0.08);
+    --stream-glow-medium: 0 0 60px rgba(59, 130, 246, 0.15);
+    --stream-transition: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===== Conversation Stream Container ===== */
+.conversation-stream {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* ===== Stream Message Base ===== */
+.stream-message {
+    position: relative;
+    margin-bottom: 2rem;
+    animation: streamFadeIn 0.5s var(--stream-transition);
+    transition: all 0.3s var(--stream-transition);
+}
+
+@keyframes streamFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== User Messages ===== */
+.stream-message--user {
+    border-left: 2px solid var(--stream-border-user);
+    padding: 1rem 0 1rem 1.5rem;
+    margin-left: 0;
+}
+
+.stream-message--user .stream-message__content {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ===== Auron Messages ===== */
+.stream-message--auron {
+    border-left: 2px solid var(--stream-border-auron);
+    padding: 1.5rem 0 1.5rem 1.5rem;
+    background: var(--stream-bg-auron);
+    border-radius: 0 16px 16px 0;
+}
+
+.stream-message--auron:hover {
+    border-left-color: rgba(59, 130, 246, 0.6);
+}
+
+/* ===== Auron Indicator ===== */
+.stream-message__indicator {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: rgba(96, 165, 250, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stream-message__indicator-icon {
+    font-size: 0.5rem;
+    color: rgba(96, 165, 250, 0.5);
+    animation: indicatorPulse 4s ease-in-out infinite;
+}
+
+@keyframes indicatorPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* ===== Message Content ===== */
+.stream-message__content {
+    font-size: 1.05rem;
+    line-height: 1.85;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.stream-message__content p {
+    margin-bottom: 1rem;
+}
+
+.stream-message__content p:last-child {
+    margin-bottom: 0;
+}
+
+/* ===== Streaming State ===== */
+.stream-message--streaming .stream-message__content::after {
+    content: '|';
+    animation: cursorBlink 1s step-end infinite;
+    color: rgba(96, 165, 250, 0.8);
+    margin-left: 2px;
+}
+
+@keyframes cursorBlink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* ===== Bio Glow Placeholder ===== */
+.bio-glow-placeholder {
+    min-height: 100px;
+    border-radius: 0 16px 16px 0;
+    background: linear-gradient(135deg,
+        rgba(59, 130, 246, 0.06) 0%,
+        rgba(37, 99, 235, 0.03) 100%
+    );
+    border-left: 2px solid rgba(59, 130, 246, 0.3);
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    animation: bioGlowPulse 6s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes bioGlowPulse {
+    0%, 100% {
+        box-shadow: var(--stream-glow-soft);
+        border-left-color: rgba(59, 130, 246, 0.3);
+    }
+    50% {
+        box-shadow: var(--stream-glow-medium);
+        border-left-color: rgba(59, 130, 246, 0.5);
+        transform: scale(1.003);
+    }
+}
+
+.bio-glow-placeholder::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        ellipse 80% 60% at 20% 40%,
+        rgba(96, 165, 250, 0.1) 0%,
+        transparent 60%
+    );
+    animation: bioGlowShift 8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes bioGlowShift {
+    0%, 100% {
+        opacity: 0.4;
+        transform: translateX(0);
+    }
+    50% {
+        opacity: 0.7;
+        transform: translateX(10px);
+    }
+}
+
+.bio-glow-placeholder__text {
+    font-size: 0.75rem;
+    color: rgba(96, 165, 250, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bio-glow-placeholder__dots {
+    display: flex;
+    gap: 4px;
+}
+
+.bio-glow-placeholder__dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(96, 165, 250, 0.5);
+    animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+.bio-glow-placeholder__dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.bio-glow-placeholder__dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+    0%, 80%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+    40% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ===== Reflective Question Inline ===== */
+.stream-reflective-question {
+    margin-top: 1.75rem;
+    padding: 1.5rem;
+    background: rgba(59, 130, 246, 0.04);
+    border-radius: 12px;
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    transition: all 0.3s var(--stream-transition);
+}
+
+.stream-reflective-question:hover {
+    border-color: rgba(59, 130, 246, 0.15);
+    background: rgba(59, 130, 246, 0.06);
+}
+
+.stream-reflective-question__label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: rgba(96, 165, 250, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+}
+
+.stream-reflective-question__text {
+    font-size: 1rem;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+/* ===== Response Textarea ===== */
+.stream-response-area {
+    margin-top: 1rem;
+}
+
+.stream-response-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    resize: vertical;
+    transition: all 0.3s var(--stream-transition);
+}
+
+.stream-response-textarea:focus {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+}
+
+.stream-response-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.stream-response-submit {
+    margin-top: 0.75rem;
+    padding: 0.625rem 1.25rem;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 8px;
+    color: rgba(96, 165, 250, 0.9);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s var(--stream-transition);
+}
+
+.stream-response-submit:hover {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: rgba(59, 130, 246, 0.35);
+    color: #60A5FA;
+}
+
+.stream-response-submit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ===== Evidence Section ===== */
+.stream-evidence {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    border-left: 2px solid rgba(59, 130, 246, 0.2);
+}
+
+.stream-evidence__label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: rgba(96, 165, 250, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+}
+
+.stream-evidence__content {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ===== Sources Link ===== */
+.stream-sources-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    padding: 0.5rem 1rem;
+    background: rgba(59, 130, 246, 0.06);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 8px;
+    color: rgba(96, 165, 250, 0.8);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s var(--stream-transition);
+}
+
+.stream-sources-link:hover {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.2);
+    color: #60A5FA;
+}
+
+/* ===== Empty State ===== */
+.stream-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 40vh;
+    padding: 2rem;
+}
+
+.stream-empty-ambient {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        ellipse 60% 40% at 50% 60%,
+        rgba(59, 130, 246, 0.04) 0%,
+        transparent 70%
+    );
+    pointer-events: none;
+    animation: ambientBreath 12s ease-in-out infinite;
+}
+
+@keyframes ambientBreath {
+    0%, 100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+/* ===== Input Placeholder Styling ===== */
+.stream-input {
+    background: rgba(15, 20, 30, 0.35);
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    transition: all 0.4s var(--stream-transition);
+}
+
+.stream-input:focus {
+    border-color: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.08);
+    background: rgba(15, 20, 30, 0.5);
+}
+
+.stream-input::placeholder {
+    color: rgba(96, 165, 250, 0.4);
+    font-style: italic;
+    transition: all 0.3s ease;
+}
+
+.stream-input:focus::placeholder {
+    color: rgba(96, 165, 250, 0.25);
+}
+
+/* ===== Separator ===== */
+.stream-separator {
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(59, 130, 246, 0.12) 50%,
+        transparent 100%
+    );
+    margin: 2.5rem 0;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .conversation-stream {
+        padding: 1rem 0.75rem;
+    }
+
+    .stream-message--user,
+    .stream-message--auron {
+        padding-left: 1rem;
+    }
+
+    .stream-message__content {
+        font-size: 1rem;
+    }
+
+    .stream-reflective-question {
+        padding: 1.25rem;
+    }
+}

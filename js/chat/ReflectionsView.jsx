@@ -223,7 +223,17 @@ function ReflectionsView({ user, setCurrentView, setLoadedSessionId, conversatio
     );
 }
 
-// Reflection Viewer Component (Clean Full Screen Modal)
+// Auron's voice - evocative placeholder phrases (shared with ChatView)
+const REFLECTION_PLACEHOLDERS = [
+    "Let it surface...",
+    "Begin with what's unspoken...",
+    "What's asking to be heard?",
+    "I'm listening...",
+    "When you're ready...",
+    "What's echoing?"
+];
+
+// Reflection Viewer Component (Clean Full Screen Modal) - Conversation Stream Style
 function ReflectionViewer({ conversationId, onClose, setSessionId }) {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -231,6 +241,16 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
     const [input, setInput] = useState('');
     const [chatLoading, setChatLoading] = useState(false);
     const messagesEndRef = useRef(null);
+
+    // Conversation stream: random placeholder (static per session)
+    const [inputPlaceholder] = useState(() =>
+        REFLECTION_PLACEHOLDERS[Math.floor(Math.random() * REFLECTION_PLACEHOLDERS.length)]
+    );
+    // SSE Streaming state
+    const [isStreaming, setIsStreaming] = useState(false);
+    const streamingMessageIndexRef = useRef(null);
+    const streamingGuidanceRef = useRef('');
+    const sseCleanupRef = useRef(null);
 
     // Sidebar state (same as ChatView)
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -336,12 +356,13 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
         }
     };
 
-    const handleSendMessage = async () => {
-        if (!input.trim() || chatLoading) return;
+    const handleSendMessage = async (messageToSend = null) => {
+        const userMessage = (messageToSend || input).trim();
+        if (!userMessage || chatLoading || isStreaming) return;
 
-        const userMessage = input.trim();
         setInput('');
         setChatLoading(true);
+        setIsStreaming(true);
 
         // Capture conversation history BEFORE adding new message
         const conversationHistory = messages.map(msg => ({
@@ -350,62 +371,132 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
         }));
 
         // Add user message immediately for UI
-        setMessages(prev => [...prev, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }]);
+        setMessages(prev => {
+            const newMessages = [...prev, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }];
+            return newMessages;
+        });
 
         try {
             const token = await getAuthToken();
 
-            // Send message with full conversation history + original session_id
-            const response = await fetch(`${DIALOGUE_API_BASE}/chat`, {
+            // SSE Streaming - same as ChatView
+            const sseUrl = `${DIALOGUE_API_BASE}/chat/stream`;
+            const response = await fetch(sseUrl, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'text/event-stream'
                 },
                 body: JSON.stringify({
                     message: userMessage,
                     conversation_history: conversationHistory,
-                    session_id: conversationId  // Continue existing conversation with original ID
+                    session_id: conversationId
                 })
             });
 
             if (!response.ok) throw new Error('Failed to send message');
 
-            const data = await response.json();
-
-            // Save session_id to enable sync button in header
-            if (data.metadata && data.metadata.session_id) {
-                setSessionId(data.metadata.session_id);
-                console.log(`✓ Session active: ${data.metadata.session_id}`);
-            }
-
-            // Preserve full dialogue object (same as ChatView)
-            const dialogue = data.message || {};
-            const guidance = dialogue.guidance || data.response || '';
-
-            const newAuronMessage = {
+            // Create streaming placeholder message
+            const streamingPlaceholder = {
                 role: 'auron',
-                content: guidance,
-                dialogue: dialogue,
-                isDialogue: !!dialogue.guidance,
+                content: '',
+                guidance: '',
+                isStreaming: true,
                 timestamp: new Date().toISOString()
             };
 
-            // Update messages and save
             setMessages(prev => {
-                const updatedMessages = [...prev, newAuronMessage];
-                // Save conversation with all messages including the new one
-                saveConversation(updatedMessages);
-                return updatedMessages;
+                streamingMessageIndexRef.current = prev.length;
+                return [...prev, streamingPlaceholder];
             });
+
+            streamingGuidanceRef.current = '';
+
+            // Read SSE stream
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let finalDialogue = null;
+
+            const processSSE = async () => {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const jsonStr = line.slice(6);
+                                if (jsonStr === '[DONE]') continue;
+                                const data = JSON.parse(jsonStr);
+
+                                if (data.type === 'token' && data.content) {
+                                    streamingGuidanceRef.current += data.content;
+                                    setMessages(prev => {
+                                        const updated = [...prev];
+                                        const idx = streamingMessageIndexRef.current;
+                                        if (idx !== null && updated[idx]) {
+                                            updated[idx] = {
+                                                ...updated[idx],
+                                                guidance: streamingGuidanceRef.current
+                                            };
+                                        }
+                                        return updated;
+                                    });
+                                } else if (data.type === 'complete' && data.dialogue) {
+                                    finalDialogue = data.dialogue;
+
+                                    if (data.metadata?.session_id) {
+                                        setSessionId(data.metadata.session_id);
+                                    }
+                                }
+                            } catch (e) {
+                                console.warn('SSE parse error:', e);
+                            }
+                        }
+                    }
+                }
+
+                // Finalize message
+                setMessages(prev => {
+                    const updated = [...prev];
+                    const idx = streamingMessageIndexRef.current;
+                    if (idx !== null && updated[idx]) {
+                        updated[idx] = {
+                            role: 'auron',
+                            content: finalDialogue?.guidance || streamingGuidanceRef.current,
+                            dialogue: finalDialogue,
+                            isDialogue: !!finalDialogue,
+                            isStreaming: false,
+                            timestamp: new Date().toISOString()
+                        };
+                    }
+                    // Save conversation after streaming completes
+                    saveConversation(updated);
+                    return updated;
+                });
+
+                setIsStreaming(false);
+                setChatLoading(false);
+                streamingMessageIndexRef.current = null;
+            };
+
+            sseCleanupRef.current = () => reader.cancel();
+            await processSSE();
 
         } catch (err) {
             console.error('Failed to send message:', err);
             setMessages(prev => [...prev, {
                 role: 'auron',
-                content: 'Sorry, I encountered an error. Please try again.'
+                content: 'Sorry, I encountered an error. Please try again.',
+                timestamp: new Date().toISOString()
             }]);
-        } finally {
+            setIsStreaming(false);
             setChatLoading(false);
         }
     };
@@ -445,7 +536,7 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
                     </div>
                 </div>
 
-                {/* Messages Container */}
+                {/* Messages Container - Conversation Stream */}
                 <div className="flex-1 overflow-y-auto mb-6" style={{
                     scrollbarWidth: 'thin',
                     scrollbarColor: '#00A8FF #1a1a1a'
@@ -463,12 +554,11 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
                     )}
 
                     {!loading && !error && (
-                        <div className="space-y-6">
+                        <div className="conversation-stream">
                             {messages.map((msg, idx) => (
                                 <DialogueMessage
                                     key={idx}
                                     message={msg}
-                                    onOpenDialogue={() => {}}
                                     onOpenReferences={(sources) => {
                                         setSidebarSources(sources);
                                         setSidebarOpen(true);
@@ -484,20 +574,8 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
                                 />
                             ))}
 
-                            {chatLoading && (
-                                <div className="flex justify-start">
-                                    <div className="max-w-[75%] rounded-2xl px-6 py-4 bg-gray-900 border border-gray-800">
-                                        <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2 glow">
-                                            Auron
-                                        </p>
-                                        <div className="flex gap-1">
-                                            <div className="w-2 h-2 rounded-full bg-primary animate-bounce"></div>
-                                            <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                            <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                            {/* Bio Glow Loading - shown during SSE streaming */}
+                            <BioGlowPlaceholder isVisible={isStreaming && !messages.some(m => m.isStreaming)} />
 
                             <div ref={messagesEndRef} />
                         </div>
@@ -512,9 +590,9 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={handleKeyPress}
-                            placeholder="Continue the conversation..."
-                            disabled={chatLoading}
-                            className="flex-1 px-5 py-4 bg-black/40 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            placeholder={inputPlaceholder}
+                            disabled={chatLoading || isStreaming}
+                            className="stream-input flex-1 px-5 py-4 bg-black/40 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                         {/* Audio Upload Button */}
                         <button
@@ -528,9 +606,9 @@ function ReflectionViewer({ conversationId, onClose, setSessionId }) {
                         </button>
                         <button
                             onClick={handleSendMessage}
-                            disabled={!input.trim() || chatLoading}
+                            disabled={!input.trim() || chatLoading || isStreaming}
                             className="btn-sci-fi px-8 py-4 rounded-xl font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed">
-                            {chatLoading ? 'Sending...' : 'Send'}
+                            {chatLoading || isStreaming ? 'Sending...' : 'Send'}
                         </button>
                     </div>
                 </div>

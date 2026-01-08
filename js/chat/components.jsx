@@ -617,277 +617,37 @@ function ReferencesSidebar({ isOpen, onClose, sources }) {
     );
 }
 
-// Dialogue Modal Component
-function DialogueModal({ dialogue, onClose, onSendResponse }) {
-    const [showQuestion, setShowQuestion] = useState(false);
-    const [userResponse, setUserResponse] = useState('');
-    const textareaRef = useRef(null);
+// DialogueModal removed - guidance now shown inline in conversation stream
 
-    if (!dialogue) return null;
-
-    const handleContinue = () => {
-        setShowQuestion(true);
-        // Auto-focus textarea after animation
-        setTimeout(() => textareaRef.current?.focus(), 600);
-    };
-
-    const handleSubmit = () => {
-        if (userResponse.trim()) {
-            onSendResponse(userResponse.trim());
-            onClose();
-        }
-    };
-
-    return (
-        <div className="dialogue-modal-overlay" onClick={onClose}>
-            <div className="dialogue-modal" onClick={(e) => e.stopPropagation()} style={{
-                transition: 'all 0.3s ease',
-                maxWidth: showQuestion ? '800px' : '700px'
-            }}>
-                {/* Close Button */}
-                <button className="dialogue-modal-close" onClick={onClose}>
-                    ✕
-                </button>
-
-                {/* Guidance - Minimizes when question appears */}
-                <div style={{
-                    transition: 'all 0.5s ease',
-                    marginBottom: showQuestion ? '1.5rem' : '2.5rem',
-                    opacity: showQuestion ? 0.7 : 1,
-                    transform: showQuestion ? 'scale(0.95)' : 'scale(1)'
-                }}>
-                    {/* Header */}
-                    <div style={{ marginBottom: showQuestion ? '1rem' : '2.5rem', textAlign: 'center' }}>
-                        <div style={{
-                            fontSize: showQuestion ? '2rem' : '3rem',
-                            marginBottom: '0.5rem',
-                            filter: 'drop-shadow(0 0 30px rgba(59, 130, 246, 0.3))',
-                            transition: 'all 0.5s ease'
-                        }}>
-                            🧠
-                        </div>
-                        <h2 className="text-white glow" style={{
-                            fontSize: showQuestion ? '1.5rem' : '2rem',
-                            fontWeight: 900,
-                            marginBottom: '0.5rem',
-                            letterSpacing: '0.02em',
-                            transition: 'all 0.5s ease'
-                        }}>
-                            {!showQuestion ? 'Understanding Your Process' : 'Your Creative Reflection'}
-                        </h2>
-                        {!showQuestion && (
-                            <p className="text-primary text-sm font-medium">
-                                Knowledge Digestion
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Guidance Text */}
-                    <div
-                        className="text-white leading-relaxed"
-                        style={{
-                            fontSize: showQuestion ? '0.95rem' : '1.15rem',
-                            lineHeight: showQuestion ? '1.6' : '2',
-                            padding: showQuestion ? '1rem' : '1.5rem',
-                            background: 'rgba(59, 130, 246, 0.02)',
-                            borderRadius: '16px',
-                            border: '1px solid rgba(59, 130, 246, 0.06)',
-                            transition: 'all 0.5s ease',
-                            marginBottom: showQuestion ? '0' : '2rem'
-                        }}>
-                        <TextWithCitations
-                            text={dialogue.guidance}
-                            cited_references={dialogue.cited_references}
-                        />
-                    </div>
-                </div>
-
-                {/* Continue Button */}
-                {dialogue.reflective_question && !showQuestion && (
-                    <div style={{ textAlign: 'center' }}>
-                        <button
-                            onClick={handleContinue}
-                            className="btn-sci-fi px-10 py-5 rounded-2xl font-bold text-white"
-                            style={{
-                                fontSize: '1.1rem',
-                                letterSpacing: '0.05em',
-                                position: 'relative',
-                                zIndex: 10
-                            }}>
-                            REFLECT DEEPER →
-                        </button>
-                        <p className="text-gray-400 text-xs mt-3">Click to explore your creative patterns</p>
-                    </div>
-                )}
-
-                {/* Question + Input Section - Appears prominently */}
-                {dialogue.reflective_question && showQuestion && (
-                    <div style={{
-                        animation: 'slideUp 0.6s ease',
-                        marginTop: '2rem'
-                    }}>
-                        {/* Question Box - Center Stage */}
-                        <div
-                            className="p-8 rounded-2xl"
-                            style={{
-                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.08) 100%)',
-                                border: '1px solid rgba(59, 130, 246, 0.15)',
-                                boxShadow: '0 0 60px rgba(59, 130, 246, 0.1)',
-                                position: 'relative',
-                                overflow: 'hidden',
-                                marginBottom: '1.5rem'
-                            }}>
-                            <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '3px',
-                                height: '100%',
-                                background: 'linear-gradient(180deg, #3B82F6 0%, #60A5FA 100%)',
-                                boxShadow: '0 0 30px rgba(59, 130, 246, 0.4)'
-                            }}></div>
-
-                            <div style={{ paddingLeft: '1rem' }}>
-                                <p className="text-primary text-xs font-bold uppercase tracking-wider mb-4 glow" style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem'
-                                }}>
-                                    <span>💭</span> A Question For You
-                                </p>
-                                <p className="text-white leading-relaxed" style={{
-                                    fontSize: '1.3rem',
-                                    lineHeight: '2',
-                                    fontWeight: '500'
-                                }}>
-                                    {dialogue.reflective_question}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Input Area - For User Response */}
-                        <div>
-                            <label className="text-gray-300 text-sm mb-2 block">
-                                Share your thoughts or continue the conversation:
-                            </label>
-                            <textarea
-                                ref={textareaRef}
-                                value={userResponse}
-                                onChange={(e) => setUserResponse(e.target.value)}
-                                onKeyPress={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault();
-                                        handleSubmit();
-                                    }
-                                }}
-                                placeholder="Type your response or what's on your mind..."
-                                className="w-full px-5 py-4 bg-black/40 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
-                                rows="4"
-                                style={{
-                                    fontSize: '1.05rem',
-                                    lineHeight: '1.6'
-                                }}
-                            />
-                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
-                                <button
-                                    onClick={onClose}
-                                    className="px-6 py-3 rounded-xl font-medium text-gray-400 hover:text-white transition-all"
-                                    style={{
-                                        border: '1px solid rgba(156, 163, 175, 0.3)'
-                                    }}>
-                                    Close
-                                </button>
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={!userResponse.trim()}
-                                    className="btn-sci-fi px-8 py-3 rounded-xl font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed"
-                                    style={{ position: 'relative', zIndex: 10 }}>
-                                    Send Response
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Research Quality Badge - Shows Pro tier depth */}
-                <ResearchQualityBadge research_quality={dialogue.research_quality} />
-
-                {/* Research Sources Section */}
-                <SourcesSection sources={dialogue.sources} />
-            </div>
-        </div>
-    );
-}
-
-// Dialogue Message Component (for chat history display)
-function DialogueMessage({ message, onOpenDialogue, onOpenReferences, onOpenBlueprintPanel, onCloseBlueprintPanel, sendMessage, sessionTeeStatus, onOpenTeeModal }) {
+// Dialogue Message Component (for chat history display) - Conversation Stream Style
+function DialogueMessage({ message, onOpenReferences, onOpenBlueprintPanel, onCloseBlueprintPanel, sendMessage, sessionTeeStatus, onOpenTeeModal }) {
     if (message.role === 'user') {
-        // User message (simple)
+        // User message - Stream style (no label, left border accent)
         return (
-            <div className="message flex justify-end">
-                <div className="max-w-[70%] rounded-2xl px-6 py-4 bg-gradient-to-r from-primary/30 to-primary-dark/30 border border-primary/50">
-                    <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">You</p>
-                    <p className="text-white leading-relaxed">{message.content}</p>
+            <div className="stream-message stream-message--user">
+                <div className="stream-message__content">
+                    <p style={{ margin: 0 }}>{message.content}</p>
                 </div>
             </div>
         );
     }
 
-    // Auron message (streaming) - Simple text display while typing
+    // Auron message (streaming) - Stream style with cursor
     if (message.isStreaming) {
         return (
-            <div className="message flex justify-start">
-                <div style={{
-                    maxWidth: '85%',
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.06)',
-                    borderRadius: '20px',
-                    padding: '1.75rem 2rem',
-                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
-                }}>
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.625rem',
-                        marginBottom: '1rem'
-                    }}>
-                        <span style={{
-                            fontSize: '1.25rem'
-                        }}>🧠</span>
-                        <p style={{
-                            fontSize: '0.75rem',
-                            fontWeight: '600',
-                            color: '#60A5FA',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.1em',
-                            margin: 0
-                        }}>AURON</p>
-                    </div>
-                    <div style={{
-                        color: 'rgba(255, 255, 255, 0.85)',
-                        lineHeight: '1.75',
-                        fontSize: '1.05rem',
-                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-                    }}>
-                        {message.guidance}
-                        <span style={{
-                            display: 'inline-block',
-                            width: '2px',
-                            height: '1.2em',
-                            background: '#60A5FA',
-                            marginLeft: '2px',
-                            animation: 'blink 1s step-end infinite',
-                            verticalAlign: 'text-bottom'
-                        }} />
-                    </div>
+            <div className="stream-message stream-message--auron stream-message--streaming">
+                <div className="stream-message__indicator">
+                    <span className="stream-message__indicator-icon">●</span>
+                    <span>Auron</span>
+                </div>
+                <div className="stream-message__content">
+                    {message.guidance}
                 </div>
             </div>
         );
     }
 
-    // Auron message (dialogue with inline research) - FLOWING NATURAL LAYOUT
+    // Auron message (dialogue with inline research) - Conversation Stream Style
     if (message.isDialogue) {
         // Parse guidance to extract reflection question if embedded
         let guidance = message.dialogue.guidance || '';
@@ -900,163 +660,77 @@ function DialogueMessage({ message, onOpenDialogue, onOpenReferences, onOpenBlue
         }
 
         return (
-            <div className="message flex justify-start">
-                <div style={{
-                    maxWidth: '85%',
-                    width: '100%',
-                    borderRadius: '20px',
-                    padding: '2rem',
-                    background: 'rgba(15, 20, 30, 0.3)',
-                    backdropFilter: 'blur(16px)',
-                    WebkitBackdropFilter: 'blur(16px)',
-                    border: '1px solid rgba(59, 130, 246, 0.06)',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-                    position: 'relative'
-                }}>
-                    {/* Blueprint Corner Ribbon */}
-                    <BlueprintCornerRibbon
-                        sources={message.dialogue.blueprint_sources}
-                        onOpenPanel={() => onOpenBlueprintPanel(message.dialogue.blueprint_sources || [])}
+            <div className="stream-message stream-message--auron" style={{ position: 'relative' }}>
+                {/* Blueprint Corner Ribbon */}
+                <BlueprintCornerRibbon
+                    sources={message.dialogue.blueprint_sources}
+                    onOpenPanel={() => onOpenBlueprintPanel(message.dialogue.blueprint_sources || [])}
+                />
+
+                {/* Auron Indicator */}
+                <div className="stream-message__indicator">
+                    <span className="stream-message__indicator-icon">●</span>
+                    <span>Auron</span>
+                </div>
+
+                {/* Guidance Text - Full content inline */}
+                <div className="stream-message__content">
+                    <TextWithCitations
+                        text={guidance}
+                        cited_references={message.dialogue.cited_references}
                     />
+                </div>
 
-                    {/* Header */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                        <span style={{
-                            fontSize: '1.75rem',
-                            filter: 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.2))'
-                        }}>🧠</span>
-                        <p className="text-xs font-semibold uppercase tracking-wide glow" style={{
-                                color: 'rgba(96, 165, 250, 0.9)',
-                                letterSpacing: '0.1em',
-                                margin: 0
-                            }}>
-                                Auron
-                            </p>
-                    </div>
-
-                    {/* Guidance Text - Flowing naturally */}
-                    <div className="text-white leading-relaxed" style={{
-                        fontSize: '1.05rem',
-                        lineHeight: '1.8',
-                        color: 'rgba(255, 255, 255, 0.95)',
-                        marginBottom: message.dialogue.research_synthesis ? '1.5rem' : '2rem'
-                    }}>
-                        <TextWithCitations
-                            text={guidance}
-                            cited_references={message.dialogue.cited_references}
-                        />
-                    </div>
-
-                    {/* Blueprint Sources - Now shown via corner ribbon instead */}
-
-                    {/* Evidence in the Pattern - Subtle, flowing integration */}
-                    {message.dialogue.research_synthesis && (
-                        <div style={{
-                            marginBottom: '2rem',
-                            paddingTop: '1.5rem',
-                            borderTop: '1px solid rgba(0, 217, 255, 0.08)'
-                        }}>
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                marginBottom: '1rem'
-                            }}>
-                                <span style={{ fontSize: '1rem', opacity: 0.7 }}>🔬</span>
-                                <h4 className="text-white" style={{
-                                    fontSize: '0.85rem',
-                                    letterSpacing: '0.05em',
-                                    textTransform: 'uppercase',
-                                    color: 'rgba(0, 217, 255, 0.7)',
-                                    fontWeight: '600'
-                                }}>
-                                    Evidence in the Pattern
-                                </h4>
-                            </div>
-                            <div className="text-white leading-relaxed" style={{
-                                fontSize: '0.95rem',
-                                lineHeight: '1.8',
-                                color: 'rgba(255, 255, 255, 0.85)',
-                                paddingLeft: '1.5rem'
-                            }}>
-                                <TextWithCitations
-                                    text={message.dialogue.research_synthesis}
-                                    cited_references={message.dialogue.cited_references}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Reflective Question - Natural continuation */}
-                    {reflectiveQuestion && (
-                        <div style={{
-                            marginTop: '2rem',
-                            paddingTop: '2rem',
-                            borderTop: '1px solid rgba(0, 217, 255, 0.15)'
-                        }}>
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.75rem',
-                                marginBottom: '1rem'
-                            }}>
-                                <span style={{
-                                    fontSize: '1.5rem',
-                                    filter: 'drop-shadow(0 0 8px rgba(0, 217, 255, 0.3))'
-                                }}>💭</span>
-                                <p className="text-white" style={{
-                                    fontSize: '1.1rem',
-                                    lineHeight: '1.6',
-                                    fontWeight: '500',
-                                    color: 'rgba(255, 255, 255, 0.95)',
-                                    fontStyle: 'italic'
-                                }}>
-                                    {reflectiveQuestion}
-                                </p>
-                            </div>
-
-                            {/* User Response Area */}
-                            <UserResponseArea
-                                onSubmit={async (response) => {
-                                    await sendMessage(response);
-                                }}
-                                messageId={message.dialogue.session_id}
+                {/* Evidence in the Pattern */}
+                {message.dialogue.research_synthesis && (
+                    <div className="stream-evidence">
+                        <div className="stream-evidence__label">Evidence in the Pattern</div>
+                        <div className="stream-evidence__content">
+                            <TextWithCitations
+                                text={message.dialogue.research_synthesis}
+                                cited_references={message.dialogue.cited_references}
                             />
                         </div>
-                    )}
+                    </div>
+                )}
 
-                    {/* View Full References - Subtle link */}
-                    {message.dialogue.sources && message.dialogue.sources.length > 0 && (
-                        <button
-                            onClick={() => onOpenReferences(message.dialogue.sources)}
-                            className="mt-6 text-sm flex items-center gap-2 text-white/60 hover:text-white/90 transition-colors mx-auto"
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                textDecoration: 'underline',
-                                textUnderlineOffset: '4px'
+                {/* Reflective Question - Inline with response area */}
+                {reflectiveQuestion && (
+                    <div className="stream-reflective-question">
+                        <div className="stream-reflective-question__label">A Question For You</div>
+                        <p className="stream-reflective-question__text">{reflectiveQuestion}</p>
+                        <UserResponseArea
+                            onSubmit={async (response) => {
+                                await sendMessage(response);
                             }}
-                        >
-                            <span style={{ fontSize: '1rem' }}>📚</span>
-                            View Full References ({message.dialogue.sources.length})
-                        </button>
-                    )}
-                </div>
+                            messageId={message.dialogue.session_id}
+                        />
+                    </div>
+                )}
+
+                {/* View Full References */}
+                {message.dialogue.sources && message.dialogue.sources.length > 0 && (
+                    <button
+                        onClick={() => onOpenReferences(message.dialogue.sources)}
+                        className="stream-sources-link"
+                    >
+                        <span>📚</span>
+                        View References ({message.dialogue.sources.length})
+                    </button>
+                )}
             </div>
         );
     }
 
-    // Regular Auron message (e.g., welcome message)
+    // Regular Auron message (fallback) - Stream style
     return (
-        <div className="message flex justify-start">
-            <div className="max-w-[75%] rounded-2xl px-6 py-5 bg-gray-900 border border-gray-800">
-                <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-3 glow">
-                    Auron
-                </p>
-                <p className="text-white leading-relaxed" style={{ lineHeight: '1.7' }}>
-                    {message.content}
-                </p>
+        <div className="stream-message stream-message--auron">
+            <div className="stream-message__indicator">
+                <span className="stream-message__indicator-icon">●</span>
+                <span>Auron</span>
+            </div>
+            <div className="stream-message__content">
+                <p style={{ margin: 0 }}>{message.content}</p>
             </div>
         </div>
     );

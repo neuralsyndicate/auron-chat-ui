@@ -14,12 +14,36 @@ const {
   useContext
 } = React;
 
+// Auron's voice - evocative placeholder phrases
+const AURON_PLACEHOLDERS = [
+  // Introspective
+  "Let it surface...",
+  "Begin with what's unspoken...",
+  "Name what lingers...",
+  // Sensory/Creative
+  "What frequency are you on?",
+  "Start with the feeling...",
+  // Minimal/Poetic
+  "Speak...",
+  "What's asking to be heard?",
+  "What's echoing?",
+  // Therapeutic/Open
+  "I'm listening...",
+  "When you're ready...",
+  "Take your time..."
+];
+
 function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessionId, setSyncing, onConversationUpdate }) {
-    const [messages, setMessages] = useState([
-        { role: 'auron', content: "Hello. I'm Auron, your creative psychologist. Share what's on your mind — whether it's frustration, curiosity, or something you can't quite name yet. I'm listening." }
-    ]);
+    const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Conversation stream: random placeholder (static per session)
+    const [inputPlaceholder] = useState(() =>
+        AURON_PLACEHOLDERS[Math.floor(Math.random() * AURON_PLACEHOLDERS.length)]
+    );
+    // Bio glow loading state (replaces ThinkingPanel)
+    const [showBioGlow, setShowBioGlow] = useState(false);
     const [currentDialogue, setCurrentDialogue] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarSources, setSidebarSources] = useState([]);
@@ -588,20 +612,11 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                 <PrivacyIndicator.PrivacyPanel
                     onClose={() => setShowPrivacyPanel(false)}
                     teeVerification={sessionTeeVerification}
-                    onOpenTeeDetails={() => {
-                        setShowPrivacyPanel(false);
-                        setShowTeeModal(true);
-                    }}
+                    userId={user?.sub || user?.id}
                 />
             )}
 
-            {(isStreaming || isPanelFading) && (
-                <ThinkingPanel stage={sseCurrentStage} progress={sseProgress} completedStages={sseCompletedStages} isFading={isPanelFading} />
-            )}
 
-            {currentDialogue && (
-                <DialogueModal dialogue={currentDialogue} onClose={() => setCurrentDialogue(null)} onSendResponse={(response) => { setCurrentDialogue(null); handleSendMessage(response); }} />
-            )}
 
             <ReferencesSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} sources={sidebarSources} />
             <BlueprintFloatingPanel isOpen={blueprintPanelOpen} onClose={() => setBlueprintPanelOpen(false)} sources={blueprintPanelSources} />
@@ -616,10 +631,11 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
             )}
 
             <div className="flex-1 overflow-y-auto py-16 px-8" style={{ scrollbarWidth: 'thin', scrollbarColor: '#00A8FF #1a1a1a' }} onDragOver={handleDragOver} onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDrop={handleDrop}>
-                <div className="max-w-4xl mx-auto space-y-8">
+                <div className="conversation-stream max-w-4xl mx-auto space-y-8">
                     {messages.map((msg, idx) => (
-                        <DialogueMessage key={idx} message={msg} onOpenDialogue={(dialogue) => setCurrentDialogue(dialogue)} onOpenReferences={(sources) => { setSidebarSources(sources); setSidebarOpen(true); }} onOpenBlueprintPanel={(sources) => { setBlueprintPanelSources(sources); setBlueprintPanelOpen(true); }} onCloseBlueprintPanel={() => setBlueprintPanelOpen(false)} sendMessage={handleSendMessage} sessionTeeStatus={sessionTeeStatus} onOpenTeeModal={(teeData) => { setSessionTeeVerification(teeData); setShowTeeModal(true); }} />
+                        <DialogueMessage key={idx} message={msg} onOpenReferences={(sources) => { setSidebarSources(sources); setSidebarOpen(true); }} onOpenBlueprintPanel={(sources) => { setBlueprintPanelSources(sources); setBlueprintPanelOpen(true); }} onCloseBlueprintPanel={() => setBlueprintPanelOpen(false)} sendMessage={handleSendMessage} sessionTeeStatus={sessionTeeStatus} onOpenTeeModal={(teeData) => { setSessionTeeVerification(teeData); setShowTeeModal(true); }} />
                     ))}
+                    <BioGlowPlaceholder isVisible={isStreaming} />
                     <div ref={messagesEndRef} />
                 </div>
             </div>
@@ -635,7 +651,7 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     </div>
                 )}
                 <div className="max-w-4xl mx-auto flex gap-4">
-                    <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSend()} placeholder="Share what's on your mind..." className="flex-1 px-5 py-4 bg-black/40 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                    <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSend()} placeholder={inputPlaceholder} className="stream-input flex-1 px-5 py-4 bg-black/40 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                     <button onClick={handleAudioUpload} disabled={uploadingAudio} className="px-5 py-4 font-medium text-white transition-all flex items-center gap-3" style={{ fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif", fontSize: '0.9375rem', fontWeight: '500', letterSpacing: '-0.01em', background: uploadingAudio ? 'rgba(10, 10, 31, 0.5)' : 'rgba(10, 10, 31, 0.65)', backdropFilter: 'blur(20px)', border: uploadingAudio ? '1px solid rgba(0, 217, 255, 0.4)' : '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '0', boxShadow: uploadingAudio ? '0 0 30px rgba(0, 217, 255, 0.3)' : '0 0 0 1px rgba(255, 255, 255, 0.05) inset', cursor: uploadingAudio ? 'not-allowed' : 'pointer', color: uploadingAudio ? 'rgba(0, 217, 255, 0.95)' : 'rgba(255, 255, 255, 0.85)' }} onMouseEnter={(e) => { if (!uploadingAudio) { e.currentTarget.style.borderColor = 'rgba(0, 217, 255, 0.5)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 217, 255, 0.2)'; e.currentTarget.style.color = 'rgba(0, 217, 255, 0.95)'; } }} onMouseLeave={(e) => { if (!uploadingAudio) { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.boxShadow = '0 0 0 1px rgba(255, 255, 255, 0.05) inset'; e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)'; } }}>
                         {uploadingAudio ? (<><svg width="16" height="16" viewBox="0 0 16 16" style={{ animation: 'spin 1s linear infinite' }}><circle cx="8" cy="8" r="6" stroke="rgba(0, 217, 255, 0.3)" strokeWidth="2" fill="none" /><circle cx="8" cy="8" r="6" stroke="rgba(0, 217, 255, 0.9)" strokeWidth="2" fill="none" strokeDasharray="28" strokeDashoffset={28 - (28 * uploadProgress / 100)} strokeLinecap="round" /></svg><span>Analyzing {Math.round(uploadProgress)}%</span></>) : (<><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg><span>Upload Audio</span></>)}
                     </button>
