@@ -391,6 +391,20 @@ async function connectSSEChat({
         const eventSource = new EventSource(eventSourceUrl);
         let isComplete = false;
 
+        // Activity-based timeout: resets on ANY event, times out after 60s of NO activity
+        let timeoutId;
+        const resetTimeout = () => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                if (!isComplete) {
+                    console.error('⏱️ SSE connection timeout (no activity for 60s)');
+                    eventSource.close();
+                    if (onError) onError(new Error('Connection timeout - no activity'));
+                }
+            }, 60000);
+        };
+        resetTimeout();  // Start initial timeout
+
         // Handle all progress events
         const progressEvents = [
             'complexity_analyzing', 'complexity_complete',
@@ -403,6 +417,7 @@ async function connectSSEChat({
 
         progressEvents.forEach(eventType => {
             eventSource.addEventListener(eventType, (e) => {
+                resetTimeout();  // Reset timeout on activity
                 try {
                     const data = JSON.parse(e.data);
                     if (onProgress) {
@@ -420,6 +435,7 @@ async function connectSSEChat({
 
         // Handle Blueprint agent events
         eventSource.addEventListener('blueprint_retrieved', (e) => {
+            resetTimeout();  // Reset timeout on activity
             try {
                 const data = JSON.parse(e.data);
                 console.log('📘 SSE Event: blueprint_retrieved', data);
@@ -439,6 +455,7 @@ async function connectSSEChat({
         });
 
         eventSource.addEventListener('blueprint_skipped', (e) => {
+            resetTimeout();  // Reset timeout on activity
             try {
                 const data = JSON.parse(e.data);
                 console.log('📘 SSE Event: blueprint_skipped', data);
@@ -459,11 +476,13 @@ async function connectSSEChat({
 
         // Handle Auron token streaming events
         eventSource.addEventListener('auron_generating', (e) => {
+            resetTimeout();  // Reset timeout on activity
             if (onAuronGenerating) onAuronGenerating();
         });
 
-        // NEW: Handle GLM-4.6 thinking/reasoning tokens
+        // Handle GLM-4.6 thinking/reasoning tokens
         eventSource.addEventListener('auron_thinking', (e) => {
+            resetTimeout();  // Reset timeout on activity
             try {
                 const data = JSON.parse(e.data);
                 if (onAuronThinking) onAuronThinking(data.token);
@@ -473,6 +492,7 @@ async function connectSSEChat({
         });
 
         eventSource.addEventListener('auron_token', (e) => {
+            resetTimeout();  // Reset timeout on activity
             try {
                 const data = JSON.parse(e.data);
                 if (onAuronToken) onAuronToken(data.token);
@@ -482,6 +502,7 @@ async function connectSSEChat({
         });
 
         eventSource.addEventListener('auron_complete', (e) => {
+            resetTimeout();  // Reset timeout on activity
             try {
                 const data = JSON.parse(e.data);
                 if (onAuronComplete) onAuronComplete(data);
@@ -492,6 +513,7 @@ async function connectSSEChat({
 
         // Handle complete event
         eventSource.addEventListener('complete', (e) => {
+            clearTimeout(timeoutId);  // Clear timeout on successful completion
             try {
                 const data = JSON.parse(e.data);
                 console.log('✅ SSE Complete:', data);
@@ -534,20 +556,13 @@ async function connectSSEChat({
         };
 
         eventSource.addEventListener('ping', (e) => {
+            resetTimeout();  // Reset timeout on keepalive ping
             console.log('💓 SSE Keepalive ping received');
         });
 
-        // Connection timeout (60 seconds)
-        const timeout = setTimeout(() => {
-            if (!isComplete) {
-                console.error('⏱️ SSE connection timeout');
-                eventSource.close();
-                if (onError) onError(new Error('Connection timeout'));
-            }
-        }, 60000);
-
+        // Cleanup function: clear timeout and close connection
         return () => {
-            clearTimeout(timeout);
+            clearTimeout(timeoutId);
             if (!isComplete) eventSource.close();
         };
 

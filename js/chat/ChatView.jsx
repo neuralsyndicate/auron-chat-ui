@@ -440,6 +440,14 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
     };
 
     const handleSendMessage = async (messageText) => {
+        // Clean up any existing SSE connection before starting new one
+        // This prevents orphaned connections when user sends multiple messages quickly
+        if (sseCleanupRef.current) {
+            console.log('Cleaning up previous SSE connection before new message');
+            sseCleanupRef.current();
+            sseCleanupRef.current = null;
+        }
+
         setMessages(prev => [...prev, { role: 'user', content: messageText }]);
         setLoading(true);
         setIsStreaming(true);
