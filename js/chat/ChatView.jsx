@@ -64,6 +64,14 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
     const [isStreaming, setIsStreaming] = useState(false);
     const sseCleanupRef = useRef(null);
 
+    // RAF-based token buffer for smooth streaming (prevents React batching lag)
+    const tokenBufferRef = useRef([]);
+    const rafIdRef = useRef(null);
+
+    // Thinking mode state (GLM-4.6 reasoning)
+    const [isThinking, setIsThinking] = useState(false);
+    const streamingThinkingRef = useRef('');
+
     // Session management
     const [needsLoadSession, setNeedsLoadSession] = useState(false);
 
@@ -95,6 +103,39 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
 
     // Privacy Panel State
     const [showPrivacyPanel, setShowPrivacyPanel] = useState(false);
+
+    // RAF-based token buffer processor for smooth streaming
+    const processTokenBuffer = useCallback(() => {
+        if (tokenBufferRef.current.length === 0) {
+            rafIdRef.current = null;
+            return;
+        }
+
+        // Process batch of tokens (max 3 per frame for smoothness)
+        const tokensToProcess = tokenBufferRef.current.splice(0, 3);
+        const newContent = tokensToProcess.join('');
+
+        streamingGuidanceRef.current += newContent;
+        let displayText = streamingGuidanceRef.current.replace(/^GUIDANCE:\s*/i, '');
+        const reflectiveIndex = displayText.search(/\n\s*REFLECTIVE QUESTION:/i);
+        if (reflectiveIndex !== -1) displayText = displayText.substring(0, reflectiveIndex).trim();
+
+        const currentIndex = streamingMessageIndexRef.current;
+        if (currentIndex !== null) {
+            setMessages(msgs => msgs.map((msg, idx) =>
+                idx === currentIndex
+                    ? { ...msg, guidance: displayText, content: displayText }
+                    : msg
+            ));
+        }
+
+        // Schedule next frame if more tokens
+        if (tokenBufferRef.current.length > 0) {
+            rafIdRef.current = requestAnimationFrame(processTokenBuffer);
+        } else {
+            rafIdRef.current = null;
+        }
+    }, []);
 
     // Initialize frontend encryption and conversation index
     useEffect(() => {
@@ -448,24 +489,60 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                 onBlueprintRetrieved: (data) => { blueprintSourcesRef.current = data.sources || []; },
                 onBlueprintSkipped: () => { blueprintSourcesRef.current = null; },
                 onAuronGenerating: () => {
+                    // Reset thinking state
+                    setIsThinking(false);
+                    streamingThinkingRef.current = '';
+                    tokenBufferRef.current = [];
+                    if (rafIdRef.current) {
+                        cancelAnimationFrame(rafIdRef.current);
+                        rafIdRef.current = null;
+                    }
                     setMessages(prev => {
                         streamingMessageIndexRef.current = prev.length;
-                        return [...prev, { role: 'auron', content: '', isStreaming: true, guidance: '' }];
+                        return [...prev, { role: 'auron', content: '', isStreaming: true, isThinking: false, guidance: '', thinkingContent: '' }];
                     });
                     setIsPanelFading(true);
-                    setTimeout(() => { setIsStreaming(false); }, 1200);
                 },
-                onAuronToken: (token) => {
-                    streamingGuidanceRef.current += token;
-                    let displayText = streamingGuidanceRef.current.replace(/^GUIDANCE:\s*/i, '');
-                    const reflectiveIndex = displayText.search(/\n\s*REFLECTIVE QUESTION:/i);
-                    if (reflectiveIndex !== -1) displayText = displayText.substring(0, reflectiveIndex).trim();
+                // NEW: Handle GLM-4.6 thinking/reasoning tokens
+                onAuronThinking: (token) => {
+                    setIsThinking(true);
+                    streamingThinkingRef.current += token;
+                    const thinkingText = streamingThinkingRef.current;
                     const currentIndex = streamingMessageIndexRef.current;
                     if (currentIndex !== null) {
-                        setMessages(msgs => msgs.map((msg, idx) => idx === currentIndex ? { ...msg, guidance: displayText, content: displayText } : msg));
+                        setMessages(msgs => msgs.map((msg, idx) =>
+                            idx === currentIndex
+                                ? { ...msg, thinkingContent: thinkingText, isThinking: true }
+                                : msg
+                        ));
+                    }
+                },
+                onAuronToken: (token) => {
+                    // Transition from thinking to answer
+                    if (isThinking) {
+                        setIsThinking(false);
+                        const currentIndex = streamingMessageIndexRef.current;
+                        if (currentIndex !== null) {
+                            setMessages(msgs => msgs.map((msg, idx) =>
+                                idx === currentIndex ? { ...msg, isThinking: false } : msg
+                            ));
+                        }
+                    }
+                    // Use RAF buffer for smooth streaming
+                    tokenBufferRef.current.push(token);
+                    if (!rafIdRef.current) {
+                        rafIdRef.current = requestAnimationFrame(processTokenBuffer);
                     }
                 },
                 onAuronComplete: (data) => {
+                    // Cancel any pending RAF
+                    if (rafIdRef.current) {
+                        cancelAnimationFrame(rafIdRef.current);
+                        rafIdRef.current = null;
+                    }
+                    // Reset thinking state
+                    setIsThinking(false);
+
                     const { guidance, reflective_question } = data;
                     const currentIndex = streamingMessageIndexRef.current;
                     let cleanStreamedText = streamingGuidanceRef.current.replace(/^GUIDANCE:\s*/i, '');
@@ -475,13 +552,15 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     const finalQuestion = reflective_question || null;
                     if (currentIndex !== null) {
                         setMessages(msgs => msgs.map((msg, idx) => idx === currentIndex ? {
-                            role: 'auron', content: "View Insight →", isDialogue: true, isStreaming: false,
+                            role: 'auron', content: finalGuidance, isDialogue: true, isStreaming: false, isThinking: false,
                             dialogue: { guidance: finalGuidance, reflective_question: finalQuestion, sources: null, research_quality: null, cited_references: null, research_synthesis: null, blueprint_sources: blueprintSourcesRef.current }
                         } : msg));
                     }
                     streamingMessageIndexRef.current = null;
                     streamingGuidanceRef.current = '';
+                    streamingThinkingRef.current = '';
                     blueprintSourcesRef.current = null;
+                    tokenBufferRef.current = [];
                 },
                 onComplete: (result) => {
                     console.log('onComplete result:', result);
@@ -641,19 +720,27 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
             </div>
 
             <div className="py-8 px-8 border-t border-white/5">
-                {/* Privacy Indicator - Above input */}
-                {window.PrivacyIndicator && (
-                    <div className="privacy-indicator-container">
-                        <PrivacyIndicator.PrivacyIndicator
-                            onClick={() => setShowPrivacyPanel(true)}
-                            teeVerified={sessionTeeStatus === true}
-                        />
-                    </div>
-                )}
                 <div className="max-w-4xl mx-auto flex gap-4">
                     <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSend()} placeholder={inputPlaceholder} className="stream-input flex-1 px-5 py-4 bg-black/40 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                    <button onClick={handleAudioUpload} disabled={uploadingAudio} className="px-5 py-4 font-medium text-white transition-all flex items-center gap-3" style={{ fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif", fontSize: '0.9375rem', fontWeight: '500', letterSpacing: '-0.01em', background: uploadingAudio ? 'rgba(10, 10, 31, 0.5)' : 'rgba(10, 10, 31, 0.65)', backdropFilter: 'blur(20px)', border: uploadingAudio ? '1px solid rgba(0, 217, 255, 0.4)' : '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '0', boxShadow: uploadingAudio ? '0 0 30px rgba(0, 217, 255, 0.3)' : '0 0 0 1px rgba(255, 255, 255, 0.05) inset', cursor: uploadingAudio ? 'not-allowed' : 'pointer', color: uploadingAudio ? 'rgba(0, 217, 255, 0.95)' : 'rgba(255, 255, 255, 0.85)' }} onMouseEnter={(e) => { if (!uploadingAudio) { e.currentTarget.style.borderColor = 'rgba(0, 217, 255, 0.5)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 217, 255, 0.2)'; e.currentTarget.style.color = 'rgba(0, 217, 255, 0.95)'; } }} onMouseLeave={(e) => { if (!uploadingAudio) { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.boxShadow = '0 0 0 1px rgba(255, 255, 255, 0.05) inset'; e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)'; } }}>
-                        {uploadingAudio ? (<><svg width="16" height="16" viewBox="0 0 16 16" style={{ animation: 'spin 1s linear infinite' }}><circle cx="8" cy="8" r="6" stroke="rgba(0, 217, 255, 0.3)" strokeWidth="2" fill="none" /><circle cx="8" cy="8" r="6" stroke="rgba(0, 217, 255, 0.9)" strokeWidth="2" fill="none" strokeDasharray="28" strokeDashoffset={28 - (28 * uploadProgress / 100)} strokeLinecap="round" /></svg><span>Analyzing {Math.round(uploadProgress)}%</span></>) : (<><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg><span>Upload Audio</span></>)}
+                    <button onClick={handleAudioUpload} disabled={uploadingAudio} className="neural-upload-btn">
+                        {uploadingAudio ? (
+                            <>
+                                <svg className="neural-upload-spinner" width="18" height="18" viewBox="0 0 18 18">
+                                    <circle cx="9" cy="9" r="7" stroke="rgba(96, 165, 250, 0.2)" strokeWidth="2" fill="none" />
+                                    <circle cx="9" cy="9" r="7" stroke="rgba(96, 165, 250, 0.9)" strokeWidth="2" fill="none" strokeDasharray="32" strokeDashoffset={32 - (32 * uploadProgress / 100)} strokeLinecap="round" style={{ transform: 'rotate(-90deg)', transformOrigin: 'center' }} />
+                                </svg>
+                                <span>Analyzing {Math.round(uploadProgress)}%</span>
+                            </>
+                        ) : (
+                            <>
+                                <svg className="neural-upload-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M9 18V5l12-2v13" />
+                                    <circle cx="6" cy="18" r="3" />
+                                    <circle cx="18" cy="16" r="3" />
+                                </svg>
+                                <span>Upload Audio</span>
+                            </>
+                        )}
                     </button>
                     <button onClick={handleSend} disabled={loading || !input.trim()} className="px-8 py-4 rounded-xl font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all" style={{ background: loading ? '#666' : 'linear-gradient(135deg, #000DFF 0%, #001AFF 100%)' }}>Send</button>
                 </div>

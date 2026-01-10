@@ -16,29 +16,32 @@ const SSE_STAGE_MESSAGES = {
     'domain_complete': 'Knowledge domains mapped',
     'trigger_analyzing': 'Identifying psychological patterns...',
     'trigger_complete': 'Psychological patterns recognized',
+    'blueprint_analyzing': 'Searching neural profile...',  // Added
     'blueprint_retrieved': 'Neural Music framework retrieved...',
     'blueprint_skipped': 'Framework check complete',
     'web_search_analyzing': 'Searching research papers...',
     'web_search_complete': 'Research complete',
-    'auron_thinking': 'Crafting response...',
+    'auron_thinking': 'Reasoning through response...',  // Updated
     'auron_complete': 'Response ready',
     'complete': 'Complete'
 };
 
 const SSE_STAGE_PROGRESS = {
     'complexity_analyzing': 5,
-    'complexity_complete': 12,
-    'emotion_analyzing': 20,
-    'emotion_complete': 30,
-    'domain_analyzing': 40,
-    'domain_complete': 50,
-    'trigger_analyzing': 60,
-    'trigger_complete': 70,
-    'blueprint_retrieved': 72,
-    'blueprint_skipped': 72,
-    'web_search_analyzing': 75,
-    'web_search_complete': 85,
-    'auron_thinking': 90,
+    'complexity_complete': 10,
+    'emotion_analyzing': 15,
+    'emotion_complete': 20,
+    'domain_analyzing': 15,   // Runs parallel with emotion
+    'domain_complete': 25,
+    'trigger_analyzing': 30,
+    'trigger_complete': 40,
+    'blueprint_analyzing': 45,  // Added
+    'blueprint_retrieved': 50,
+    'blueprint_skipped': 50,
+    'web_search_analyzing': 55,
+    'web_search_complete': 65,
+    'auron_generating': 70,     // Added
+    'auron_thinking': 80,       // Updated: thinking phase
     'auron_complete': 95,
     'complete': 100
 };

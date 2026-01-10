@@ -632,7 +632,7 @@ function DialogueMessage({ message, onOpenReferences, onOpenBlueprintPanel, onCl
         );
     }
 
-    // Auron message (streaming) - Stream style with cursor
+    // Auron message (streaming) - Stream style with cursor and thinking display
     if (message.isStreaming) {
         return (
             <div className="stream-message stream-message--auron stream-message--streaming">
@@ -640,6 +640,16 @@ function DialogueMessage({ message, onOpenReferences, onOpenBlueprintPanel, onCl
                     <span className="stream-message__indicator-icon">●</span>
                     <span>Auron</span>
                 </div>
+
+                {/* Thinking Content - Shows BEFORE answer (GLM-4.6 reasoning) */}
+                {message.thinkingContent && (
+                    <div className={`stream-thinking-content ${!message.isThinking ? 'transitioning' : ''}`}>
+                        <div className="stream-thinking-label">Reasoning</div>
+                        <div className="stream-thinking-text">{message.thinkingContent}</div>
+                    </div>
+                )}
+
+                {/* Answer Content */}
                 <div className="stream-message__content">
                     {message.guidance}
                 </div>

@@ -210,89 +210,246 @@
     }
 }
 
-/* ===== Reflective Question Inline ===== */
+/* ===== Thinking Mode - Blur Reveal Effect ===== */
+.stream-thinking-content {
+    position: relative;
+    margin-bottom: 1.25rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.03) 0%, transparent 100%);
+    border-left: 2px solid rgba(59, 130, 246, 0.2);
+    border-radius: 0 8px 8px 0;
+    overflow: hidden;
+}
+
+.stream-thinking-content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        ellipse 50% 50% at 0% 50%,
+        rgba(96, 165, 250, 0.06) 0%,
+        transparent 70%
+    );
+    animation: thinkingGlow 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes thinkingGlow {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+}
+
+.stream-thinking-label {
+    font-size: 0.5625rem;
+    font-weight: 600;
+    color: rgba(96, 165, 250, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.stream-thinking-label::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(96, 165, 250, 0.4);
+    animation: indicatorPulse 2s ease-in-out infinite;
+}
+
+@keyframes indicatorPulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+}
+
+.stream-thinking-text {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+    position: relative;
+    z-index: 1;
+}
+
+/* Token blur-reveal animation */
+.stream-token-reveal {
+    animation: tokenReveal 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tokenReveal {
+    from {
+        filter: blur(4px);
+        opacity: 0.3;
+    }
+    to {
+        filter: blur(0);
+        opacity: 1;
+    }
+}
+
+/* Thinking to Answer transition */
+.stream-thinking-content.transitioning {
+    animation: thinkingFadeOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes thinkingFadeOut {
+    to {
+        opacity: 0.4;
+        transform: translateY(-4px);
+        filter: blur(2px);
+        max-height: 60px;
+        overflow: hidden;
+    }
+}
+
+/* Streaming message with cursor */
+.stream-message--streaming .stream-message__content::after {
+    content: '';
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background: rgba(96, 165, 250, 0.8);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: cursorBlink 1s step-end infinite;
+}
+
+@keyframes cursorBlink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* ===== Reflective Question - Subtle Glow Prompt ===== */
 .stream-reflective-question {
-    margin-top: 1.75rem;
-    padding: 1.5rem;
-    background: rgba(59, 130, 246, 0.04);
-    border-radius: 12px;
-    border: 1px solid rgba(59, 130, 246, 0.08);
+    margin-top: 2rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    position: relative;
+    padding-left: 1.5rem;
     transition: all 0.3s var(--stream-transition);
 }
 
-.stream-reflective-question:hover {
-    border-color: rgba(59, 130, 246, 0.15);
-    background: rgba(59, 130, 246, 0.06);
+/* Subtle breathing glow on left edge */
+.stream-reflective-question::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, transparent, rgba(96, 165, 250, 0.5) 50%, transparent);
+    animation: questionGlow 4s ease-in-out infinite;
 }
 
+@keyframes questionGlow {
+    0%, 100% {
+        opacity: 0.4;
+        box-shadow: 0 0 8px rgba(96, 165, 250, 0.2);
+    }
+    50% {
+        opacity: 1;
+        box-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
+    }
+}
+
+/* Hide label - question speaks for itself */
 .stream-reflective-question__label {
-    font-size: 0.625rem;
-    font-weight: 600;
-    color: rgba(96, 165, 250, 0.6);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 0.75rem;
+    display: none;
 }
 
+/* Question text with subtle pulse */
 .stream-reflective-question__text {
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-style: italic;
-    color: rgba(255, 255, 255, 0.8);
-    line-height: 1.7;
-    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.8;
+    margin-bottom: 1.25rem;
+    animation: questionPulse 6s ease-in-out infinite;
 }
 
-/* ===== Response Textarea ===== */
+@keyframes questionPulse {
+    0%, 100% {
+        text-shadow: none;
+    }
+    50% {
+        text-shadow: 0 0 30px rgba(96, 165, 250, 0.15);
+    }
+}
+
+/* ===== Response Textarea - Minimal Boundary Style ===== */
 .stream-response-area {
-    margin-top: 1rem;
+    margin-top: 1.25rem;
 }
 
-.stream-response-textarea {
+.stream-response-textarea,
+.stream-reflective-question textarea,
+.user-response-area textarea {
     width: 100%;
-    min-height: 80px;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(59, 130, 246, 0.1);
-    border-radius: 10px;
+    min-height: 70px;
+    padding: 1rem 0;
+    background: rgba(0, 0, 0, 0.1);
+    border: none;
+    border-bottom: 1px solid rgba(96, 165, 250, 0.1);
+    border-radius: 0;
     color: rgba(255, 255, 255, 0.9);
     font-family: inherit;
     font-size: 0.9375rem;
-    line-height: 1.6;
-    resize: vertical;
+    line-height: 1.7;
+    resize: none;
     transition: all 0.3s var(--stream-transition);
 }
 
-.stream-response-textarea:focus {
+.stream-response-textarea:focus,
+.stream-reflective-question textarea:focus,
+.user-response-area textarea:focus {
     outline: none;
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+    border-bottom-color: rgba(96, 165, 250, 0.4);
+    background: rgba(0, 0, 0, 0.15);
+    box-shadow: none;
 }
 
-.stream-response-textarea::placeholder {
-    color: rgba(255, 255, 255, 0.35);
+.stream-response-textarea::placeholder,
+.stream-reflective-question textarea::placeholder,
+.user-response-area textarea::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+    font-style: italic;
 }
 
-.stream-response-submit {
-    margin-top: 0.75rem;
-    padding: 0.625rem 1.25rem;
-    background: rgba(59, 130, 246, 0.15);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 8px;
-    color: rgba(96, 165, 250, 0.9);
+/* Submit button - Inline link style */
+.stream-response-submit,
+.stream-reflective-question button,
+.user-response-area button {
+    margin-top: 0.875rem;
+    padding: 0.5rem 0;
+    background: transparent;
+    border: none;
+    color: rgba(96, 165, 250, 0.7);
     font-size: 0.8125rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s var(--stream-transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
 }
 
-.stream-response-submit:hover {
-    background: rgba(59, 130, 246, 0.25);
-    border-color: rgba(59, 130, 246, 0.35);
+.stream-response-submit:hover,
+.stream-reflective-question button:hover,
+.user-response-area button:hover {
     color: #60A5FA;
+    background: transparent;
+    text-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
 }
 
-.stream-response-submit:disabled {
-    opacity: 0.4;
+.stream-response-submit:disabled,
+.stream-reflective-question button:disabled,
+.user-response-area button:disabled {
+    opacity: 0.3;
     cursor: not-allowed;
 }
 
@@ -410,6 +567,79 @@
     margin: 2.5rem 0;
 }
 
+/* ===== Premium Upload Audio Button ===== */
+.neural-upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1.25rem;
+    background: linear-gradient(135deg, rgba(15, 20, 35, 0.8) 0%, rgba(20, 30, 50, 0.6) 100%);
+    border: 1px solid rgba(96, 165, 250, 0.12);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.75);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Ambient glow overlay on hover */
+.neural-upload-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 100% at 50% 100%, rgba(96, 165, 250, 0.1), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+}
+
+.neural-upload-btn:hover::before {
+    opacity: 1;
+}
+
+.neural-upload-btn:hover {
+    border-color: rgba(96, 165, 250, 0.3);
+    color: rgba(255, 255, 255, 0.95);
+    box-shadow:
+        0 0 30px rgba(96, 165, 250, 0.1),
+        0 0 60px rgba(96, 165, 250, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transform: translateY(-1px);
+}
+
+.neural-upload-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+    background: linear-gradient(135deg, rgba(15, 20, 35, 0.6) 0%, rgba(20, 30, 50, 0.4) 100%);
+    border-color: rgba(96, 165, 250, 0.2);
+    color: rgba(96, 165, 250, 0.9);
+}
+
+.neural-upload-icon {
+    opacity: 0.7;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neural-upload-btn:hover .neural-upload-icon {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px rgba(96, 165, 250, 0.5));
+}
+
+.neural-upload-spinner {
+    animation: uploadSpin 1.2s linear infinite;
+}
+
+@keyframes uploadSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
     .conversation-stream {
@@ -426,6 +656,15 @@
     }
 
     .stream-reflective-question {
-        padding: 1.25rem;
+        padding-left: 1rem;
+    }
+
+    .neural-upload-btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.8125rem;
+    }
+
+    .neural-upload-btn span:last-child {
+        display: none;
     }
 }

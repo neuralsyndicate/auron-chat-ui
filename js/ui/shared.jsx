@@ -353,6 +353,7 @@ async function connectSSEChat({
     onBlueprintRetrieved,
     onBlueprintSkipped,
     onAuronGenerating,
+    onAuronThinking,      // NEW: GLM-4.6 reasoning tokens
     onAuronToken,
     onAuronComplete,
     onComplete,
@@ -396,6 +397,7 @@ async function connectSSEChat({
             'emotion_analyzing', 'emotion_complete',
             'domain_analyzing', 'domain_complete',
             'trigger_analyzing', 'trigger_complete',
+            'blueprint_analyzing',  // Added: blueprint search stage
             'web_search_analyzing', 'web_search_complete'
         ];
 
@@ -458,6 +460,16 @@ async function connectSSEChat({
         // Handle Auron token streaming events
         eventSource.addEventListener('auron_generating', (e) => {
             if (onAuronGenerating) onAuronGenerating();
+        });
+
+        // NEW: Handle GLM-4.6 thinking/reasoning tokens
+        eventSource.addEventListener('auron_thinking', (e) => {
+            try {
+                const data = JSON.parse(e.data);
+                if (onAuronThinking) onAuronThinking(data.token);
+            } catch (err) {
+                console.error('Error parsing auron_thinking event:', err);
+            }
         });
 
         eventSource.addEventListener('auron_token', (e) => {
