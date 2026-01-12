@@ -181,6 +181,44 @@ function SourceCard({ source, index }) {
     );
 }
 
+// Web Source Pills - Simple inline clickable links for web search results
+function WebSourcePills({ sources }) {
+    if (!sources || sources.length === 0) return null;
+
+    const getHostname = (url) => {
+        try {
+            return new URL(url).hostname.replace('www.', '');
+        } catch {
+            return url;
+        }
+    };
+
+    return (
+        <div className="web-sources-pills">
+            {sources.map((source, idx) => (
+                <a
+                    key={idx}
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="web-source-pill"
+                    title={source.title}
+                >
+                    <img
+                        src={`https://www.google.com/s2/favicons?domain=${getHostname(source.url)}&sz=16`}
+                        alt=""
+                        className="web-source-favicon"
+                        onError={(e) => e.target.style.display = 'none'}
+                    />
+                    <span className="web-source-name">
+                        {source.source || getHostname(source.url)}
+                    </span>
+                </a>
+            ))}
+        </div>
+    );
+}
+
 // Research Quality Badge - Shows Pro tier research depth
 function ResearchQualityBadge({ research_quality }) {
     if (!research_quality || !research_quality.data_points) return null;
@@ -693,6 +731,15 @@ function DialogueMessage({ message, onOpenReferences, onOpenBlueprintPanel, onCl
             guidance = guidance.replace(/REFLECTION QUESTION:\s*.+$/s, '').trim();
         }
 
+        // Categorize sources: web vs scientific
+        const allSources = message.dialogue.sources || [];
+        const webSources = allSources.filter(s =>
+            s.source_type === 'web' || (!s.source_type && !s.credibility?.tier_number)
+        );
+        const scientificSources = allSources.filter(s =>
+            s.source_type === 'scientific' || s.credibility?.tier_number
+        );
+
         return (
             <div className="stream-message stream-message--auron" style={{ position: 'relative' }}>
                 {/* Blueprint Corner Ribbon */}
@@ -735,6 +782,9 @@ function DialogueMessage({ message, onOpenReferences, onOpenBlueprintPanel, onCl
                     </div>
                 )}
 
+                {/* Inline Web Sources - Simple clickable pills */}
+                {webSources.length > 0 && <WebSourcePills sources={webSources} />}
+
                 {/* Reflective Question - Inline with response area */}
                 {reflectiveQuestion && (
                     <div className="stream-reflective-question">
@@ -749,14 +799,14 @@ function DialogueMessage({ message, onOpenReferences, onOpenBlueprintPanel, onCl
                     </div>
                 )}
 
-                {/* View Full References */}
-                {message.dialogue.sources && message.dialogue.sources.length > 0 && (
+                {/* View Research - Only for scientific sources with tiered display */}
+                {scientificSources.length > 0 && (
                     <button
-                        onClick={() => onOpenReferences(message.dialogue.sources)}
+                        onClick={() => onOpenReferences(scientificSources)}
                         className="stream-sources-link"
                     >
                         <span>📚</span>
-                        View References ({message.dialogue.sources.length})
+                        View Research ({scientificSources.length})
                     </button>
                 )}
             </div>

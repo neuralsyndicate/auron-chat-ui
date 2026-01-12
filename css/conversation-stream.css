@@ -559,6 +559,67 @@
     color: #60A5FA;
 }
 
+/* ===== Web Source Pills - Inline Clickable Links ===== */
+.web-sources-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.web-source-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: rgba(59, 130, 246, 0.04);
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    border-radius: 6px;
+    color: rgba(96, 165, 250, 0.85);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.web-source-pill:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.2);
+    color: #60A5FA;
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.08);
+    transform: translateY(-1px);
+}
+
+.web-source-favicon {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    opacity: 0.7;
+}
+
+.web-source-pill:hover .web-source-favicon {
+    opacity: 1;
+}
+
+.web-source-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.web-source-pill::after {
+    content: '\2197';
+    font-size: 0.625rem;
+    opacity: 0;
+    margin-left: 0.125rem;
+    transition: opacity 0.2s ease;
+}
+
+.web-source-pill:hover::after {
+    opacity: 0.6;
+}
+
 /* ===== Empty State ===== */
 .stream-empty-state {
     display: flex;
