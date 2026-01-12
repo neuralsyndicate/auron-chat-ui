@@ -575,7 +575,7 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                             dialogue: { guidance: finalGuidance, reflective_question: finalQuestion, thinking: finalThinking, sources: null, research_quality: null, cited_references: null, research_synthesis: null, blueprint_sources: blueprintSourcesRef.current }
                         } : msg));
                     }
-                    streamingMessageIndexRef.current = null;
+                    // DON'T clear streamingMessageIndexRef here - onComplete needs it for sources!
                     streamingGuidanceRef.current = '';
                     streamingThinkingRef.current = '';
                     blueprintSourcesRef.current = null;
@@ -604,6 +604,16 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     // Sources come from top-level OR web_search analysis
                     const webSearchData = result.analysis?.web_search || {};
                     const sources = result.sources || webSearchData.sources || [];
+                    console.log('SOURCES DEBUG:', {
+                        resultKeys: Object.keys(result || {}),
+                        resultSources: result.sources,
+                        resultAnalysis: result.analysis,
+                        webSearchData: webSearchData,
+                        webSearchSources: webSearchData.sources,
+                        extractedSources: sources,
+                        sourcesLength: sources.length,
+                        currentIndex: currentIndex
+                    });
                     if (currentIndex !== null && (sources.length > 0 || teeVerification)) {
                         setMessages(msgs => msgs.map((msg, idx) => idx === currentIndex && msg.dialogue ? {
                             ...msg, dialogue: {
@@ -638,6 +648,8 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     setIsStreaming(false);
                     setLoading(false);
                     setIsPanelFading(false);
+                    // Cleanup ref AFTER sources have been applied
+                    streamingMessageIndexRef.current = null;
                 },
                 onError: (error) => {
                     console.error('SSE Error - falling back to regular chat:', error);

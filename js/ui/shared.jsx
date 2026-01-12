@@ -516,17 +516,24 @@ async function connectSSEChat({
             clearTimeout(timeoutId);  // Clear timeout on successful completion
             try {
                 const data = JSON.parse(e.data);
-                console.log('✅ SSE Complete:', data);
+                console.log('✅ SSE Complete RAW:', data);
+                console.log('✅ SSE Complete data.result:', data.result);
+                console.log('✅ SSE Complete data.sources:', data.sources);
+                console.log('✅ SSE Complete data.result?.sources:', data.result?.sources);
+                console.log('✅ SSE Complete data.result?.analysis:', data.result?.analysis);
                 isComplete = true;
                 eventSource.close();
                 // Include sseSessionId in result for frontend conversation saving
+                // Also include sources from data level if present
                 const resultWithSession = {
                     ...data.result,
+                    sources: data.result?.sources || data.sources,
                     metadata: {
                         ...(data.result?.metadata || {}),
                         session_id: sseSessionId
                     }
                 };
+                console.log('✅ Final resultWithSession:', resultWithSession);
                 if (onComplete) onComplete(resultWithSession);
             } catch (err) {
                 console.error('Error parsing complete event:', err);
