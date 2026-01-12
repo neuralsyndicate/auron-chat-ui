@@ -213,6 +213,7 @@ function WebSourcePills({ sources }) {
                     <span className="web-source-name">
                         {source.source || getHostname(source.url)}
                     </span>
+                    <span className="web-source-external">↗</span>
                 </a>
             ))}
         </div>
