@@ -737,7 +737,7 @@ function DialogueMessage({ message, onOpenReferences, onOpenBlueprintPanel, onCl
             s.source_type === 'web' || (!s.source_type && !s.credibility?.tier_number)
         );
         const scientificSources = allSources.filter(s =>
-            s.source_type === 'scientific' || s.credibility?.tier_number
+            s.source_type === 'scientific' || (s.source_type !== 'web' && s.credibility?.tier_number)
         );
 
         return (
