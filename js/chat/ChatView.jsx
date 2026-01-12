@@ -72,6 +72,9 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
     const [isThinking, setIsThinking] = useState(false);
     const streamingThinkingRef = useRef('');
 
+    // Track when streaming content starts (to hide placeholder)
+    const [hasStreamingContent, setHasStreamingContent] = useState(false);
+
     // Session management
     const [needsLoadSession, setNeedsLoadSession] = useState(false);
 
@@ -451,6 +454,7 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
         setMessages(prev => [...prev, { role: 'user', content: messageText }]);
         setLoading(true);
         setIsStreaming(true);
+        setHasStreamingContent(false);  // Reset: show placeholder until content arrives
         setSSEProgress(0);
         setSSECurrentStage('');
         setSSECompletedStages([]);
@@ -526,6 +530,10 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     }
                 },
                 onAuronToken: (token) => {
+                    // First token: hide placeholder, content is arriving
+                    if (tokenBufferRef.current.length === 0) {
+                        setHasStreamingContent(true);
+                    }
                     // Transition from thinking to answer
                     if (isThinking) {
                         setIsThinking(false);
@@ -558,10 +566,13 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     if (reflectiveIndex !== -1) cleanStreamedText = cleanStreamedText.substring(0, reflectiveIndex).trim();
                     const finalGuidance = guidance || cleanStreamedText || '';
                     const finalQuestion = reflective_question || null;
+                    // Preserve thinking content BEFORE clearing
+                    const finalThinking = streamingThinkingRef.current || null;
                     if (currentIndex !== null) {
                         setMessages(msgs => msgs.map((msg, idx) => idx === currentIndex ? {
                             role: 'auron', content: finalGuidance, isDialogue: true, isStreaming: false, isThinking: false,
-                            dialogue: { guidance: finalGuidance, reflective_question: finalQuestion, sources: null, research_quality: null, cited_references: null, research_synthesis: null, blueprint_sources: blueprintSourcesRef.current }
+                            thinkingContent: finalThinking,  // Preserve for "View Reasoning" toggle
+                            dialogue: { guidance: finalGuidance, reflective_question: finalQuestion, thinking: finalThinking, sources: null, research_quality: null, cited_references: null, research_synthesis: null, blueprint_sources: blueprintSourcesRef.current }
                         } : msg));
                     }
                     streamingMessageIndexRef.current = null;
@@ -590,14 +601,17 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
 
                     const currentIndex = streamingMessageIndexRef.current;
                     // Update message with sources, analysis, and TEE verification
-                    if (currentIndex !== null && (result.sources || teeVerification)) {
+                    // Sources come from top-level OR web_search analysis
+                    const webSearchData = result.analysis?.web_search || {};
+                    const sources = result.sources || webSearchData.sources || [];
+                    if (currentIndex !== null && (sources.length > 0 || teeVerification)) {
                         setMessages(msgs => msgs.map((msg, idx) => idx === currentIndex && msg.dialogue ? {
                             ...msg, dialogue: {
                                 ...msg.dialogue,
-                                sources: result.sources || msg.dialogue.sources,
-                                research_quality: result.analysis?.web_search?.research_quality || msg.dialogue.research_quality,
-                                cited_references: result.analysis?.cited_references || msg.dialogue.cited_references,
-                                research_synthesis: result.research_synthesis || msg.dialogue.research_synthesis,
+                                sources: sources.length > 0 ? sources : msg.dialogue.sources,
+                                research_quality: webSearchData.research_quality || msg.dialogue.research_quality,
+                                cited_references: webSearchData.cited_references || msg.dialogue.cited_references,
+                                research_synthesis: result.research_synthesis || webSearchData.knowledge_synthesis || msg.dialogue.research_synthesis,
                                 tee_verification: teeVerification || msg.dialogue.tee_verification
                             }
                         } : msg));
@@ -635,7 +649,8 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
 
                         const messageData = data.auron_response || data.message;
                         const parsedMessage = typeof messageData === 'string' ? { guidance: messageData, reflective_question: "What insight from this resonates most with you?" } : messageData;
-                        const dialogueWithSources = { ...parsedMessage, sources: data.sources || null, research_quality: data.analysis?.web_search?.research_quality || null, cited_references: data.analysis?.cited_references || null, research_synthesis: data.research_synthesis || null };
+                        const webSearch = data.analysis?.web_search || {};
+                        const dialogueWithSources = { ...parsedMessage, sources: data.sources || webSearch.sources || null, research_quality: webSearch.research_quality || null, cited_references: webSearch.cited_references || null, research_synthesis: data.research_synthesis || webSearch.knowledge_synthesis || null };
                         setMessages(prev => {
                             const newMessages = [...prev, { role: 'auron', content: "View Insight →", isDialogue: true, dialogue: dialogueWithSources }];
 
@@ -722,7 +737,7 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
                     {messages.map((msg, idx) => (
                         <DialogueMessage key={idx} message={msg} onOpenReferences={(sources) => { setSidebarSources(sources); setSidebarOpen(true); }} onOpenBlueprintPanel={(sources) => { setBlueprintPanelSources(sources); setBlueprintPanelOpen(true); }} onCloseBlueprintPanel={() => setBlueprintPanelOpen(false)} sendMessage={handleSendMessage} sessionTeeStatus={sessionTeeStatus} onOpenTeeModal={(teeData) => { setSessionTeeVerification(teeData); setShowTeeModal(true); }} />
                     ))}
-                    <BioGlowPlaceholder isVisible={isStreaming} />
+                    <BioGlowPlaceholder isVisible={isStreaming && !hasStreamingContent} />
                     <div ref={messagesEndRef} />
                 </div>
             </div>

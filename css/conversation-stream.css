@@ -305,6 +305,65 @@
     }
 }
 
+/* ===== Collapsible Thinking (for completed messages) ===== */
+.stream-thinking-collapsible {
+    margin-bottom: 1rem;
+}
+
+.stream-thinking-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    background: transparent;
+    border: none;
+    color: rgba(96, 165, 250, 0.5);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.stream-thinking-toggle:hover {
+    color: rgba(96, 165, 250, 0.9);
+}
+
+.stream-thinking-toggle-icon {
+    font-size: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.stream-thinking-content--completed {
+    margin-top: 0.5rem;
+    padding: 1rem 1.25rem;
+    background: rgba(59, 130, 246, 0.02);
+    border-left: 2px solid rgba(59, 130, 246, 0.1);
+    border-radius: 0 8px 8px 0;
+    animation: thinkingExpand 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stream-thinking-content--completed .stream-thinking-text {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+@keyframes thinkingExpand {
+    from {
+        opacity: 0;
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+}
+
 /* Streaming message with cursor */
 .stream-message--streaming .stream-message__content::after {
     content: '';

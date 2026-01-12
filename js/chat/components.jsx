@@ -14,6 +14,30 @@ const {
   useContext
 } = React;
 
+// Thinking Collapsible Component - View past reasoning with toggle
+function ThinkingCollapsible({ content }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    if (!content) return null;
+
+    return (
+        <div className="stream-thinking-collapsible">
+            <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="stream-thinking-toggle"
+            >
+                <span className="stream-thinking-toggle-icon">{isExpanded ? '▼' : '▶'}</span>
+                <span>View Reasoning</span>
+            </button>
+            {isExpanded && (
+                <div className="stream-thinking-content stream-thinking-content--completed">
+                    <div className="stream-thinking-text">{content}</div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 // Blueprint Source Component - Simplified (no longer used inline, kept for compatibility)
 function BlueprintSourceCard({ source, index }) {
     const similarityPercent = Math.round((source.similarity || 0) * 100);
@@ -682,6 +706,13 @@ function DialogueMessage({ message, onOpenReferences, onOpenBlueprintPanel, onCl
                     <span className="stream-message__indicator-icon">●</span>
                     <span>Auron</span>
                 </div>
+
+                {/* Thinking Content - Collapsible for completed messages */}
+                {(message.thinkingContent || message.dialogue?.thinking) && (
+                    <ThinkingCollapsible
+                        content={message.thinkingContent || message.dialogue?.thinking}
+                    />
+                )}
 
                 {/* Guidance Text - Full content inline */}
                 <div className="stream-message__content">
