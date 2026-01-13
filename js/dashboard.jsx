@@ -71,6 +71,11 @@ function Dashboard() {
 
                     // Store for backwards compatibility
                     localStorage.setItem('auron_user', JSON.stringify(userInfo));
+
+                    // Initialize session manager for proactive token refresh
+                    if (window.initSessionManager) {
+                        window.initSessionManager();
+                    }
                 } else {
                     throw new Error('Failed to get user info');
                 }

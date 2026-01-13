@@ -1,21 +1,25 @@
 // Helper function to get auth token
+// Always uses Logto SDK which handles internal caching + automatic refresh
 async function getAuthToken() {
-    // First try localStorage (cached access token)
-    let token = localStorage.getItem('auron_access_token');
-
-    if (token) {
-        return token;
-    }
-
-    // Get fresh access token from Logto with API resource
     try {
-        token = await window.LogtoAuth.getAccessToken(DIALOGUE_API_BASE);
+        // Always get from Logto SDK - it manages token lifecycle internally
+        // SDK will return cached token if valid, or refresh automatically if expired
+        const token = await window.LogtoAuth.getAccessToken(DIALOGUE_API_BASE);
+
         if (token) {
+            // Cache for SSE connections (EventSource can't await in URL construction)
             localStorage.setItem('auron_access_token', token);
             return token;
         }
     } catch (err) {
         console.warn('Could not get access token from Logto:', err);
+
+        // Fallback: try cached token only if SDK fails (offline, network issue)
+        const cached = localStorage.getItem('auron_access_token');
+        if (cached) {
+            console.log('Using cached token as fallback');
+            return cached;
+        }
     }
 
     return null;
