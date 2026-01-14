@@ -358,27 +358,48 @@ function CitationMarker({ number, reference }) {
     );
 }
 
-// Parse text and render inline citations
+// Parse text and render inline citations with intelligent paragraph support
 function TextWithCitations({ text, cited_references }) {
-    if (!text || !cited_references || Object.keys(cited_references).length === 0) {
+    if (!text) return null;
+
+    // Check if we have citations to process
+    const hasCitations = cited_references && Object.keys(cited_references).length > 0;
+
+    // Split into paragraphs on double newlines
+    const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
+
+    // Single paragraph without citations - simple render (no wrapper)
+    if (paragraphs.length === 1 && !hasCitations) {
         return <>{text}</>;
     }
 
-    // Split text by [N] pattern while keeping the markers
-    const parts = text.split(/(\[\d+\])/g);
+    // Helper to render a paragraph with citation support
+    const renderParagraphContent = (paragraph) => {
+        if (!hasCitations) {
+            return paragraph;
+        }
+
+        // Split by [N] pattern while keeping the markers
+        const parts = paragraph.split(/(\[\d+\])/g);
+
+        return parts.map((part, index) => {
+            const match = part.match(/\[(\d+)\]/);
+            if (match) {
+                const num = parseInt(match[1]);
+                const ref = cited_references[String(num)] || cited_references[num];
+                return <CitationMarker key={index} number={num} reference={ref} />;
+            }
+            return <span key={index}>{part}</span>;
+        });
+    };
 
     return (
         <>
-            {parts.map((part, index) => {
-                const match = part.match(/\[(\d+)\]/);
-                if (match) {
-                    const num = parseInt(match[1]);
-                    // cited_references is now an object keyed by number: {"1": {...}, "2": {...}}
-                    const ref = cited_references[String(num)] || cited_references[num];
-                    return <CitationMarker key={index} number={num} reference={ref} />;
-                }
-                return <span key={index}>{part}</span>;
-            })}
+            {paragraphs.map((paragraph, pIndex) => (
+                <p key={pIndex}>
+                    {renderParagraphContent(paragraph)}
+                </p>
+            ))}
         </>
     );
 }
