@@ -103,6 +103,64 @@
     margin-bottom: 0;
 }
 
+/* ===== Indications (Bullet Lists) ===== */
+.stream-message__content .indications {
+    margin: 1.25em 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.stream-message__content .indications li {
+    position: relative;
+    margin-bottom: 0.875em;
+    padding-left: 1.5em;
+    line-height: 1.7;
+}
+
+.stream-message__content .indications li:last-child {
+    margin-bottom: 0;
+}
+
+.stream-message__content .indications li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: rgba(59, 130, 246, 0.5);
+    font-weight: 500;
+}
+
+/* ===== Bold Concepts ===== */
+.stream-message__content .concept {
+    font-weight: 600;
+    color: rgba(96, 165, 250, 0.95);
+}
+
+/* Evidence section inherits same styles */
+.stream-evidence__content .indications {
+    margin: 1em 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.stream-evidence__content .indications li {
+    position: relative;
+    margin-bottom: 0.75em;
+    padding-left: 1.5em;
+    line-height: 1.6;
+}
+
+.stream-evidence__content .indications li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: rgba(59, 130, 246, 0.4);
+}
+
+.stream-evidence__content .concept {
+    font-weight: 600;
+    color: rgba(96, 165, 250, 0.85);
+}
+
 /* ===== Streaming State ===== */
 .stream-message--streaming .stream-message__content::after {
     content: '|';

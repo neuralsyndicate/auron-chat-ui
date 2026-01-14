@@ -359,47 +359,70 @@ function CitationMarker({ number, reference }) {
 }
 
 // Parse text and render inline citations with intelligent paragraph support
+// Handles: \n\n paragraphs, **bold** concepts, - bullet lists (Indications), [N] citations
 function TextWithCitations({ text, cited_references }) {
     if (!text) return null;
 
-    // Check if we have citations to process
     const hasCitations = cited_references && Object.keys(cited_references).length > 0;
 
-    // Split into paragraphs on double newlines
-    const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
+    // Helper: Parse **bold** in a string
+    const parseBold = (str) => {
+        if (typeof str !== 'string') return str;
+        const parts = str.split(/\*\*([^*]+)\*\*/g);
+        return parts.map((part, i) =>
+            i % 2 === 1
+                ? <strong key={`b${i}`} className="concept">{part}</strong>
+                : part
+        );
+    };
 
-    // Single paragraph without citations - simple render (no wrapper)
-    if (paragraphs.length === 1 && !hasCitations) {
-        return <>{text}</>;
-    }
+    // Helper: Parse [N] citations and **bold** in content
+    const parseContent = (content) => {
+        if (typeof content !== 'string') return content;
 
-    // Helper to render a paragraph with citation support
-    const renderParagraphContent = (paragraph) => {
         if (!hasCitations) {
-            return paragraph;
+            return parseBold(content);
         }
 
         // Split by [N] pattern while keeping the markers
-        const parts = paragraph.split(/(\[\d+\])/g);
-
-        return parts.map((part, index) => {
+        const parts = content.split(/(\[\d+\])/g);
+        return parts.map((part, i) => {
             const match = part.match(/\[(\d+)\]/);
             if (match) {
                 const num = parseInt(match[1]);
                 const ref = cited_references[String(num)] || cited_references[num];
-                return <CitationMarker key={index} number={num} reference={ref} />;
+                return <CitationMarker key={`c${i}`} number={num} reference={ref} />;
             }
-            return <span key={index}>{part}</span>;
+            return <span key={`s${i}`}>{parseBold(part)}</span>;
         });
     };
 
+    // Split into paragraph blocks
+    const blocks = text.split(/\n\n+/).filter(b => b.trim());
+
+    // Simple case: single block, no special formatting needed
+    if (blocks.length === 1 && !hasCitations && !text.includes('**') && !text.includes('- ')) {
+        return <>{text}</>;
+    }
+
     return (
         <>
-            {paragraphs.map((paragraph, pIndex) => (
-                <p key={pIndex}>
-                    {renderParagraphContent(paragraph)}
-                </p>
-            ))}
+            {blocks.map((block, blockIdx) => {
+                const lines = block.split('\n').filter(l => l.trim());
+                const isBulletList = lines.length > 0 && lines.every(l => l.trim().startsWith('- '));
+
+                if (isBulletList) {
+                    return (
+                        <ul key={blockIdx} className="indications">
+                            {lines.map((line, i) => (
+                                <li key={i}>{parseContent(line.replace(/^-\s*/, ''))}</li>
+                            ))}
+                        </ul>
+                    );
+                }
+
+                return <p key={blockIdx}>{parseContent(block)}</p>;
+            })}
         </>
     );
 }
