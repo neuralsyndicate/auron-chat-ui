@@ -477,106 +477,6 @@ function EvidenceInThePattern({ research_synthesis, cited_references }) {
     );
 }
 
-// Highlighted Question Component - Beautiful prominent question display
-function HighlightedQuestion({ question }) {
-    if (!question) return null;
-
-    return (
-        <div className="highlighted-question mt-6" style={{
-            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.06) 0%, rgba(59, 130, 246, 0.06) 100%)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(59, 130, 246, 0.12)',
-            borderRadius: '20px',
-            padding: '2rem',
-            boxShadow: '0 0 60px rgba(59, 130, 246, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
-            animation: 'subtle-pulse 6s ease-in-out infinite',
-            position: 'relative'
-        }}>
-            {/* Icon */}
-            <div style={{
-                textAlign: 'center',
-                marginBottom: '1.25rem'
-            }}>
-                <span style={{
-                    fontSize: '2rem',
-                    filter: 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.25))'
-                }}>💭</span>
-            </div>
-
-            {/* Question Text */}
-            <p className="text-white text-center" style={{
-                fontSize: '1.15rem',
-                lineHeight: '1.8',
-                fontWeight: '500',
-                color: 'rgba(255, 255, 255, 0.95)',
-                letterSpacing: '0.01em'
-            }}>
-                {question}
-            </p>
-        </div>
-    );
-}
-
-// User Response Area - Inline textarea and submit
-function UserResponseArea({ onSubmit, messageId }) {
-    const [response, setResponse] = useState('');
-    const [submitting, setSubmitting] = useState(false);
-
-    const handleSubmit = async () => {
-        if (!response.trim()) return;
-        setSubmitting(true);
-        await onSubmit(response);
-        setResponse('');
-        setSubmitting(false);
-    };
-
-    return (
-        <div className="user-response-area mt-6">
-            {/* Textarea */}
-            <textarea
-                value={response}
-                onChange={(e) => setResponse(e.target.value)}
-                placeholder="Share your reflection..."
-                className="w-full px-4 py-3 rounded-xl resize-none"
-                rows={4}
-                style={{
-                    background: 'rgba(15, 20, 30, 0.5)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(59, 130, 246, 0.1)',
-                    color: 'white',
-                    fontSize: '0.95rem',
-                    lineHeight: '1.6',
-                    outline: 'none',
-                    transition: 'all 0.3s ease'
-                }}
-                onFocus={(e) => {
-                    e.target.style.border = '1px solid rgba(59, 130, 246, 0.2)';
-                    e.target.style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.08)';
-                }}
-                onBlur={(e) => {
-                    e.target.style.border = '1px solid rgba(59, 130, 246, 0.1)';
-                    e.target.style.boxShadow = 'none';
-                }}
-            />
-
-            {/* Submit Button */}
-            <button
-                onClick={handleSubmit}
-                disabled={!response.trim() || submitting}
-                className="btn-sci-fi mt-4 px-8 py-3 rounded-xl font-semibold"
-                style={{
-                    opacity: !response.trim() || submitting ? 0.5 : 1,
-                    cursor: !response.trim() || submitting ? 'not-allowed' : 'pointer'
-                }}
-            >
-                {submitting ? 'Sending...' : 'Continue Journey →'}
-            </button>
-        </div>
-    );
-}
-
 // Sources Section Component - Collapsible list of sources
 function SourcesSection({ sources }) {
     const [showSources, setShowSources] = useState(false);
@@ -830,17 +730,10 @@ function DialogueMessage({ message, onOpenReferences, onOpenBlueprintPanel, onCl
                 {/* Inline Web Sources - Simple clickable pills */}
                 {webSources.length > 0 && <WebSourcePills sources={webSources} />}
 
-                {/* Reflective Question - Inline with response area */}
+                {/* Reflective Question */}
                 {reflectiveQuestion && (
                     <div className="stream-reflective-question">
-                        <div className="stream-reflective-question__label">A Question For You</div>
                         <p className="stream-reflective-question__text">{reflectiveQuestion}</p>
-                        <UserResponseArea
-                            onSubmit={async (response) => {
-                                await sendMessage(response);
-                            }}
-                            messageId={message.dialogue.session_id}
-                        />
                     </div>
                 )}
 
