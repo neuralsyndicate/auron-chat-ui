@@ -54,7 +54,7 @@ function EducationalTerm({ term }) {
                 setIsLoading(true);
                 try {
                     const token = await getAuthToken();
-                    const response = await fetch(`${BFF_API_BASE}/explain-term`, {
+                    const response = await fetch(`${DIALOGUE_API_BASE}/explain-term`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ function EducationalTerm({ term }) {
         setIsLoading(true);
         try {
             const token = await getAuthToken();
-            const response = await fetch(`${BFF_API_BASE}/explain-term`, {
+            const response = await fetch(`${DIALOGUE_API_BASE}/explain-term`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
