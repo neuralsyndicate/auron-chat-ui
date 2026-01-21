@@ -38,6 +38,124 @@ function ThinkingCollapsible({ content }) {
     );
 }
 
+// Educational Term - Clickable scientific term with lazy-loaded explanations
+function EducationalTerm({ term }) {
+    const [explanation, setExplanation] = useState(null);
+    const [fullExplanation, setFullExplanation] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [showTooltip, setShowTooltip] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const hoverTimeoutRef = useRef(null);
+
+    const handleMouseEnter = () => {
+        // 400ms debounce - prevents accidental API calls
+        hoverTimeoutRef.current = setTimeout(async () => {
+            if (!explanation && !isLoading) {
+                setIsLoading(true);
+                try {
+                    const token = await getAuthToken();
+                    const response = await fetch(`${BFF_API_BASE}/explain-term`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ term, depth: 'quick' })
+                    });
+                    const data = await response.json();
+                    setExplanation(data);
+                    setShowTooltip(true);
+                } catch (error) {
+                    console.error('Failed to fetch explanation:', error);
+                } finally {
+                    setIsLoading(false);
+                }
+            } else if (explanation) {
+                setShowTooltip(true);
+            }
+        }, 400);
+    };
+
+    const handleMouseLeave = () => {
+        if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+        }
+        setShowTooltip(false);
+    };
+
+    const handleClick = async (e) => {
+        e.stopPropagation();
+        setIsLoading(true);
+        try {
+            const token = await getAuthToken();
+            const response = await fetch(`${BFF_API_BASE}/explain-term`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ term, depth: 'full' })
+            });
+            const data = await response.json();
+            setFullExplanation(data);
+            setShowModal(true);
+        } catch (error) {
+            console.error('Failed to fetch full explanation:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <span
+            className="educational-term"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onClick={handleClick}
+        >
+            {term}
+            {isLoading && <span className="educational-term-spinner" />}
+
+            {/* Quick Tooltip */}
+            {showTooltip && explanation && (
+                <div className="educational-term-tooltip">
+                    <p>{explanation.explanation}</p>
+                    <span className="educational-term-tooltip-hint">Click for more</span>
+                </div>
+            )}
+
+            {/* Full Modal */}
+            {showModal && fullExplanation && (
+                <EducationalTermModal
+                    data={fullExplanation}
+                    onClose={() => setShowModal(false)}
+                />
+            )}
+        </span>
+    );
+}
+
+// Modal for full educational term explanation
+function EducationalTermModal({ data, onClose }) {
+    return (
+        <div className="educational-modal-overlay" onClick={onClose}>
+            <div className="educational-modal" onClick={e => e.stopPropagation()}>
+                <button className="educational-modal-close" onClick={onClose}>×</button>
+                <h3>{data.term}</h3>
+                <p>{data.explanation}</p>
+                {data.related_terms?.length > 0 && (
+                    <div className="educational-modal-related">
+                        <span>Related concepts:</span>
+                        {data.related_terms.map((t, i) => (
+                            <span key={i} className="educational-modal-related-term">{t}</span>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
 // Blueprint Source Component - Simplified (no longer used inline, kept for compatibility)
 function BlueprintSourceCard({ source, index }) {
     const similarityPercent = Math.round((source.similarity || 0) * 100);
@@ -365,15 +483,29 @@ function TextWithCitations({ text, cited_references }) {
 
     const hasCitations = cited_references && Object.keys(cited_references).length > 0;
 
-    // Helper: Parse **bold** in a string
+    // Helper: Parse **bold** and [[educational terms]] in a string
     const parseBold = (str) => {
         if (typeof str !== 'string') return str;
-        const parts = str.split(/\*\*([^*]+)\*\*/g);
-        return parts.map((part, i) =>
-            i % 2 === 1
-                ? <strong key={`b${i}`} className="concept">{part}</strong>
-                : part
-        );
+
+        // First parse [[term]] markers
+        const withTerms = str.split(/\[\[([^\]]+)\]\]/g).map((part, i) => {
+            if (i % 2 === 1) {
+                // Odd indices are terms (inside brackets)
+                return <EducationalTerm key={`term${i}`} term={part} />;
+            }
+            return part;
+        });
+
+        // Then parse **bold** in remaining string parts
+        return withTerms.map((part, i) => {
+            if (typeof part !== 'string') return part; // Already a React element
+            const boldParts = part.split(/\*\*([^*]+)\*\*/g);
+            return boldParts.map((bp, j) =>
+                j % 2 === 1
+                    ? <strong key={`b${i}-${j}`} className="concept">{bp}</strong>
+                    : bp
+            );
+        }).flat();
     };
 
     // Helper: Parse [N] citations and **bold** in content
