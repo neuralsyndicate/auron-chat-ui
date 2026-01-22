@@ -13,13 +13,8 @@ async function getAuthToken() {
         }
     } catch (err) {
         console.warn('Could not get access token from Logto:', err);
-
-        // Fallback: try cached token only if SDK fails (offline, network issue)
-        const cached = localStorage.getItem('auron_access_token');
-        if (cached) {
-            console.log('Using cached token as fallback');
-            return cached;
-        }
+        // Don't fallback to cached token - it may be stale/expired after logout
+        // Returning null forces re-authentication which is safer
     }
 
     return null;

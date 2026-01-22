@@ -82,27 +82,29 @@ async function signUp() {
 
 // Sign Out
 async function signOut() {
+    // Clear local storage FIRST, before Logto redirect
+    // This ensures clean state even if the OAuth logout flow fails
+    localStorage.removeItem('auron_user');
+    localStorage.removeItem('auron_auth_token');
+    localStorage.removeItem('auron_access_token');
+    localStorage.removeItem('auron_id_token');
+
+    // Clear all Logto-related storage (handles old sessions, PKCE state, etc.)
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('logto') || key.includes('oidc')) {
+            localStorage.removeItem(key);
+        }
+    });
+
     try {
         const client = await initLogto();
+        // Let Logto handle the redirect - it will clear server-side session
         await client.signOut(POST_SIGNOUT_URI);
+        // Note: If signOut() succeeds, it redirects and code below never runs
     } catch (err) {
         console.error('Sign out from Logto failed:', err);
-        // Continue to clear local data even if remote signout fails
-    } finally {
-        // Always clear cached data (handles invalid/old sessions)
-        localStorage.removeItem('auron_user');
-        localStorage.removeItem('auron_auth_token');
-        localStorage.removeItem('auron_access_token');
-        localStorage.removeItem('auron_id_token');
-
-        // Clear all Logto SDK storage (handles old app ID sessions)
-        Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('logto:')) {
-                localStorage.removeItem(key);
-            }
-        });
-
-        // Force redirect to landing page
+        // Only redirect manually if Logto SDK fails
+        // (local storage already cleared above)
         window.location.href = POST_SIGNOUT_URI;
     }
 }
