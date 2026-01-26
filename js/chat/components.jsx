@@ -53,12 +53,10 @@ function EducationalTerm({ term }) {
             if (!explanation && !isLoading) {
                 setIsLoading(true);
                 try {
-                    const token = await getAuthToken();
-                    const response = await fetch(`${DIALOGUE_API_BASE}/explain-term`, {
+                    const response = await window.authFetch(`${DIALOGUE_API_BASE}/explain-term`, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({ term, depth: 'quick' })
                     });
@@ -87,12 +85,10 @@ function EducationalTerm({ term }) {
         e.stopPropagation();
         setIsLoading(true);
         try {
-            const token = await getAuthToken();
-            const response = await fetch(`${DIALOGUE_API_BASE}/explain-term`, {
+            const response = await window.authFetch(`${DIALOGUE_API_BASE}/explain-term`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ term, depth: 'full' })
             });

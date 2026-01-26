@@ -171,10 +171,9 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
             const loadPastMessages = async () => {
                 try {
                     setLoading(true);
-                    const token = await getAuthToken();
-                    const verifyResponse = await fetch(`${BFF_API_BASE}/get-conversation`, {
+                    const verifyResponse = await window.authFetch(`${BFF_API_BASE}/get-conversation`, {
                         method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ conversation_id: loadedSessionId })
                     });
                     if (!verifyResponse.ok) throw new Error('Failed to verify conversation access');
@@ -323,11 +322,9 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
 
     const submitProfileSynthesis = async (uploadId, answers) => {
         try {
-            const token = await getAuthToken();
-            if (!token) throw new Error('Not authenticated - please log in again');
-            const response = await fetch(`${DIALOGUE_API_BASE}/synthesize-profile`, {
+            const response = await window.authFetch(`${DIALOGUE_API_BASE}/synthesize-profile`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ upload_id: uploadId, user_input: answers })
             });
             if (!response.ok) { const error = await response.json(); throw new Error(error.detail || 'Profile synthesis failed'); }
@@ -466,9 +463,9 @@ function ChatView({ user, onUpdateProgress, loadedSessionId, sessionId, setSessi
             const token = await getAuthToken();
             if (!token) throw new Error('Not authenticated - please log in again');
             if (needsLoadSession && sessionId) {
-                const loadResponse = await fetch(`${DIALOGUE_API_BASE}/load-session`, {
+                const loadResponse = await window.authFetch(`${DIALOGUE_API_BASE}/load-session`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ conversation_id: sessionId })
                 });
                 if (loadResponse.ok) { console.log('Session loaded into backend RAM'); setNeedsLoadSession(false); }

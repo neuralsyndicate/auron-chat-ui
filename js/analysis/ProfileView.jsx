@@ -125,19 +125,9 @@ function ProfileView({ user, isLocked, conversationCount }) {
 
     const loadProfile = async () => {
         try {
-            // Get authentication token
-            const token = await getAuthToken();
-            if (!token) {
-                console.error('No authentication token available');
-                throw new Error('Authentication required');
-            }
-
-            // Call BFF API with JWT authentication
-            const response = await fetch(`${BFF_API_BASE}/profile`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            // Call BFF API with JWT authentication using authFetch for automatic 401/503 handling
+            const response = await window.authFetch(`${BFF_API_BASE}/profile`, {
+                method: 'GET'
             });
 
             if (!response.ok) {

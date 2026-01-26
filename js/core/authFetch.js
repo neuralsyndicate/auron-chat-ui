@@ -84,6 +84,20 @@ async function authFetch(url, options = {}) {
         });
     }
 
+    // Handle 503 - auth service temporarily unavailable, retry after delay
+    if (response.status === 503) {
+        console.log('503 - auth service unavailable, retrying in 2s...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const retryToken = await getAuthToken();
+        return fetch(url, {
+            ...options,
+            headers: {
+                ...options.headers,
+                'Authorization': `Bearer ${retryToken}`
+            }
+        });
+    }
+
     return response;
 }
 
