@@ -38,7 +38,7 @@ function ThinkingCollapsible({ content }) {
     );
 }
 
-// Educational Term - Clickable scientific term with lazy-loaded explanations
+// Educational Term - Premium Glass UI with lazy-loaded explanations
 function EducationalTerm({ term }) {
     const [explanation, setExplanation] = useState(null);
     const [fullExplanation, setFullExplanation] = useState(null);
@@ -48,28 +48,30 @@ function EducationalTerm({ term }) {
     const hoverTimeoutRef = useRef(null);
 
     const handleMouseEnter = () => {
-        // 400ms debounce - prevents accidental API calls
+        // Show tooltip immediately if we have cached explanation
+        if (explanation) {
+            setShowTooltip(true);
+            return;
+        }
+        // 400ms debounce for API calls
         hoverTimeoutRef.current = setTimeout(async () => {
             if (!explanation && !isLoading) {
                 setIsLoading(true);
+                setShowTooltip(true); // Show loading skeleton immediately
                 try {
-                    const response = await window.authFetch(`${BFF_API_BASE}/explain-term`, {
+                    const response = await window.authFetch(`${DIALOGUE_API_BASE}/explain-term`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ term, depth: 'quick' })
                     });
                     const data = await response.json();
                     setExplanation(data);
-                    setShowTooltip(true);
                 } catch (error) {
                     console.error('Failed to fetch explanation:', error);
+                    setShowTooltip(false);
                 } finally {
                     setIsLoading(false);
                 }
-            } else if (explanation) {
-                setShowTooltip(true);
             }
         }, 400);
     };
@@ -83,47 +85,62 @@ function EducationalTerm({ term }) {
 
     const handleClick = async (e) => {
         e.stopPropagation();
-        setIsLoading(true);
-        try {
-            const response = await window.authFetch(`${BFF_API_BASE}/explain-term`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ term, depth: 'full' })
-            });
-            const data = await response.json();
-            setFullExplanation(data);
-            setShowModal(true);
-        } catch (error) {
-            console.error('Failed to fetch full explanation:', error);
-        } finally {
-            setIsLoading(false);
+        setShowTooltip(false);
+        setShowModal(true);
+
+        // Fetch full explanation if not cached
+        if (!fullExplanation) {
+            setIsLoading(true);
+            try {
+                const response = await window.authFetch(`${DIALOGUE_API_BASE}/explain-term`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ term, depth: 'full' })
+                });
+                const data = await response.json();
+                setFullExplanation(data);
+            } catch (error) {
+                console.error('Failed to fetch full explanation:', error);
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
     return (
         <span
-            className="educational-term"
+            className={`educational-term ${isLoading && !showModal ? 'educational-term--loading' : ''}`}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={handleClick}
         >
             {term}
-            {isLoading && <span className="educational-term-spinner" />}
 
-            {/* Quick Tooltip */}
+            {/* Glass Tooltip - Loading skeleton */}
+            {showTooltip && isLoading && !explanation && (
+                <div className="educational-tooltip educational-tooltip--loading">
+                    <div className="educational-tooltip__arrow" />
+                    <div className="educational-tooltip__skeleton" />
+                    <div className="educational-tooltip__skeleton educational-tooltip__skeleton--short" />
+                </div>
+            )}
+
+            {/* Glass Tooltip - With content */}
             {showTooltip && explanation && (
-                <div className="educational-term-tooltip">
-                    <p>{explanation.explanation}</p>
-                    <span className="educational-term-tooltip-hint">Click for more</span>
+                <div className="educational-tooltip">
+                    <div className="educational-tooltip__arrow" />
+                    <div className="educational-tooltip__header">{term}</div>
+                    <p className="educational-tooltip__text">{explanation.explanation}</p>
+                    <span className="educational-tooltip__hint">Click to explore →</span>
                 </div>
             )}
 
             {/* Full Modal */}
-            {showModal && fullExplanation && (
+            {showModal && (
                 <EducationalTermModal
+                    term={term}
                     data={fullExplanation}
+                    isLoading={isLoading && !fullExplanation}
                     onClose={() => setShowModal(false)}
                 />
             )}
@@ -131,21 +148,58 @@ function EducationalTerm({ term }) {
     );
 }
 
-// Modal for full educational term explanation
-function EducationalTermModal({ data, onClose }) {
+// Premium Glass Modal for full educational term explanation
+function EducationalTermModal({ term, data, isLoading, onClose }) {
+    // Prevent body scroll when modal open
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+    }, []);
+
+    // Close on Escape key
+    useEffect(() => {
+        const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [onClose]);
+
     return (
         <div className="educational-modal-overlay" onClick={onClose}>
             <div className="educational-modal" onClick={e => e.stopPropagation()}>
-                <button className="educational-modal-close" onClick={onClose}>×</button>
-                <h3>{data.term}</h3>
-                <p>{data.explanation}</p>
-                {data.related_terms?.length > 0 && (
-                    <div className="educational-modal-related">
-                        <span>Related concepts:</span>
-                        {data.related_terms.map((t, i) => (
-                            <span key={i} className="educational-modal-related-term">{t}</span>
-                        ))}
+                {/* Glass close button */}
+                <button className="educational-modal__close" onClick={onClose} aria-label="Close">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M1 1L13 13M1 13L13 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                </button>
+
+                {isLoading ? (
+                    <div className="educational-modal__loading">
+                        <div className="educational-modal__loading-ring" />
+                        <span>Loading explanation...</span>
                     </div>
+                ) : data ? (
+                    <>
+                        {/* Glowing term header */}
+                        <h2 className="educational-modal__title">{data.term || term}</h2>
+
+                        {/* Full explanation */}
+                        <p className="educational-modal__explanation">{data.explanation}</p>
+
+                        {/* Related terms as glass pills */}
+                        {data.related_terms?.length > 0 && (
+                            <div className="educational-modal__related">
+                                <span className="educational-modal__related-label">Related concepts</span>
+                                <div className="educational-modal__related-pills">
+                                    {data.related_terms.map((t, i) => (
+                                        <span key={i} className="educational-modal__pill">{t}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <p className="educational-modal__error">Unable to load explanation</p>
                 )}
             </div>
         </div>
