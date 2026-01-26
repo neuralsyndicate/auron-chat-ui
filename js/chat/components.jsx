@@ -53,7 +53,7 @@ function EducationalTerm({ term }) {
             if (!explanation && !isLoading) {
                 setIsLoading(true);
                 try {
-                    const response = await window.authFetch(`${DIALOGUE_API_BASE}/explain-term`, {
+                    const response = await window.authFetch(`${BFF_API_BASE}/explain-term`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -85,7 +85,7 @@ function EducationalTerm({ term }) {
         e.stopPropagation();
         setIsLoading(true);
         try {
-            const response = await window.authFetch(`${DIALOGUE_API_BASE}/explain-term`, {
+            const response = await window.authFetch(`${BFF_API_BASE}/explain-term`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
