@@ -84,6 +84,7 @@ function EducationalTerm({ term }) {
     };
 
     const handleClick = async (e) => {
+        e.preventDefault();
         e.stopPropagation();
         setShowTooltip(false);
         setShowModal(true);
@@ -135,14 +136,15 @@ function EducationalTerm({ term }) {
                 </div>
             )}
 
-            {/* Full Modal */}
-            {showModal && (
+            {/* Modal via Portal - renders at document.body level to fix click-outside */}
+            {showModal && ReactDOM.createPortal(
                 <EducationalTermModal
                     term={term}
                     data={fullExplanation}
                     isLoading={isLoading && !fullExplanation}
                     onClose={() => setShowModal(false)}
-                />
+                />,
+                document.body
             )}
         </span>
     );
