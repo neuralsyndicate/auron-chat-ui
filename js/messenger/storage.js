@@ -4,119 +4,115 @@
 
 /**
  * Storage with client-side encryption using WebCrypto
- * Mnemonic is encrypted with a key derived from userId + a user secret
+ * Mnemonic is encrypted with a key derived from userId
  */
 
-const STORAGE_VERSION = 'v2'; // Increment when changing encryption scheme
+const STORAGE_VERSION = 'v2';
 
 /**
  * Derive encryption key from userId using PBKDF2
- * The userId from Logto acts as the "password" for key derivation
  */
-async function deriveKey(userId) {
+function deriveKey(userId) {
     const encoder = new TextEncoder();
-    const keyMaterial = await crypto.subtle.importKey(
+    const salt = encoder.encode('nm-session-storage-salt-v1');
+
+    return crypto.subtle.importKey(
         'raw',
         encoder.encode(userId),
         'PBKDF2',
         false,
         ['deriveKey']
-    );
-
-    // Use a fixed salt (could be made per-user for extra security)
-    const salt = encoder.encode('nm-session-storage-salt-v1');
-
-    return crypto.subtle.deriveKey(
-        {
-            name: 'PBKDF2',
-            salt: salt,
-            iterations: 100000,
-            hash: 'SHA-256'
-        },
-        keyMaterial,
-        { name: 'AES-GCM', length: 256 },
-        false,
-        ['encrypt', 'decrypt']
-    );
+    ).then(function(keyMaterial) {
+        return crypto.subtle.deriveKey(
+            {
+                name: 'PBKDF2',
+                salt: salt,
+                iterations: 100000,
+                hash: 'SHA-256'
+            },
+            keyMaterial,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+        );
+    });
 }
 
 /**
  * Encrypt data with AES-GCM
  */
-async function encryptData(key, plaintext) {
+function encryptData(cryptoKey, plaintext) {
     const encoder = new TextEncoder();
     const iv = crypto.getRandomValues(new Uint8Array(12));
 
-    const ciphertext = await crypto.subtle.encrypt(
+    return crypto.subtle.encrypt(
         { name: 'AES-GCM', iv: iv },
-        key,
+        cryptoKey,
         encoder.encode(plaintext)
-    );
-
-    // Combine IV + ciphertext and encode as base64
-    const combined = new Uint8Array(iv.length + ciphertext.byteLength);
-    combined.set(iv);
-    combined.set(new Uint8Array(ciphertext), iv.length);
-
-    return btoa(String.fromCharCode(...combined));
+    ).then(function(ciphertext) {
+        const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+        combined.set(iv);
+        combined.set(new Uint8Array(ciphertext), iv.length);
+        return btoa(String.fromCharCode.apply(null, combined));
+    });
 }
 
 /**
  * Decrypt data with AES-GCM
  */
-async function decryptData(key, encryptedBase64) {
-    const combined = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+function decryptData(cryptoKey, encryptedBase64) {
+    var combined = Uint8Array.from(atob(encryptedBase64), function(c) { return c.charCodeAt(0); });
+    var iv = combined.slice(0, 12);
+    var ciphertext = combined.slice(12);
 
-    const iv = combined.slice(0, 12);
-    const ciphertext = combined.slice(12);
-
-    const plaintext = await crypto.subtle.decrypt(
+    return crypto.subtle.decrypt(
         { name: 'AES-GCM', iv: iv },
-        key,
+        cryptoKey,
         ciphertext
-    );
-
-    return new TextDecoder().decode(plaintext);
+    ).then(function(plaintext) {
+        return new TextDecoder().decode(plaintext);
+    });
 }
 
 function getStorageKey(userId, suffix) {
     if (!userId) throw new Error('User ID required for Session storage');
-    return `nm_session_${STORAGE_VERSION}_${userId}_${suffix}`;
+    return 'nm_session_' + STORAGE_VERSION + '_' + userId + '_' + suffix;
 }
 
 /**
  * Store mnemonic (encrypted)
  */
-async function storeSessionMnemonic(userId, mnemonic) {
-    const key = await deriveKey(userId);
-    const encrypted = await encryptData(key, mnemonic);
-    localStorage.setItem(getStorageKey(userId, 'mnemonic'), encrypted);
+function storeSessionMnemonic(userId, mnemonic) {
+    return deriveKey(userId).then(function(key) {
+        return encryptData(key, mnemonic);
+    }).then(function(encrypted) {
+        localStorage.setItem(getStorageKey(userId, 'mnemonic'), encrypted);
+    });
 }
 
 /**
  * Get mnemonic (decrypted)
  */
-async function getSessionMnemonic(userId) {
-    const encrypted = localStorage.getItem(getStorageKey(userId, 'mnemonic'));
-    if (!encrypted) return null;
+function getSessionMnemonic(userId) {
+    var encrypted = localStorage.getItem(getStorageKey(userId, 'mnemonic'));
+    if (!encrypted) return Promise.resolve(null);
 
-    try {
-        const key = await deriveKey(userId);
-        return await decryptData(key, encrypted);
-    } catch (e) {
+    return deriveKey(userId).then(function(key) {
+        return decryptData(key, encrypted);
+    }).catch(function(e) {
         console.error('Failed to decrypt mnemonic:', e);
         return null;
-    }
+    });
 }
 
 /**
  * Clear all Session data for user
  */
 function clearSessionData(userId) {
-    const keys = Object.keys(localStorage).filter(k =>
-        k.startsWith(`nm_session_`) && k.includes(userId)
-    );
-    keys.forEach(k => localStorage.removeItem(k));
+    var keys = Object.keys(localStorage).filter(function(k) {
+        return k.startsWith('nm_session_') && k.includes(userId);
+    });
+    keys.forEach(function(k) { localStorage.removeItem(k); });
 }
 
 /**
@@ -143,56 +139,60 @@ function getStoredSessionId(userId) {
 /**
  * Store conversations list (encrypted)
  */
-async function storeConversations(userId, conversations) {
-    const key = await deriveKey(userId);
-    const encrypted = await encryptData(key, JSON.stringify(conversations));
-    localStorage.setItem(getStorageKey(userId, 'conversations'), encrypted);
+function storeConversations(userId, conversations) {
+    return deriveKey(userId).then(function(key) {
+        return encryptData(key, JSON.stringify(conversations));
+    }).then(function(encrypted) {
+        localStorage.setItem(getStorageKey(userId, 'conversations'), encrypted);
+    });
 }
 
 /**
  * Get conversations list (decrypted)
  */
-async function getConversations(userId) {
-    const encrypted = localStorage.getItem(getStorageKey(userId, 'conversations'));
-    if (!encrypted) return [];
+function getConversations(userId) {
+    var encrypted = localStorage.getItem(getStorageKey(userId, 'conversations'));
+    if (!encrypted) return Promise.resolve([]);
 
-    try {
-        const key = await deriveKey(userId);
-        const decrypted = await decryptData(key, encrypted);
+    return deriveKey(userId).then(function(key) {
+        return decryptData(key, encrypted);
+    }).then(function(decrypted) {
         return JSON.parse(decrypted);
-    } catch (e) {
+    }).catch(function(e) {
         console.error('Failed to decrypt conversations:', e);
         return [];
-    }
+    });
 }
 
 /**
  * Store messages for a conversation (encrypted)
  */
-async function storeMessages(userId, recipientSessionId, messages) {
-    const key = await deriveKey(userId);
-    const encrypted = await encryptData(key, JSON.stringify(messages));
-    localStorage.setItem(getStorageKey(userId, `messages_${recipientSessionId}`), encrypted);
+function storeMessages(userId, recipientSessionId, messages) {
+    return deriveKey(userId).then(function(key) {
+        return encryptData(key, JSON.stringify(messages));
+    }).then(function(encrypted) {
+        localStorage.setItem(getStorageKey(userId, 'messages_' + recipientSessionId), encrypted);
+    });
 }
 
 /**
  * Get messages for a conversation (decrypted)
  */
-async function getMessages(userId, recipientSessionId) {
-    const encrypted = localStorage.getItem(getStorageKey(userId, `messages_${recipientSessionId}`));
-    if (!encrypted) return [];
+function getMessages(userId, recipientSessionId) {
+    var encrypted = localStorage.getItem(getStorageKey(userId, 'messages_' + recipientSessionId));
+    if (!encrypted) return Promise.resolve([]);
 
-    try {
-        const key = await deriveKey(userId);
-        const decrypted = await decryptData(key, encrypted);
+    return deriveKey(userId).then(function(key) {
+        return decryptData(key, encrypted);
+    }).then(function(decrypted) {
         return JSON.parse(decrypted);
-    } catch (e) {
+    }).catch(function(e) {
         console.error('Failed to decrypt messages:', e);
         return [];
-    }
+    });
 }
 
-// Export for global access (all async now)
+// Export for global access
 window.SessionStorage = {
     storeMnemonic: storeSessionMnemonic,
     getMnemonic: getSessionMnemonic,
