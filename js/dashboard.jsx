@@ -249,6 +249,16 @@ function Dashboard() {
 
                         <button
                             className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                                currentView === 'messages'
+                                    ? 'bg-white/5 text-white'
+                                    : 'text-gray-400 hover:text-white'
+                            }`}
+                            onClick={() => setCurrentView('messages')}>
+                            Messages
+                        </button>
+
+                        <button
+                            className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                                 !profileUnlocked && 'opacity-50 cursor-not-allowed'
                             } ${
                                 currentView === 'profile'
@@ -322,6 +332,8 @@ function Dashboard() {
                         user={user}
                         setLoadedSessionId={setLoadedSessionId}
                     />
+                ) : currentView === 'messages' ? (
+                    <MessagesView user={user} />
                 ) : currentView === 'memory' ? (
                     <MemoryView user={user} />
                 ) : (

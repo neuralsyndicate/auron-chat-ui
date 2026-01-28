@@ -2,6 +2,7 @@
 const API_BASE = 'http://86.38.182.54:8001';
 const DIALOGUE_API_BASE = 'https://api.neuralsyndicate.com';  // Backend via Cloudflare Tunnel
 const BFF_API_BASE = 'https://api.combryth-backbone.ch';  // BFF for Neural Music Profile
+const SESSION_PROXY_URL = 'https://session.combryth-backbone.ch';  // Session.js proxy for E2E messaging
 const BUNNY_STORAGE_URL = 'https://storage.bunnycdn.com/combryth-data';  // BunnyCDN Storage
 const BUNNY_PASSWORD = 'f528b697-2867-40b5-bf1710764185-4b99-4621';  // Read-only password
 const UNLOCK_THRESHOLD = 10;
