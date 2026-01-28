@@ -135,12 +135,17 @@ function MessagesView({ user }) {
                 // Message from known contact
                 const newMsg = result.message;
 
+                // Always store the message to storage
+                (async () => {
+                    const existingMessages = await window.SessionStorage.getMessages(userId, msg.from);
+                    const updated = [...existingMessages, newMsg];
+                    await window.SessionStorage.storeMessages(userId, msg.from, updated);
+                })();
+
+                // Update UI if we're viewing this conversation
                 setMessages(prev => {
-                    // Only add if we're viewing this conversation
                     if (activeConversation?.sessionId === msg.from) {
-                        const updated = [...prev, newMsg];
-                        window.SessionStorage.storeMessages(userId, msg.from, updated);
-                        return updated;
+                        return [...prev, newMsg];
                     }
                     return prev;
                 });
