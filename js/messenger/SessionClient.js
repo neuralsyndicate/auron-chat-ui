@@ -17,6 +17,7 @@ class SessionClient {
         this.userId = null;
         this.mnemonic = null;
         this.pollInterval = null;
+        this.userInfo = null; // Logto user object for envelope metadata
     }
 
     /**
@@ -94,10 +95,36 @@ class SessionClient {
     }
 
     /**
-     * Send message via proxy
+     * Set user info for envelope metadata
+     * @param {object} user - Logto user object with username, name, etc.
      */
-    async sendMessage(to, text) {
+    setUserInfo(user) {
+        this.userInfo = user;
+    }
+
+    /**
+     * Get user info
+     */
+    getUserInfo() {
+        return this.userInfo;
+    }
+
+    /**
+     * Send message via proxy (wraps in envelope automatically)
+     * @param {string} to - Recipient's Session ID
+     * @param {string} text - Message text (if already an envelope, sends as-is)
+     * @param {boolean} isRawEnvelope - If true, text is already an envelope, don't wrap
+     */
+    async sendMessage(to, text, isRawEnvelope = false) {
         if (!this.isInitialized) throw new Error('Not initialized');
+
+        // Wrap in envelope unless already wrapped or explicitly raw
+        let messageText = text;
+        if (!isRawEnvelope && !text.trimStart().startsWith('{"v":')) {
+            const username = this.userInfo?.username || '';
+            const displayName = this.userInfo?.name || this.userInfo?.username || '';
+            messageText = window.MessageEnvelope.createMessage(username, displayName, text);
+        }
 
         const response = await fetch(SESSION_PROXY_URL, {
             method: 'POST',
@@ -106,7 +133,7 @@ class SessionClient {
                 type: 'send',
                 mnemonic: this.mnemonic,
                 to: to,
-                text: text
+                text: messageText
             })
         });
 
@@ -116,6 +143,13 @@ class SessionClient {
         }
 
         return await response.json();
+    }
+
+    /**
+     * Send a raw envelope (for contact requests, acks, etc.)
+     */
+    async sendEnvelope(to, envelope) {
+        return this.sendMessage(to, envelope, true);
     }
 
     /**

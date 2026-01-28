@@ -2,87 +2,10 @@
 // MESSAGES VIEW - Session Protocol Messenger
 // Bound to Logto authentication - each user has their own Session identity
 // Encrypted local storage via WebCrypto
+// Contact request system with username integration
 // ============================================================
 
 const { useState, useEffect, useRef, useCallback } = React;
-
-// Neural Pathway Visualization Component
-// Animated 3-hop routing visual representing Session's onion routing
-function NeuralPathway({ isSending = false }) {
-    return (
-        <div className="neural-pathway-container">
-            <div className="neural-pathway-label">Neural Pathway</div>
-            <div className="neural-pathway">
-                {/* Origin Node (You) */}
-                <div className="neural-origin">
-                    <div className="neural-origin-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="8" r="4" />
-                            <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
-                        </svg>
-                    </div>
-                    <span className="neural-origin-label">You</span>
-                </div>
-
-                {/* Connection Line 1 */}
-                <div className={`neural-line ${isSending ? 'sending' : ''}`}>
-                    <div className="neural-pulse"></div>
-                </div>
-
-                {/* Service Node 1 */}
-                <div className="neural-node" style={{ animationDelay: '0s' }}>
-                    <div className="neural-node-inner"></div>
-                    <div className="neural-node-ring"></div>
-                </div>
-
-                {/* Connection Line 2 */}
-                <div className={`neural-line ${isSending ? 'sending' : ''}`} style={{ animationDelay: '0.2s' }}>
-                    <div className="neural-pulse" style={{ animationDelay: '0.3s' }}></div>
-                </div>
-
-                {/* Service Node 2 */}
-                <div className="neural-node" style={{ animationDelay: '0.3s' }}>
-                    <div className="neural-node-inner"></div>
-                    <div className="neural-node-ring"></div>
-                </div>
-
-                {/* Connection Line 3 */}
-                <div className={`neural-line ${isSending ? 'sending' : ''}`} style={{ animationDelay: '0.4s' }}>
-                    <div className="neural-pulse" style={{ animationDelay: '0.6s' }}></div>
-                </div>
-
-                {/* Service Node 3 */}
-                <div className="neural-node" style={{ animationDelay: '0.6s' }}>
-                    <div className="neural-node-inner"></div>
-                    <div className="neural-node-ring"></div>
-                </div>
-
-                {/* Connection Line 4 */}
-                <div className={`neural-line ${isSending ? 'sending' : ''}`} style={{ animationDelay: '0.6s' }}>
-                    <div className="neural-pulse" style={{ animationDelay: '0.9s' }}></div>
-                </div>
-
-                {/* Destination (Network) */}
-                <div className="neural-destination">
-                    <div className="neural-destination-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                            <circle cx="12" cy="12" r="3" />
-                            <circle cx="12" cy="12" r="7" opacity="0.5" />
-                            <circle cx="12" cy="12" r="10" opacity="0.3" />
-                        </svg>
-                    </div>
-                    <span className="neural-destination-label">Network</span>
-                </div>
-            </div>
-
-            {/* Status indicator */}
-            <div className="neural-status">
-                <span className="neural-status-dot"></span>
-                <span className="neural-status-text">3-hop encrypted routing active</span>
-            </div>
-        </div>
-    );
-}
 
 function MessagesView({ user }) {
     const [isInitialized, setIsInitialized] = useState(false);
@@ -96,7 +19,10 @@ function MessagesView({ user }) {
     const [recipientInput, setRecipientInput] = useState('');
     const [showNewChat, setShowNewChat] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
-    const [isSending, setIsSending] = useState(false);
+    const [pendingRequests, setPendingRequests] = useState([]);
+    const [contacts, setContacts] = useState([]);
+    const [requestsCollapsed, setRequestsCollapsed] = useState(false);
+    const [introMessage, setIntroMessage] = useState('');
 
     const messagesEndRef = useRef(null);
     const clientRef = useRef(null);
@@ -121,6 +47,9 @@ function MessagesView({ user }) {
                 const client = window.getSessionClient(userId);
                 clientRef.current = client;
 
+                // Set user info for envelope metadata
+                client.setUserInfo(user);
+
                 // Check for existing mnemonic (async - encrypted storage)
                 const existingMnemonic = await window.SessionStorage.getMnemonic(userId);
                 await client.initialize(userId, existingMnemonic || undefined);
@@ -128,9 +57,15 @@ function MessagesView({ user }) {
                 setSessionId(client.getSessionId());
                 setIsInitialized(true);
 
-                // Load user's saved conversations (async - encrypted)
-                const savedConvs = await window.SessionStorage.getConversations(userId);
+                // Load user's data (async - encrypted)
+                const [savedConvs, savedContacts, savedRequests] = await Promise.all([
+                    window.SessionStorage.getConversations(userId),
+                    window.SessionStorage.getContacts(userId),
+                    window.SessionStorage.getPendingRequests(userId)
+                ]);
                 setConversations(savedConvs);
+                setContacts(savedContacts);
+                setPendingRequests(savedRequests);
 
                 // Start polling for messages
                 client.startPolling((msg) => {
@@ -169,56 +104,209 @@ function MessagesView({ user }) {
         }
     }, [activeConversation, userId]);
 
-    // Handle incoming message
+    // Handle incoming message with contact system
     const handleIncomingMessage = useCallback(async (msg) => {
-        const newMsg = {
-            id: Date.now(),
-            from: msg.from,
-            text: msg.text,
-            timestamp: msg.timestamp,
-            incoming: true
-        };
+        const result = await window.ContactManager.processIncomingMessage(userId, msg, user);
 
-        setMessages(prev => {
-            const updated = [...prev, newMsg];
-            // Save to storage async
-            if (activeConversation?.sessionId === msg.from) {
-                window.SessionStorage.storeMessages(userId, msg.from, updated);
-            }
-            return updated;
-        });
+        switch (result.action) {
+            case 'blocked':
+                // Silent drop - do nothing
+                return;
 
-        // Add/update conversation
-        setConversations(prev => {
-            const exists = prev.find(c => c.sessionId === msg.from);
-            let updated;
-            if (!exists) {
-                updated = [...prev, {
-                    sessionId: msg.from,
-                    name: `${msg.from.slice(0, 8)}...`,
-                    lastMessage: msg.text,
-                    lastTimestamp: msg.timestamp
-                }];
-            } else {
-                updated = prev.map(c =>
-                    c.sessionId === msg.from
-                        ? { ...c, lastMessage: msg.text, lastTimestamp: msg.timestamp }
-                        : c
-                );
+            case 'acknowledged':
+                // Our request was accepted - update contacts
+                setContacts(prev => {
+                    const exists = prev.find(c => c.sessionId === result.contact.sessionId);
+                    if (exists) return prev;
+                    return [...prev, result.contact];
+                });
+                // Update conversation status if we have one
+                setConversations(prev => {
+                    return prev.map(c => {
+                        if (c.sessionId === result.contact.sessionId) {
+                            return { ...c, status: 'accepted', ...result.contact };
+                        }
+                        return c;
+                    });
+                });
+                break;
+
+            case 'deliver':
+                // Message from known contact
+                const newMsg = result.message;
+
+                setMessages(prev => {
+                    // Only add if we're viewing this conversation
+                    if (activeConversation?.sessionId === msg.from) {
+                        const updated = [...prev, newMsg];
+                        window.SessionStorage.storeMessages(userId, msg.from, updated);
+                        return updated;
+                    }
+                    return prev;
+                });
+
+                // Update conversation
+                setConversations(prev => {
+                    const exists = prev.find(c => c.sessionId === msg.from);
+                    let updated;
+                    if (!exists) {
+                        updated = [...prev, {
+                            sessionId: msg.from,
+                            username: result.contact.username,
+                            displayName: result.contact.displayName,
+                            name: getContactDisplayName(result.contact),
+                            lastMessage: window.MessageEnvelope.parse(msg.text).payload,
+                            lastTimestamp: msg.timestamp,
+                            status: 'accepted'
+                        }];
+                    } else {
+                        updated = prev.map(c =>
+                            c.sessionId === msg.from
+                                ? {
+                                    ...c,
+                                    lastMessage: window.MessageEnvelope.parse(msg.text).payload,
+                                    lastTimestamp: msg.timestamp
+                                }
+                                : c
+                        );
+                    }
+                    window.SessionStorage.storeConversations(userId, updated);
+                    return updated;
+                });
+                break;
+
+            case 'new_request':
+            case 'held':
+                // Update pending requests
+                const freshRequests = await window.SessionStorage.getPendingRequests(userId);
+                setPendingRequests(freshRequests);
+                break;
+        }
+    }, [activeConversation, userId, user]);
+
+    // Get display name for a contact
+    const getContactDisplayName = (contact) => {
+        if (contact.displayName) return contact.displayName;
+        if (contact.username) return '@' + contact.username;
+        return contact.sessionId.slice(0, 8) + '...';
+    };
+
+    // Get display name for a conversation
+    const getConversationDisplayName = (conv) => {
+        // Check contacts first
+        const contact = contacts.find(c => c.sessionId === conv.sessionId);
+        if (contact) {
+            return getContactDisplayName(contact);
+        }
+        // Fallback to conversation data
+        if (conv.displayName) return conv.displayName;
+        if (conv.username) return '@' + conv.username;
+        if (conv.name) return conv.name;
+        return conv.sessionId.slice(0, 8) + '...';
+    };
+
+    // Check if conversation is with a verified contact
+    const isVerifiedContact = (sessionId) => {
+        return contacts.some(c => c.sessionId === sessionId);
+    };
+
+    // Handle accepting a contact request
+    const handleAcceptRequest = async (sessionId) => {
+        try {
+            const result = await window.ContactManager.acceptRequest(
+                userId,
+                sessionId,
+                user,
+                clientRef.current
+            );
+
+            // Update local state
+            setContacts(prev => [...prev, result.contact]);
+            setPendingRequests(prev => prev.filter(r => r.sessionId !== sessionId));
+
+            // Create conversation for the new contact
+            const newConv = {
+                sessionId: sessionId,
+                username: result.contact.username,
+                displayName: result.contact.displayName,
+                name: getContactDisplayName(result.contact),
+                lastMessage: result.initialMessage || '',
+                lastTimestamp: Date.now(),
+                status: 'accepted'
+            };
+
+            setConversations(prev => {
+                const exists = prev.find(c => c.sessionId === sessionId);
+                if (exists) {
+                    return prev.map(c => c.sessionId === sessionId ? { ...c, ...newConv } : c);
+                }
+                return [...prev, newConv];
+            });
+
+            // Store messages from held messages
+            if (result.initialMessage || (result.heldMessages && result.heldMessages.length > 0)) {
+                const allMessages = [];
+                if (result.initialMessage) {
+                    allMessages.push({
+                        id: Date.now() - 1000,
+                        from: sessionId,
+                        text: result.initialMessage,
+                        timestamp: result.contact.addedAt - 1000,
+                        incoming: true
+                    });
+                }
+                result.heldMessages.forEach((held, i) => {
+                    allMessages.push({
+                        id: Date.now() + i,
+                        from: sessionId,
+                        text: held.text,
+                        timestamp: held.timestamp,
+                        incoming: true
+                    });
+                });
+                await window.SessionStorage.storeMessages(userId, sessionId, allMessages);
             }
-            window.SessionStorage.storeConversations(userId, updated);
-            return updated;
-        });
-    }, [activeConversation, userId]);
+
+            // Open the conversation
+            setActiveConversation(newConv);
+        } catch (err) {
+            console.error('Accept request failed:', err);
+            setError('Failed to accept request');
+            setTimeout(() => setError(null), 3000);
+        }
+    };
+
+    // Handle ignoring a contact request
+    const handleIgnoreRequest = async (sessionId) => {
+        try {
+            await window.ContactManager.ignoreRequest(userId, sessionId);
+            setPendingRequests(prev => prev.filter(r => r.sessionId !== sessionId));
+        } catch (err) {
+            console.error('Ignore request failed:', err);
+        }
+    };
+
+    // Handle blocking a user
+    const handleBlockUser = async (sessionId) => {
+        try {
+            await window.ContactManager.blockUser(userId, sessionId);
+            setPendingRequests(prev => prev.filter(r => r.sessionId !== sessionId));
+            setContacts(prev => prev.filter(c => c.sessionId !== sessionId));
+            setConversations(prev => prev.filter(c => c.sessionId !== sessionId));
+            if (activeConversation?.sessionId === sessionId) {
+                setActiveConversation(null);
+            }
+        } catch (err) {
+            console.error('Block user failed:', err);
+        }
+    };
 
     // Send message
     const handleSend = async () => {
         if (!inputText.trim() || !activeConversation) return;
 
         try {
-            setIsSending(true);
             await clientRef.current.sendMessage(activeConversation.sessionId, inputText);
-            setIsSending(false);
 
             const newMsg = {
                 id: Date.now(),
@@ -249,41 +337,90 @@ function MessagesView({ user }) {
             setInputText('');
         } catch (err) {
             console.error('Send failed:', err);
-            setIsSending(false);
             setError('Failed to send message');
             setTimeout(() => setError(null), 3000);
         }
     };
 
-    // Start new conversation
+    // Start new conversation (send contact request)
     const handleStartNewChat = async () => {
         if (!recipientInput.trim()) return;
 
         const recipientId = recipientInput.trim();
-        const newConv = {
-            sessionId: recipientId,
-            name: `${recipientId.slice(0, 8)}...`,
-            lastMessage: '',
-            lastTimestamp: Date.now()
-        };
 
-        setConversations(prev => {
-            const exists = prev.find(c => c.sessionId === recipientId);
-            if (exists) {
-                setActiveConversation(exists);
-                setShowNewChat(false);
-                setRecipientInput('');
-                return prev;
+        // Check if already a contact
+        const existingContact = contacts.find(c => c.sessionId === recipientId);
+        if (existingContact) {
+            const existingConv = conversations.find(c => c.sessionId === recipientId);
+            if (existingConv) {
+                setActiveConversation(existingConv);
+            } else {
+                const newConv = {
+                    sessionId: recipientId,
+                    username: existingContact.username,
+                    displayName: existingContact.displayName,
+                    name: getContactDisplayName(existingContact),
+                    lastMessage: '',
+                    lastTimestamp: Date.now(),
+                    status: 'accepted'
+                };
+                setConversations(prev => [...prev, newConv]);
+                setActiveConversation(newConv);
             }
-            const updated = [...prev, newConv];
-            window.SessionStorage.storeConversations(userId, updated);
-            return updated;
-        });
+            setShowNewChat(false);
+            setRecipientInput('');
+            setIntroMessage('');
+            return;
+        }
 
-        setActiveConversation(newConv);
-        setShowNewChat(false);
-        setRecipientInput('');
-        setMessages([]);
+        // Check if we already have a pending outgoing request
+        const existingConv = conversations.find(c => c.sessionId === recipientId);
+        if (existingConv && existingConv.status === 'pending_outgoing') {
+            setActiveConversation(existingConv);
+            setShowNewChat(false);
+            setRecipientInput('');
+            setIntroMessage('');
+            return;
+        }
+
+        try {
+            // Send contact request
+            const result = await window.ContactManager.sendRequest(
+                userId,
+                recipientId,
+                user,
+                clientRef.current,
+                introMessage || undefined
+            );
+
+            const newConv = {
+                sessionId: recipientId,
+                name: `${recipientId.slice(0, 8)}...`,
+                lastMessage: introMessage || 'Contact request sent',
+                lastTimestamp: Date.now(),
+                status: 'pending_outgoing'
+            };
+
+            setConversations(prev => {
+                const exists = prev.find(c => c.sessionId === recipientId);
+                if (exists) {
+                    return prev.map(c => c.sessionId === recipientId ? newConv : c);
+                }
+                const updated = [...prev, newConv];
+                window.SessionStorage.storeConversations(userId, updated);
+                return updated;
+            });
+
+            setActiveConversation(newConv);
+            setShowNewChat(false);
+            setRecipientInput('');
+            setIntroMessage('');
+            setMessages([]);
+        } catch (err) {
+            console.error('Send request failed:', err);
+            setError('Failed to send contact request');
+            setTimeout(() => setError(null), 3000);
+        }
     };
 
     // Copy Session ID
@@ -333,8 +470,15 @@ function MessagesView({ user }) {
         <div className="h-full flex">
             {/* Sidebar - Conversations */}
             <div className="w-80 border-r border-white/5 flex flex-col">
-                {/* Neural Pathway Visualization */}
-                <NeuralPathway isSending={isSending} />
+                {/* Contact Requests Section */}
+                <ContactRequestsSection
+                    pendingRequests={pendingRequests}
+                    onAccept={handleAcceptRequest}
+                    onIgnore={handleIgnoreRequest}
+                    onBlock={handleBlockUser}
+                    isCollapsed={requestsCollapsed}
+                    onToggleCollapse={() => setRequestsCollapsed(!requestsCollapsed)}
+                />
 
                 {/* Neural ID Header */}
                 <div className="p-4 border-b border-white/5">
@@ -349,7 +493,7 @@ function MessagesView({ user }) {
                         </span>
                     </div>
                     <div className="mt-2 text-xs text-gray-600">
-                        Logged in as: {user?.username || user?.name || 'User'}
+                        Logged in as: <span className="text-blue-400">@{user?.username || user?.name || 'User'}</span>
                     </div>
                 </div>
 
@@ -365,35 +509,70 @@ function MessagesView({ user }) {
 
                 {/* Conversations List */}
                 <div className="flex-1 overflow-y-auto">
+                    {/* Section Header */}
+                    {conversations.length > 0 && (
+                        <div className="px-4 py-2 text-xs text-gray-500 uppercase tracking-wider">
+                            Conversations
+                        </div>
+                    )}
+
                     {conversations.length === 0 ? (
                         <div className="p-4 text-center text-gray-500 text-sm">
                             <p>No conversations yet</p>
                             <p className="mt-2 text-xs">Share your Neural ID to receive messages</p>
                         </div>
                     ) : (
-                        conversations.map((conv) => (
-                            <div
-                                key={conv.sessionId}
-                                onClick={() => setActiveConversation(conv)}
-                                className={`p-4 border-b border-white/5 cursor-pointer transition-colors ${
-                                    activeConversation?.sessionId === conv.sessionId
-                                        ? 'bg-white/5'
-                                        : 'hover:bg-white/5'
-                                }`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
-                                        <span className="text-blue-400 text-sm font-medium">
-                                            {conv.name.slice(0, 2).toUpperCase()}
-                                        </span>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="text-white text-sm font-medium truncate">{conv.name}</div>
-                                        <div className="text-gray-500 text-xs truncate">{conv.lastMessage || 'No messages'}</div>
+                        conversations.map((conv) => {
+                            const displayName = getConversationDisplayName(conv);
+                            const isVerified = isVerifiedContact(conv.sessionId);
+                            const isPendingOutgoing = conv.status === 'pending_outgoing';
+
+                            return (
+                                <div
+                                    key={conv.sessionId}
+                                    onClick={() => setActiveConversation(conv)}
+                                    className={`p-4 border-b border-white/5 cursor-pointer transition-colors ${
+                                        activeConversation?.sessionId === conv.sessionId
+                                            ? 'bg-white/5'
+                                            : 'hover:bg-white/5'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                            isVerified
+                                                ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/20'
+                                                : 'bg-gradient-to-br from-gray-500/20 to-gray-600/20'
+                                        }`}>
+                                            <span className={`text-sm font-medium ${
+                                                isVerified ? 'text-blue-400' : 'text-gray-400'
+                                            }`}>
+                                                {displayName.slice(0, 2).toUpperCase()}
+                                            </span>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-white text-sm font-medium truncate">
+                                                    {displayName}
+                                                </span>
+                                                {isVerified && (
+                                                    <svg className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                    </svg>
+                                                )}
+                                                {isPendingOutgoing && (
+                                                    <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded">
+                                                        Pending
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="text-gray-500 text-xs truncate">
+                                                {conv.lastMessage || 'No messages'}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
 
@@ -412,20 +591,42 @@ function MessagesView({ user }) {
                     <>
                         {/* Chat Header */}
                         <div className="p-4 border-b border-white/5 flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                                <span className="text-blue-400 text-sm font-medium">
-                                    {activeConversation.name.slice(0, 2).toUpperCase()}
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                isVerifiedContact(activeConversation.sessionId)
+                                    ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/20'
+                                    : 'bg-gradient-to-br from-gray-500/20 to-gray-600/20'
+                            }`}>
+                                <span className={`text-sm font-medium ${
+                                    isVerifiedContact(activeConversation.sessionId) ? 'text-blue-400' : 'text-gray-400'
+                                }`}>
+                                    {getConversationDisplayName(activeConversation).slice(0, 2).toUpperCase()}
                                 </span>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="text-white font-medium">{activeConversation.name}</div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-white font-medium">
+                                        {getConversationDisplayName(activeConversation)}
+                                    </span>
+                                    {isVerifiedContact(activeConversation.sessionId) && (
+                                        <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                    )}
+                                </div>
                                 <div className="text-xs text-gray-500 truncate font-mono">{activeConversation.sessionId}</div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="px-2 py-1 bg-green-500/10 text-green-400 text-xs rounded-full flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                                    E2E Encrypted
-                                </span>
+                                {activeConversation.status === 'pending_outgoing' ? (
+                                    <span className="px-2 py-1 bg-amber-500/10 text-amber-400 text-xs rounded-full flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 bg-amber-400 rounded-full"></span>
+                                        Request Pending
+                                    </span>
+                                ) : (
+                                    <span className="px-2 py-1 bg-green-500/10 text-green-400 text-xs rounded-full flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                                        E2E Encrypted
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -433,6 +634,23 @@ function MessagesView({ user }) {
                         {error && (
                             <div className="mx-4 mt-2 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
                                 {error}
+                            </div>
+                        )}
+
+                        {/* Pending outgoing notice */}
+                        {activeConversation.status === 'pending_outgoing' && (
+                            <div className="mx-4 mt-2 px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                                <div className="flex items-start gap-3">
+                                    <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div>
+                                        <p className="text-amber-400 text-sm font-medium">Contact Request Pending</p>
+                                        <p className="text-gray-400 text-xs mt-1">
+                                            Your contact request has been sent. You can chat once they accept.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -469,23 +687,29 @@ function MessagesView({ user }) {
 
                         {/* Input */}
                         <div className="p-4 border-t border-white/5">
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={inputText}
-                                    onChange={(e) => setInputText(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                                    placeholder="Type a message..."
-                                    className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 transition-colors"
-                                />
-                                <button
-                                    onClick={handleSend}
-                                    disabled={!inputText.trim()}
-                                    className="px-6 py-3 bg-blue-500/20 text-blue-400 rounded-xl hover:bg-blue-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Send
-                                </button>
-                            </div>
+                            {activeConversation.status === 'pending_outgoing' ? (
+                                <div className="text-center text-gray-500 text-sm py-2">
+                                    Waiting for contact request to be accepted...
+                                </div>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={inputText}
+                                        onChange={(e) => setInputText(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                                        placeholder="Type a message..."
+                                        className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 transition-colors"
+                                    />
+                                    <button
+                                        onClick={handleSend}
+                                        disabled={!inputText.trim()}
+                                        className="px-6 py-3 bg-blue-500/20 text-blue-400 rounded-xl hover:bg-blue-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Send
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </>
                 ) : (
@@ -515,20 +739,45 @@ function MessagesView({ user }) {
                         <h3 className="text-white text-lg font-medium mb-2">New Conversation</h3>
                         <p className="text-gray-400 text-sm mb-4">
                             Enter the Neural ID of the person you want to message.
-                            They can find their Neural ID in their Messages tab.
+                            A contact request will be sent and you can chat once they accept.
                         </p>
-                        <input
-                            type="text"
-                            value={recipientInput}
-                            onChange={(e) => setRecipientInput(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleStartNewChat()}
-                            placeholder="Enter Neural ID (05...)"
-                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 mb-4 font-mono text-sm"
-                            autoFocus
-                        />
-                        <div className="flex gap-2">
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2">
+                                    Neural ID
+                                </label>
+                                <input
+                                    type="text"
+                                    value={recipientInput}
+                                    onChange={(e) => setRecipientInput(e.target.value)}
+                                    placeholder="Enter Neural ID (05...)"
+                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 font-mono text-sm"
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2">
+                                    Introduction Message (Optional)
+                                </label>
+                                <textarea
+                                    value={introMessage}
+                                    onChange={(e) => setIntroMessage(e.target.value)}
+                                    placeholder="Hi! I'd like to connect with you."
+                                    rows={2}
+                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 text-sm resize-none"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2 mt-6">
                             <button
-                                onClick={() => setShowNewChat(false)}
+                                onClick={() => {
+                                    setShowNewChat(false);
+                                    setRecipientInput('');
+                                    setIntroMessage('');
+                                }}
                                 className="flex-1 px-4 py-2 text-gray-400 hover:text-white transition-colors rounded-lg"
                             >
                                 Cancel
@@ -538,7 +787,7 @@ function MessagesView({ user }) {
                                 disabled={!recipientInput.trim()}
                                 className="flex-1 px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Start Chat
+                                Send Request
                             </button>
                         </div>
                     </div>

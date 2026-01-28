@@ -1,291 +1,366 @@
 /* ============================================================
-   NEURAL PATHWAY - Session Protocol Visualization
-   Animated 3-hop routing visual
+   NEURAL MESSENGER - Contact Request System Styles
    ============================================================ */
 
-/* Container */
-.neural-pathway-container {
-    padding: 16px;
+/* Contact Request Section */
+.contact-request-section {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    background: linear-gradient(180deg, rgba(0, 13, 255, 0.03) 0%, transparent 100%);
 }
 
-.neural-pathway-label {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.4);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 12px;
-    text-align: center;
+/* Request Card */
+.contact-request-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+    margin: 8px;
 }
 
-/* Main pathway container */
-.neural-pathway {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 4px;
-    position: relative;
+.contact-request-card:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 
-/* Origin (You) */
-.neural-origin {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-}
-
-.neural-origin-icon {
-    width: 28px;
-    height: 28px;
+/* Avatar Styles */
+.contact-avatar {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    background: rgba(0, 13, 255, 0.15);
-    border: 1px solid rgba(0, 13, 255, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #4d7aff;
-    box-shadow: 0 0 12px rgba(0, 13, 255, 0.2);
+    font-weight: 500;
+    font-size: 14px;
 }
 
-.neural-origin-icon svg {
+.contact-avatar.verified {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+    color: #60a5fa;
+}
+
+.contact-avatar.unverified {
+    background: linear-gradient(135deg, rgba(107, 114, 128, 0.2) 0%, rgba(75, 85, 99, 0.2) 100%);
+    color: #9ca3af;
+}
+
+.contact-avatar.request {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(249, 115, 22, 0.2) 100%);
+    color: #fbbf24;
+}
+
+/* Verified Badge */
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #60a5fa;
+}
+
+.verified-badge svg {
     width: 14px;
     height: 14px;
 }
 
-.neural-origin-label {
-    font-size: 9px;
-    color: rgba(255, 255, 255, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-/* Connection lines */
-.neural-line {
-    flex: 1;
-    height: 2px;
-    background: linear-gradient(90deg,
-        rgba(0, 13, 255, 0.1) 0%,
-        rgba(0, 13, 255, 0.3) 50%,
-        rgba(0, 13, 255, 0.1) 100%
-    );
-    position: relative;
-    margin: 0 2px;
-    border-radius: 1px;
-    overflow: visible;
-}
-
-/* Animated pulse on line */
-.neural-pulse {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background: radial-gradient(circle,
-        rgba(77, 122, 255, 0.8) 0%,
-        rgba(0, 13, 255, 0.4) 50%,
-        transparent 70%
-    );
-    border-radius: 50%;
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    animation: neural-flow 2s ease-in-out infinite;
-    box-shadow: 0 0 8px rgba(0, 13, 255, 0.6);
-}
-
-@keyframes neural-flow {
-    0% {
-        left: -4px;
-        opacity: 0;
-    }
-    10% {
-        opacity: 1;
-    }
-    90% {
-        opacity: 1;
-    }
-    100% {
-        left: calc(100% - 4px);
-        opacity: 0;
-    }
-}
-
-/* Sending state - faster animation */
-.neural-line.sending .neural-pulse {
-    animation-duration: 0.6s;
-    background: radial-gradient(circle,
-        rgba(77, 255, 150, 0.9) 0%,
-        rgba(0, 255, 100, 0.5) 50%,
-        transparent 70%
-    );
-    box-shadow: 0 0 12px rgba(0, 255, 100, 0.8);
-}
-
-/* Service Nodes */
-.neural-node {
-    position: relative;
-    width: 16px;
-    height: 16px;
-    animation: neural-node-pulse 3s ease-in-out infinite;
-}
-
-.neural-node-inner {
-    position: absolute;
-    inset: 4px;
-    background: linear-gradient(135deg,
-        rgba(0, 13, 255, 0.6) 0%,
-        rgba(77, 122, 255, 0.8) 100%
-    );
-    border-radius: 50%;
-    box-shadow:
-        0 0 8px rgba(0, 13, 255, 0.5),
-        inset 0 0 4px rgba(255, 255, 255, 0.2);
-}
-
-.neural-node-ring {
-    position: absolute;
-    inset: 0;
-    border: 1px solid rgba(0, 13, 255, 0.3);
-    border-radius: 50%;
-    animation: neural-ring-pulse 3s ease-in-out infinite;
-}
-
-@keyframes neural-node-pulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.1);
-    }
-}
-
-@keyframes neural-ring-pulse {
-    0%, 100% {
-        opacity: 0.3;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.6;
-        transform: scale(1.2);
-    }
-}
-
-/* Destination (Network) */
-.neural-destination {
-    display: flex;
-    flex-direction: column;
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
     align-items: center;
     gap: 4px;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 500;
 }
 
-.neural-destination-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(0, 13, 255, 0.1);
-    border: 1px solid rgba(0, 13, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #4d7aff;
-    animation: neural-destination-glow 4s ease-in-out infinite;
+.status-badge.pending {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
 }
 
-.neural-destination-icon svg {
-    width: 18px;
-    height: 18px;
+.status-badge.unknown {
+    background: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
 }
 
-.neural-destination-label {
-    font-size: 9px;
-    color: rgba(255, 255, 255, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+.status-badge.verified {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
 }
 
-@keyframes neural-destination-glow {
-    0%, 100% {
-        box-shadow: 0 0 8px rgba(0, 13, 255, 0.2);
-    }
-    50% {
-        box-shadow: 0 0 16px rgba(0, 13, 255, 0.4);
-    }
+/* Action Buttons */
+.action-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    border: none;
 }
 
-/* Status indicator */
-.neural-status {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin-top: 12px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.03);
+.action-btn.accept {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
 }
 
-.neural-status-dot {
-    width: 6px;
-    height: 6px;
-    background: #22c55e;
-    border-radius: 50%;
-    box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
-    animation: neural-status-blink 2s ease-in-out infinite;
+.action-btn.accept:hover {
+    background: rgba(34, 197, 94, 0.25);
 }
 
-@keyframes neural-status-blink {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
+.action-btn.ignore {
+    background: rgba(255, 255, 255, 0.05);
+    color: #9ca3af;
 }
 
-.neural-status-text {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.4);
+.action-btn.ignore:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #d1d5db;
 }
 
-/* Hover effect on container */
-.neural-pathway-container:hover .neural-node-inner {
-    box-shadow:
-        0 0 12px rgba(0, 13, 255, 0.7),
-        inset 0 0 4px rgba(255, 255, 255, 0.3);
+.action-btn.block {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
 }
 
-.neural-pathway-container:hover .neural-pulse {
-    animation-duration: 1.2s;
+.action-btn.block:hover {
+    background: rgba(239, 68, 68, 0.2);
 }
 
-/* Tooltip on hover */
-.neural-pathway-container {
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Message Preview in Request */
+.request-message-preview {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 8px 0;
+}
+
+.request-message-preview p {
+    color: #d1d5db;
+    font-size: 13px;
+    font-style: italic;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* More Menu */
+.more-menu {
     position: relative;
 }
 
-.neural-pathway-container::after {
-    content: 'Your messages travel through 3 encrypted nodes before reaching their destination';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.8);
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 11px;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.2s ease;
-    pointer-events: none;
-    z-index: 10;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+.more-menu-button {
+    padding: 6px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.15s ease;
 }
 
-.neural-pathway-container:hover::after {
-    opacity: 1;
-    visibility: visible;
-    bottom: calc(100% + 8px);
+.more-menu-button:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #9ca3af;
+}
+
+.more-menu-dropdown {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 4px;
+    background: #1f2937;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    z-index: 50;
+    min-width: 120px;
+    overflow: hidden;
+}
+
+.more-menu-item {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 13px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.more-menu-item.danger {
+    color: #f87171;
+}
+
+.more-menu-item.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Collapsible Header */
+.collapsible-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.collapsible-header:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.collapsible-header .count-badge {
+    padding: 2px 8px;
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.collapsible-header .chevron {
+    width: 16px;
+    height: 16px;
+    color: #6b7280;
+    transition: transform 0.2s ease;
+}
+
+.collapsible-header .chevron.expanded {
+    transform: rotate(180deg);
+}
+
+/* Pending Outgoing Notice */
+.pending-outgoing-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    margin: 8px 16px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 12px;
+}
+
+.pending-outgoing-notice svg {
+    width: 20px;
+    height: 20px;
+    color: #fbbf24;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.pending-outgoing-notice .title {
+    color: #fbbf24;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.pending-outgoing-notice .description {
+    color: #9ca3af;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Conversation List Item Enhancements */
+.conversation-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.conversation-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.conversation-item.active {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.conversation-item .name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.conversation-item .verified-icon {
+    width: 14px;
+    height: 14px;
+    color: #60a5fa;
+}
+
+/* Input disabled state for pending conversations */
+.chat-input-disabled {
+    text-align: center;
+    padding: 12px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* Security Badge */
+.security-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.security-badge .dot {
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+}
+
+.security-badge .text {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+/* Username Display */
+.username-display {
+    color: #60a5fa;
+    font-size: 12px;
+}
+
+.username-display::before {
+    content: '@';
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Animation for new requests */
+@keyframes request-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0);
+    }
+}
+
+.contact-request-card.new {
+    animation: request-pulse 2s ease-in-out infinite;
 }

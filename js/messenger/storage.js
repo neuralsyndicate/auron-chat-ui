@@ -179,7 +179,100 @@ window.SessionStorage = {
             console.error('Decrypt messages failed:', err);
             return [];
         });
+    },
+
+    // ============================================================
+    // Contact Management Storage
+    // ============================================================
+
+    /**
+     * Store accepted contacts list
+     * Contact structure: { sessionId, username, displayName, addedAt }
+     */
+    storeContacts: function(userId, contacts) {
+        return deriveStorageKey(userId).then(function(key) {
+            return encryptString(key, JSON.stringify(contacts));
+        }).then(function(encrypted) {
+            localStorage.setItem(getStorageKey(userId, 'contacts'), encrypted);
+        });
+    },
+
+    /**
+     * Get accepted contacts list
+     */
+    getContacts: function(userId) {
+        var encrypted = localStorage.getItem(getStorageKey(userId, 'contacts'));
+        if (!encrypted) {
+            return Promise.resolve([]);
+        }
+        return deriveStorageKey(userId).then(function(key) {
+            return decryptString(key, encrypted);
+        }).then(function(decrypted) {
+            return JSON.parse(decrypted);
+        }).catch(function(err) {
+            console.error('Decrypt contacts failed:', err);
+            return [];
+        });
+    },
+
+    /**
+     * Store pending contact requests
+     * Request structure: { sessionId, username, displayName, message, receivedAt, heldMessages }
+     */
+    storePendingRequests: function(userId, requests) {
+        return deriveStorageKey(userId).then(function(key) {
+            return encryptString(key, JSON.stringify(requests));
+        }).then(function(encrypted) {
+            localStorage.setItem(getStorageKey(userId, 'pending_requests'), encrypted);
+        });
+    },
+
+    /**
+     * Get pending contact requests
+     */
+    getPendingRequests: function(userId) {
+        var encrypted = localStorage.getItem(getStorageKey(userId, 'pending_requests'));
+        if (!encrypted) {
+            return Promise.resolve([]);
+        }
+        return deriveStorageKey(userId).then(function(key) {
+            return decryptString(key, encrypted);
+        }).then(function(decrypted) {
+            return JSON.parse(decrypted);
+        }).catch(function(err) {
+            console.error('Decrypt pending requests failed:', err);
+            return [];
+        });
+    },
+
+    /**
+     * Store blocked session IDs list
+     */
+    storeBlockedIds: function(userId, blockedIds) {
+        return deriveStorageKey(userId).then(function(key) {
+            return encryptString(key, JSON.stringify(blockedIds));
+        }).then(function(encrypted) {
+            localStorage.setItem(getStorageKey(userId, 'blocked'), encrypted);
+        });
+    },
+
+    /**
+     * Get blocked session IDs list
+     */
+    getBlockedIds: function(userId) {
+        var encrypted = localStorage.getItem(getStorageKey(userId, 'blocked'));
+        if (!encrypted) {
+            return Promise.resolve([]);
+        }
+        return deriveStorageKey(userId).then(function(key) {
+            return decryptString(key, encrypted);
+        }).then(function(decrypted) {
+            return JSON.parse(decrypted);
+        }).catch(function(err) {
+            console.error('Decrypt blocked list failed:', err);
+            return [];
+        });
     }
 };
 
-console.log('SessionStorage v3 loaded');
+console.log('SessionStorage v4 loaded');
