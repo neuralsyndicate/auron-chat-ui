@@ -6,6 +6,84 @@
 
 const { useState, useEffect, useRef, useCallback } = React;
 
+// Neural Pathway Visualization Component
+// Animated 3-hop routing visual representing Session's onion routing
+function NeuralPathway({ isSending = false }) {
+    return (
+        <div className="neural-pathway-container">
+            <div className="neural-pathway-label">Neural Pathway</div>
+            <div className="neural-pathway">
+                {/* Origin Node (You) */}
+                <div className="neural-origin">
+                    <div className="neural-origin-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                        </svg>
+                    </div>
+                    <span className="neural-origin-label">You</span>
+                </div>
+
+                {/* Connection Line 1 */}
+                <div className={`neural-line ${isSending ? 'sending' : ''}`}>
+                    <div className="neural-pulse"></div>
+                </div>
+
+                {/* Service Node 1 */}
+                <div className="neural-node" style={{ animationDelay: '0s' }}>
+                    <div className="neural-node-inner"></div>
+                    <div className="neural-node-ring"></div>
+                </div>
+
+                {/* Connection Line 2 */}
+                <div className={`neural-line ${isSending ? 'sending' : ''}`} style={{ animationDelay: '0.2s' }}>
+                    <div className="neural-pulse" style={{ animationDelay: '0.3s' }}></div>
+                </div>
+
+                {/* Service Node 2 */}
+                <div className="neural-node" style={{ animationDelay: '0.3s' }}>
+                    <div className="neural-node-inner"></div>
+                    <div className="neural-node-ring"></div>
+                </div>
+
+                {/* Connection Line 3 */}
+                <div className={`neural-line ${isSending ? 'sending' : ''}`} style={{ animationDelay: '0.4s' }}>
+                    <div className="neural-pulse" style={{ animationDelay: '0.6s' }}></div>
+                </div>
+
+                {/* Service Node 3 */}
+                <div className="neural-node" style={{ animationDelay: '0.6s' }}>
+                    <div className="neural-node-inner"></div>
+                    <div className="neural-node-ring"></div>
+                </div>
+
+                {/* Connection Line 4 */}
+                <div className={`neural-line ${isSending ? 'sending' : ''}`} style={{ animationDelay: '0.6s' }}>
+                    <div className="neural-pulse" style={{ animationDelay: '0.9s' }}></div>
+                </div>
+
+                {/* Destination (Network) */}
+                <div className="neural-destination">
+                    <div className="neural-destination-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <circle cx="12" cy="12" r="3" />
+                            <circle cx="12" cy="12" r="7" opacity="0.5" />
+                            <circle cx="12" cy="12" r="10" opacity="0.3" />
+                        </svg>
+                    </div>
+                    <span className="neural-destination-label">Network</span>
+                </div>
+            </div>
+
+            {/* Status indicator */}
+            <div className="neural-status">
+                <span className="neural-status-dot"></span>
+                <span className="neural-status-text">3-hop encrypted routing active</span>
+            </div>
+        </div>
+    );
+}
+
 function MessagesView({ user }) {
     const [isInitialized, setIsInitialized] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -18,6 +96,7 @@ function MessagesView({ user }) {
     const [recipientInput, setRecipientInput] = useState('');
     const [showNewChat, setShowNewChat] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
+    const [isSending, setIsSending] = useState(false);
 
     const messagesEndRef = useRef(null);
     const clientRef = useRef(null);
@@ -137,7 +216,9 @@ function MessagesView({ user }) {
         if (!inputText.trim() || !activeConversation) return;
 
         try {
+            setIsSending(true);
             await clientRef.current.sendMessage(activeConversation.sessionId, inputText);
+            setIsSending(false);
 
             const newMsg = {
                 id: Date.now(),
@@ -168,6 +249,7 @@ function MessagesView({ user }) {
             setInputText('');
         } catch (err) {
             console.error('Send failed:', err);
+            setIsSending(false);
             setError('Failed to send message');
             setTimeout(() => setError(null), 3000);
         }
@@ -251,9 +333,12 @@ function MessagesView({ user }) {
         <div className="h-full flex">
             {/* Sidebar - Conversations */}
             <div className="w-80 border-r border-white/5 flex flex-col">
-                {/* Session ID Header */}
+                {/* Neural Pathway Visualization */}
+                <NeuralPathway isSending={isSending} />
+
+                {/* Neural ID Header */}
                 <div className="p-4 border-b border-white/5">
-                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">Your Session ID</div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">Your Neural ID</div>
                     <div
                         onClick={copySessionId}
                         className="flex items-center gap-2 p-2 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors group"
@@ -283,7 +368,7 @@ function MessagesView({ user }) {
                     {conversations.length === 0 ? (
                         <div className="p-4 text-center text-gray-500 text-sm">
                             <p>No conversations yet</p>
-                            <p className="mt-2 text-xs">Share your Session ID to receive messages</p>
+                            <p className="mt-2 text-xs">Share your Neural ID to receive messages</p>
                         </div>
                     ) : (
                         conversations.map((conv) => (
@@ -429,15 +514,15 @@ function MessagesView({ user }) {
                     <div className="bg-gray-900 border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
                         <h3 className="text-white text-lg font-medium mb-2">New Conversation</h3>
                         <p className="text-gray-400 text-sm mb-4">
-                            Enter the Session ID of the person you want to message.
-                            They can find their Session ID in their Messages tab.
+                            Enter the Neural ID of the person you want to message.
+                            They can find their Neural ID in their Messages tab.
                         </p>
                         <input
                             type="text"
                             value={recipientInput}
                             onChange={(e) => setRecipientInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleStartNewChat()}
-                            placeholder="Enter Session ID (05...)"
+                            placeholder="Enter Neural ID (05...)"
                             className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 mb-4 font-mono text-sm"
                             autoFocus
                         />
