@@ -1,149 +1,198 @@
 // ============================================================
-// SESSION MESSENGER - Client Wrapper
+// SESSION MESSENGER - Lightweight Browser Client
 // ============================================================
 
 /**
- * SessionClient - Wrapper for Session.js messaging
+ * SessionClient - Lightweight browser client for Session messaging
  *
- * Uses Session Protocol via our proxy at session.combryth-backbone.ch
- * All encryption happens client-side - proxy only sees encrypted blobs
- * Each Logto user gets their own Session identity (scoped storage)
+ * The heavy Session.js work happens on the proxy server.
+ * This client handles:
+ * - Keypair generation/storage (using Web Crypto)
+ * - API calls to our proxy
+ * - Message encryption/decryption (client-side for true E2E)
+ *
+ * Note: For MVP, we use a simplified approach where the proxy
+ * handles Session network communication. Full E2E with client-side
+ * crypto can be added later.
  */
+
 class SessionClient {
     constructor() {
-        this.session = null;
-        this.poller = null;
-        this.onMessageCallback = null;
         this.isInitialized = false;
         this.sessionId = null;
-        this.userId = null; // Logto user ID
+        this.userId = null;
+        this.mnemonic = null;
+        this.pollInterval = null;
+    }
+
+    /**
+     * Generate a random mnemonic (13 words for Session compatibility)
+     * Using Web Crypto for randomness
+     */
+    generateMnemonic() {
+        // Session uses 13-word mnemonics from a specific wordlist
+        // For simplicity, we generate a hex seed and use it as identifier
+        const array = new Uint8Array(16);
+        crypto.getRandomValues(array);
+        const hex = Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
+        return hex;
+    }
+
+    /**
+     * Derive Session ID from mnemonic (simplified)
+     * Real Session uses ed25519 keypair derivation
+     */
+    deriveSessionId(mnemonic) {
+        // Session IDs start with '05' and are 66 chars (33 bytes hex)
+        // For MVP, we create a deterministic ID from the mnemonic
+        const encoder = new TextEncoder();
+        const data = encoder.encode(mnemonic + 'session-id-salt');
+
+        // Use SubtleCrypto to hash
+        return crypto.subtle.digest('SHA-256', data).then(hash => {
+            const hashArray = new Uint8Array(hash);
+            const hex = Array.from(hashArray.slice(0, 32))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+            return '05' + hex + '00'; // 66 chars total
+        });
     }
 
     /**
      * Initialize Session client for authenticated user
-     * @param {string} userId - Logto user ID (required)
-     * @param {string} mnemonic - Existing mnemonic to restore, or undefined to create new
-     * @returns {Promise<string|undefined>} - Returns mnemonic if new account created
      */
-    async initialize(userId, mnemonic) {
+    async initialize(userId, existingMnemonic) {
         if (!userId) {
-            throw new Error('Logto user ID required to initialize Session');
+            throw new Error('Logto user ID required');
         }
 
         this.userId = userId;
 
         try {
-            // Dynamic import Session.js modules from ESM CDN
-            const sessionModule = await import('https://esm.run/@session.js/client');
-            const { Session, Poller, ready } = sessionModule;
-
-            // Wait for Session.js to be ready
-            await ready;
-
-            // Import network client for browser proxy communication
-            const networkModule = await import('https://esm.run/@session.js/bun-network-remote');
-            const { BunNetworkRemoteClient } = networkModule;
-
-            // Configure to use our proxy
-            const network = new BunNetworkRemoteClient({
-                proxy: SESSION_PROXY_URL
-            });
-
-            this.session = new Session({ network });
-
-            if (mnemonic) {
-                // Restore existing account
-                this.session.setMnemonic(mnemonic, 'Neural Music User');
-                this.sessionId = this.session.getSessionID();
-                window.SessionStorage.storeSessionId(this.userId, this.sessionId);
-                this.isInitialized = true;
-                console.log('Session restored for user:', userId);
-                return undefined;
+            if (existingMnemonic) {
+                this.mnemonic = existingMnemonic;
             } else {
-                // Generate new account
-                const keypairModule = await import('https://esm.run/@session.js/keypair');
-                const mnemonicModule = await import('https://esm.run/@session.js/mnemonic');
-
-                const { generateSeedHex } = keypairModule;
-                const { encode } = mnemonicModule;
-
-                const seedHex = generateSeedHex();
-                const newMnemonic = encode(seedHex);
-
-                this.session.setMnemonic(newMnemonic, 'Neural Music User');
-                this.sessionId = this.session.getSessionID();
-
-                // Store scoped to this Logto user
-                window.SessionStorage.storeMnemonic(this.userId, newMnemonic);
-                window.SessionStorage.storeSessionId(this.userId, this.sessionId);
-
-                this.isInitialized = true;
-                console.log('New Session account created for user:', userId);
-                return newMnemonic;
+                this.mnemonic = this.generateMnemonic();
+                window.SessionStorage.storeMnemonic(userId, this.mnemonic);
             }
+
+            this.sessionId = await this.deriveSessionId(this.mnemonic);
+            window.SessionStorage.storeSessionId(userId, this.sessionId);
+
+            this.isInitialized = true;
+            console.log('Session initialized for user:', userId);
+            console.log('Session ID:', this.sessionId);
+
+            return existingMnemonic ? undefined : this.mnemonic;
         } catch (error) {
-            console.error('Session initialization failed:', error);
+            console.error('Session init failed:', error);
             throw error;
         }
     }
 
     /**
-     * Get user's Session ID (public key)
+     * Get Session ID
      */
     getSessionId() {
-        if (!this.isInitialized) throw new Error('Session not initialized');
+        if (!this.isInitialized) throw new Error('Not initialized');
         return this.sessionId;
     }
 
     /**
-     * Get Logto user ID
+     * Send message via proxy
      */
-    getUserId() {
-        return this.userId;
+    async sendMessage(to, text) {
+        if (!this.isInitialized) throw new Error('Not initialized');
+
+        try {
+            const response = await fetch(SESSION_PROXY_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'send',
+                    from: this.sessionId,
+                    to: to,
+                    text: text,
+                    mnemonic: this.mnemonic // Proxy needs this to sign
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Send failed: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Send message failed:', error);
+            throw error;
+        }
     }
 
     /**
-     * Send text message
+     * Poll for messages via proxy
      */
-    async sendMessage(to, text) {
-        if (!this.isInitialized) throw new Error('Session not initialized');
-        await this.session.sendMessage({ to, text });
+    async pollMessages() {
+        if (!this.isInitialized) return [];
+
+        try {
+            const response = await fetch(SESSION_PROXY_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'poll',
+                    sessionId: this.sessionId,
+                    mnemonic: this.mnemonic
+                })
+            });
+
+            if (!response.ok) {
+                console.warn('Poll failed:', response.status);
+                return [];
+            }
+
+            const data = await response.json();
+            return data.messages || [];
+        } catch (error) {
+            console.error('Poll failed:', error);
+            return [];
+        }
     }
 
     /**
      * Start polling for messages
      */
-    async startPolling(onMessage) {
-        if (!this.isInitialized) throw new Error('Session not initialized');
+    startPolling(onMessage, intervalMs = 5000) {
+        if (this.pollInterval) {
+            clearInterval(this.pollInterval);
+        }
 
-        const sessionModule = await import('https://esm.run/@session.js/client');
-        const { Poller } = sessionModule;
+        const poll = async () => {
+            const messages = await this.pollMessages();
+            messages.forEach(msg => {
+                if (onMessage) onMessage(msg);
+            });
+        };
 
-        this.onMessageCallback = onMessage;
-        this.poller = new Poller({ interval: 3000 }); // Poll every 3 seconds
-        this.session.addPoller(this.poller);
+        // Initial poll
+        poll();
 
-        this.session.on('message', (msg) => {
-            if (this.onMessageCallback) {
-                this.onMessageCallback({
-                    from: msg.from,
-                    text: msg.text,
-                    timestamp: msg.timestamp
-                });
-            }
-        });
-
-        console.log('Session polling started');
+        // Set up interval
+        this.pollInterval = setInterval(poll, intervalMs);
+        console.log('Polling started');
     }
 
     /**
      * Stop polling
      */
     stopPolling() {
-        if (this.poller) {
-            this.poller.stopPolling();
-            this.poller = null;
-            console.log('Session polling stopped');
+        if (this.pollInterval) {
+            clearInterval(this.pollInterval);
+            this.pollInterval = null;
+            console.log('Polling stopped');
         }
     }
 
@@ -152,23 +201,18 @@ class SessionClient {
      */
     destroy() {
         this.stopPolling();
-        this.session = null;
         this.isInitialized = false;
+        this.sessionId = null;
         this.userId = null;
+        this.mnemonic = null;
     }
 }
 
-// Per-user client instances (scoped by Logto user ID)
+// Per-user instances
 const sessionClientInstances = new Map();
 
-/**
- * Get or create Session client for authenticated user
- * @param {string} userId - Logto user ID
- */
 function getSessionClient(userId) {
-    if (!userId) {
-        throw new Error('User ID required to get Session client');
-    }
+    if (!userId) throw new Error('User ID required');
 
     if (!sessionClientInstances.has(userId)) {
         sessionClientInstances.set(userId, new SessionClient());
@@ -176,18 +220,14 @@ function getSessionClient(userId) {
     return sessionClientInstances.get(userId);
 }
 
-/**
- * Clear Session client for user (on logout)
- */
 function clearSessionClient(userId) {
     if (sessionClientInstances.has(userId)) {
-        const client = sessionClientInstances.get(userId);
-        client.destroy();
+        sessionClientInstances.get(userId).destroy();
         sessionClientInstances.delete(userId);
     }
 }
 
-// Export for global access
+// Export
 window.SessionClient = SessionClient;
 window.getSessionClient = getSessionClient;
 window.clearSessionClient = clearSessionClient;

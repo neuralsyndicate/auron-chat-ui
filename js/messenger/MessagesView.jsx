@@ -57,9 +57,9 @@ function MessagesView({ user }) {
                 setConversations(savedConvs);
 
                 // Start polling for messages
-                await client.startPolling((msg) => {
+                client.startPolling((msg) => {
                     handleIncomingMessage(msg);
-                });
+                }, 5000);
 
             } catch (err) {
                 console.error('Session init error:', err);
