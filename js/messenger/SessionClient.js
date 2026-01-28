@@ -1,19 +1,16 @@
 // ============================================================
-// SESSION MESSENGER - Lightweight Browser Client
+// SESSION MESSENGER - Browser Client
 // ============================================================
 
 /**
- * SessionClient - Lightweight browser client for Session messaging
+ * SessionClient - Browser client for Session messaging
  *
- * The heavy Session.js work happens on the proxy server.
- * This client handles:
- * - Keypair generation/storage (using Web Crypto)
- * - API calls to our proxy
- * - Message encryption/decryption (client-side for true E2E)
- *
- * Note: For MVP, we use a simplified approach where the proxy
- * handles Session network communication. Full E2E with client-side
- * crypto can be added later.
+ * The Session.js operations happen on the proxy server.
+ * This client:
+ * - Generates/stores mnemonic (using Web Crypto)
+ * - Gets real Session ID from proxy
+ * - Sends messages via proxy
+ * - Polls for messages via proxy
  */
 
 class SessionClient {
@@ -26,36 +23,12 @@ class SessionClient {
     }
 
     /**
-     * Generate a random mnemonic (13 words for Session compatibility)
-     * Using Web Crypto for randomness
+     * Generate a random mnemonic seed (hex)
      */
     generateMnemonic() {
-        // Session uses 13-word mnemonics from a specific wordlist
-        // For simplicity, we generate a hex seed and use it as identifier
         const array = new Uint8Array(16);
         crypto.getRandomValues(array);
-        const hex = Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
-        return hex;
-    }
-
-    /**
-     * Derive Session ID from mnemonic (simplified)
-     * Real Session uses ed25519 keypair derivation
-     */
-    deriveSessionId(mnemonic) {
-        // Session IDs start with '05' and are 66 chars (33 bytes hex)
-        // For MVP, we create a deterministic ID from the mnemonic
-        const encoder = new TextEncoder();
-        const data = encoder.encode(mnemonic + 'session-id-salt');
-
-        // Use SubtleCrypto to hash
-        return crypto.subtle.digest('SHA-256', data).then(hash => {
-            const hashArray = new Uint8Array(hash);
-            const hex = Array.from(hashArray.slice(0, 32))
-                .map(b => b.toString(16).padStart(2, '0'))
-                .join('');
-            return '05' + hex + '00'; // 66 chars total
-        });
+        return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
     /**
@@ -76,7 +49,23 @@ class SessionClient {
                 window.SessionStorage.storeMnemonic(userId, this.mnemonic);
             }
 
-            this.sessionId = await this.deriveSessionId(this.mnemonic);
+            // Get real Session ID from proxy
+            const response = await fetch(SESSION_PROXY_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'init',
+                    mnemonic: this.mnemonic
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Init failed: ${response.status}`);
+            }
+
+            const data = await response.json();
+            this.sessionId = data.sessionId;
+
             window.SessionStorage.storeSessionId(userId, this.sessionId);
 
             this.isInitialized = true;
@@ -104,30 +93,23 @@ class SessionClient {
     async sendMessage(to, text) {
         if (!this.isInitialized) throw new Error('Not initialized');
 
-        try {
-            const response = await fetch(SESSION_PROXY_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    type: 'send',
-                    from: this.sessionId,
-                    to: to,
-                    text: text,
-                    mnemonic: this.mnemonic // Proxy needs this to sign
-                })
-            });
+        const response = await fetch(SESSION_PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: 'send',
+                mnemonic: this.mnemonic,
+                to: to,
+                text: text
+            })
+        });
 
-            if (!response.ok) {
-                throw new Error(`Send failed: ${response.status}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Send message failed:', error);
-            throw error;
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || `Send failed: ${response.status}`);
         }
+
+        return await response.json();
     }
 
     /**
@@ -139,12 +121,9 @@ class SessionClient {
         try {
             const response = await fetch(SESSION_PROXY_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     type: 'poll',
-                    sessionId: this.sessionId,
                     mnemonic: this.mnemonic
                 })
             });
@@ -157,7 +136,7 @@ class SessionClient {
             const data = await response.json();
             return data.messages || [];
         } catch (error) {
-            console.error('Poll failed:', error);
+            console.error('Poll error:', error);
             return [];
         }
     }
