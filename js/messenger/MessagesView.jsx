@@ -1,6 +1,7 @@
 // ============================================================
 // MESSAGES VIEW - Session Protocol Messenger
 // Bound to Logto authentication - each user has their own Session identity
+// Encrypted local storage via WebCrypto
 // ============================================================
 
 const { useState, useEffect, useRef, useCallback } = React;
@@ -41,19 +42,15 @@ function MessagesView({ user }) {
                 const client = window.getSessionClient(userId);
                 clientRef.current = client;
 
-                // Check for existing mnemonic for this user
-                const existingMnemonic = window.SessionStorage.getMnemonic(userId);
-                const newMnemonic = await client.initialize(userId, existingMnemonic || undefined);
-
-                if (newMnemonic) {
-                    console.log('New Session account created for user:', userId);
-                }
+                // Check for existing mnemonic (async - encrypted storage)
+                const existingMnemonic = await window.SessionStorage.getMnemonic(userId);
+                await client.initialize(userId, existingMnemonic || undefined);
 
                 setSessionId(client.getSessionId());
                 setIsInitialized(true);
 
-                // Load user's saved conversations
-                const savedConvs = window.SessionStorage.getConversations(userId);
+                // Load user's saved conversations (async - encrypted)
+                const savedConvs = await window.SessionStorage.getConversations(userId);
                 setConversations(savedConvs);
 
                 // Start polling for messages
@@ -86,13 +83,15 @@ function MessagesView({ user }) {
     // Load messages when conversation changes
     useEffect(() => {
         if (activeConversation && userId) {
-            const savedMessages = window.SessionStorage.getMessages(userId, activeConversation.sessionId);
-            setMessages(savedMessages);
+            (async () => {
+                const savedMessages = await window.SessionStorage.getMessages(userId, activeConversation.sessionId);
+                setMessages(savedMessages);
+            })();
         }
     }, [activeConversation, userId]);
 
     // Handle incoming message
-    const handleIncomingMessage = useCallback((msg) => {
+    const handleIncomingMessage = useCallback(async (msg) => {
         const newMsg = {
             id: Date.now(),
             from: msg.from,
@@ -103,7 +102,7 @@ function MessagesView({ user }) {
 
         setMessages(prev => {
             const updated = [...prev, newMsg];
-            // Save to storage if this is the active conversation
+            // Save to storage async
             if (activeConversation?.sessionId === msg.from) {
                 window.SessionStorage.storeMessages(userId, msg.from, updated);
             }
@@ -170,11 +169,12 @@ function MessagesView({ user }) {
         } catch (err) {
             console.error('Send failed:', err);
             setError('Failed to send message');
+            setTimeout(() => setError(null), 3000);
         }
     };
 
     // Start new conversation
-    const handleStartNewChat = () => {
+    const handleStartNewChat = async () => {
         if (!recipientInput.trim()) return;
 
         const recipientId = recipientInput.trim();
@@ -229,7 +229,7 @@ function MessagesView({ user }) {
     }
 
     // Error state
-    if (error) {
+    if (error && !isInitialized) {
         return (
             <div className="flex items-center justify-center h-full">
                 <div className="text-center max-w-md">
@@ -343,6 +343,13 @@ function MessagesView({ user }) {
                                 </span>
                             </div>
                         </div>
+
+                        {/* Error toast */}
+                        {error && (
+                            <div className="mx-4 mt-2 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+                                {error}
+                            </div>
+                        )}
 
                         {/* Messages */}
                         <div className="flex-1 overflow-y-auto p-4 space-y-4">

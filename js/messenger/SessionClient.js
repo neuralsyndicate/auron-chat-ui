@@ -5,12 +5,9 @@
 /**
  * SessionClient - Browser client for Session messaging
  *
- * The Session.js operations happen on the proxy server.
- * This client:
- * - Generates/stores mnemonic (using Web Crypto)
- * - Gets real Session ID from proxy
- * - Sends messages via proxy
- * - Polls for messages via proxy
+ * - Mnemonic generated server-side (proper 13-word Session mnemonic)
+ * - Stored encrypted in localStorage via WebCrypto
+ * - All Session operations via proxy
  */
 
 class SessionClient {
@@ -20,15 +17,6 @@ class SessionClient {
         this.userId = null;
         this.mnemonic = null;
         this.pollInterval = null;
-    }
-
-    /**
-     * Generate a random mnemonic seed (hex)
-     */
-    generateMnemonic() {
-        const array = new Uint8Array(16);
-        crypto.getRandomValues(array);
-        return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
     /**
@@ -43,28 +31,46 @@ class SessionClient {
 
         try {
             if (existingMnemonic) {
+                // Use existing mnemonic - get Session ID from proxy
                 this.mnemonic = existingMnemonic;
+
+                const response = await fetch(SESSION_PROXY_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'init',
+                        mnemonic: this.mnemonic
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.message || `Init failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                this.sessionId = data.sessionId;
+
             } else {
-                this.mnemonic = this.generateMnemonic();
-                window.SessionStorage.storeMnemonic(userId, this.mnemonic);
+                // Generate new mnemonic on server
+                const response = await fetch(SESSION_PROXY_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'generate' })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.message || `Generate failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                this.mnemonic = data.mnemonic;
+                this.sessionId = data.sessionId;
+
+                // Store encrypted mnemonic
+                await window.SessionStorage.storeMnemonic(userId, this.mnemonic);
             }
-
-            // Get real Session ID from proxy
-            const response = await fetch(SESSION_PROXY_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    type: 'init',
-                    mnemonic: this.mnemonic
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`Init failed: ${response.status}`);
-            }
-
-            const data = await response.json();
-            this.sessionId = data.sessionId;
 
             window.SessionStorage.storeSessionId(userId, this.sessionId);
 
@@ -156,8 +162,8 @@ class SessionClient {
             });
         };
 
-        // Initial poll
-        poll();
+        // Initial poll after short delay
+        setTimeout(poll, 1000);
 
         // Set up interval
         this.pollInterval = setInterval(poll, intervalMs);
